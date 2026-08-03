@@ -14,7 +14,12 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context, api_url):
     if bridge_ui_backend == constants.BRIDGE_UI_BACKEND.aggkit:
         # aggkit-backed mode: no bridge-hub api and no prebuilt UI container,
         # just the haproxy proxy with a CORS-safe route straight to the
-        # aggkit bridge REST API.
+        # aggkit bridge REST API. If aggkit_proxy_url is set (S5: multi-L2
+        # enclaves point this at the standalone aggkit_proxy additional
+        # service), use that single multi-network backend instead of this
+        # run's own l2_context.aggkit_bridge_url (which only fronts one
+        # chain's bridge REST API).
+        aggkit_bridge_url = args.get("aggkit_proxy_url") or l2_context.aggkit_bridge_url
         run_proxy(
             plan,
             args,
@@ -22,7 +27,7 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context, api_url):
             l2_context.rpc_url,
             bridge_hub_api_url=None,
             agglayer_dev_ui_url=None,
-            aggkit_bridge_url=l2_context.aggkit_bridge_url,
+            aggkit_bridge_url=aggkit_bridge_url,
         )
         return
 
@@ -91,8 +96,13 @@ def run_proxy(
 ):
     # Shaped as a list so that a future multi-L2 enclave can add one entry
     # per L2 (e.g. distinct path_suffix values like "/1", "/2" keyed off
-    # network_id), even though today there is always exactly one L2 and the
-    # suffix is empty (routes land on the bare "/aggkitapi" prefix).
+    # network_id). In practice a single multi-network backend (the
+    # standalone "aggkit_proxy" additional service, routed here via
+    # aggkit_proxy_url -- see run() above) already fronts every L2's bridge
+    # REST API, so this list collapses back down to exactly one entry (empty
+    # suffix, routes land on the bare "/aggkitapi" prefix) even in a 2-L2
+    # enclave -- haproxy never needs to fan out to per-chain bridge REST
+    # services itself.
     aggkit_backends = []
     if aggkit_bridge_url:
         aggkit_backends = [
@@ -101,6 +111,31 @@ def run_proxy(
                 "url": aggkit_bridge_url.removeprefix("http://"),
             },
         ]
+
+    # Per-chain L2 JSON-RPC routes (S5: /l2rpc-001, /l2rpc-002, ...),
+    # args-driven so a single-L2 deployment (the default, empty list) renders
+    # none of these extra routes and behaves exactly as before.
+    raw_l2_rpc_backends = args.get("bridge_ui_l2_rpc_urls", [])
+    l2_rpc_backends = [
+        {
+            "path_suffix": entry["path_suffix"],
+            "url": entry["url"].removeprefix("http://"),
+        }
+        for entry in raw_l2_rpc_backends
+    ]
+
+    # Back-compat: the bare /l2rpc route (consumed by the existing dev-ui
+    # script) stays aliased to chain 1 -- see the S5 route-map decision in
+    # enclave-notes.md. If bridge_ui_l2_rpc_urls declares a "-001" entry,
+    # prefer it over l2_rpc_url (which is this run's OWN l2_context.rpc_url,
+    # i.e. chain 2 when bridge_ui is deployed alongside run2's rollup); a
+    # single-L2 deployment has no such entry and l2_rpc_url is used exactly
+    # as before.
+    default_l2_rpc_url = l2_rpc_url
+    for entry in raw_l2_rpc_backends:
+        if entry["path_suffix"] == "-001":
+            default_l2_rpc_url = entry["url"]
+            break
 
     config_artifact = plan.render_templates(
         name="agglayer-dev-ui-proxy-config{}".format(args.get("deployment_suffix")),
@@ -111,7 +146,7 @@ def run_proxy(
                 ),
                 data={
                     "l1_rpc_url": l1_rpc_url.removeprefix("http://"),
-                    "l2_rpc_url": l2_rpc_url.removeprefix("http://"),
+                    "l2_rpc_url": default_l2_rpc_url.removeprefix("http://"),
                     "bridge_hub_api_url": bridge_hub_api_url.removeprefix("http://")
                     if bridge_hub_api_url
                     else "",
@@ -119,6 +154,7 @@ def run_proxy(
                     if agglayer_dev_ui_url
                     else "",
                     "aggkit_backends": aggkit_backends,
+                    "l2_rpc_backends": l2_rpc_backends,
                 },
             )
         },

@@ -406,6 +406,24 @@ DEFAULT_ARGS = (
         # - 'aggkit': skip the bridge-hub stack and have the haproxy proxy
         #   forward directly to the aggkit bridge REST API.
         "bridge_ui_backend": constants.BRIDGE_UI_BACKEND.bridge_hub,
+        # Only relevant when bridge_ui_backend is "aggkit". When set, the
+        # haproxy proxy's single /aggkitapi backend forwards to this URL
+        # instead of this run's own l2_context.aggkit_bridge_url. Use this to
+        # point at a standalone multi-network "aggkit_proxy" additional
+        # service (e.g. "http://aggkit-proxy-001:8080") so one haproxy
+        # backend fronts every participating L2's bridge REST API, instead of
+        # only the L2 that happens to be this run's own chain. Leave empty
+        # ("") to keep the original single-L2 behavior (falls back to
+        # l2_context.aggkit_bridge_url).
+        "aggkit_proxy_url": "",
+        # Only relevant when "bridge_ui" is in additional_services. Per-chain
+        # L2 JSON-RPC routes rendered by the haproxy proxy in ADDITION to the
+        # bare /l2rpc route (which stays aliased to the "-001" entry here, if
+        # present, for back-compat with the existing dev-ui script -- see the
+        # S5 route-map decision in enclave-notes.md). Each entry renders an
+        # `/l2rpc{path_suffix}` route, e.g. path_suffix "-001" -> /l2rpc-001.
+        # Each entry: {"path_suffix": <str>, "url": <str>}.
+        "bridge_ui_l2_rpc_urls": [],
         # Additional services to run alongside the network.
         # Options:
         # - agglogger

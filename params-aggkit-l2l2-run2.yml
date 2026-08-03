@@ -16,7 +16,10 @@ deployment_stages:
 args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
-  aggkit_image: ghcr.io/agglayer/aggkit:develop_2026_08_03_13_20_56c849c
+  # S5 (aggkit-proxy-l2l2 plan): switched from the develop image to the
+  # locally patched image that fixes the L2->L2 autoclaim readiness bug
+  # found in S3 -- see run1's params file and enclave-notes.md S3 section.
+  aggkit_image: aggkit:fix-autoclaim-l2tolx-local
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (2) gets an AutoClaim claimer -- see
   # aggkit_autoclaim_destinations below.
@@ -31,8 +34,30 @@ args:
   # (rollup_manager_address), which every run computes independently via its
   # own contracts-00X service, and it needs to know about BOTH bridge
   # services, which only exist once run2 has completed anyway.
+  # S5 (aggkit-proxy-l2l2 plan): also deploy bridge_ui here, for the same
+  # reason -- it wires the haproxy proxy's /aggkitapi route to aggkit-proxy-001
+  # (see aggkit_proxy_url below), which must already exist.
   additional_services:
     - aggkit_proxy
+    - bridge_ui
+
+  # S5 (aggkit-proxy-l2l2 plan): browser entrypoint. bridge_ui in "aggkit"
+  # mode skips the bridge-hub stack and renders just the haproxy proxy.
+  # aggkit_proxy_url points haproxy's single /aggkitapi backend at the
+  # standalone aggkit-proxy service (deployed above) instead of this run's
+  # own l2_context.aggkit_bridge_url (aggkit-002-bridge only) -- one haproxy
+  # backend then fronts networks 0/1/2 via the proxy's own network_id-based
+  # routing.
+  bridge_ui_backend: aggkit
+  aggkit_proxy_url: "http://aggkit-proxy-001:8080"
+  # Per-chain L2 JSON-RPC routes: /l2rpc-001 -> rollup 1, /l2rpc-002 ->
+  # rollup 2. The bare /l2rpc route stays aliased to the "-001" entry here
+  # for back-compat (see the S5 route-map decision in enclave-notes.md).
+  bridge_ui_l2_rpc_urls:
+    - path_suffix: "-001"
+      url: "http://op-el-1-op-reth-op-node-001:8545"
+    - path_suffix: "-002"
+      url: "http://op-el-1-op-reth-op-node-002:8545"
 
   # S4 (aggkit-proxy-l2l2 plan): static overrides for the aggkit-proxy
   # BridgeServiceFinder. Required for every network including 0 -- network 0
