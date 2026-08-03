@@ -714,8 +714,28 @@ def _extract_aggkit_version(aggkit_image):
     if not found_digit:
         return 999.9
 
+    # Other CI-built tags DO start with a digit but are still not a clean
+    # "<major>.<minor>[.<patch>]" version once the "-"-delimited suffix is
+    # dropped -- e.g. "develop_2026_08_03_13_20_56c849c" (branch name +
+    # underscore-joined build timestamp + short sha, no "-" at all so
+    # tag_without_suffix is the whole tag, and it starts with the "2026"
+    # digit of the date). float() would hard-fail on the underscores/hex
+    # digits in that string, so treat non-numeric "versions" the same way:
+    # assume latest (grpc-capable).
+    if not _is_simple_version(version):
+        return 999.9
+
     # return a float
     if version.count(".") > 1:
         split = version.split(".")
         return float("{}.{}".format(split[0], split[1]))
     return float(version)
+
+
+def _is_simple_version(version):
+    """True if version consists only of digits and '.' (i.e. is float()-safe)."""
+    for i in range(len(version)):
+        c = version[i]
+        if c != "." and not c.isdigit():
+            return False
+    return True

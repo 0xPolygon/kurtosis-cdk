@@ -99,6 +99,10 @@ def create_agglayer_config_artifact(
                     "op_el_rpc_url": args["op_el_rpc_url"],
                     "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
                     "consensus_contract_type": args["consensus_contract_type"],
+                    # Rollups beyond this run's own (network_id 1), pre-declared so
+                    # the agglayer this run deploys also knows about them. See
+                    # agglayer_extra_rollups in input_parser.star.
+                    "extra_rollups": args.get("agglayer_extra_rollups", []),
                 }
                 | contract_setup_addresses
                 | db_configs,

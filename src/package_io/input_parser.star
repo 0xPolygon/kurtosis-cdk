@@ -286,6 +286,18 @@ DEFAULT_ROLLUP_ARGS = {
     # The URL where the agglayer can be reached for ReadRPC
     "agglayer_readrpc_url": "http://agglayer:"
     + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
+    # Additional rollups to register in the agglayer's [full-node-rpcs] /
+    # [proof-signers] config tables, beyond the rollup that this run itself
+    # deploys (which always gets network_id 1 in those tables). Needed for
+    # multi-L2-into-one-enclave setups: when a second (or later) `kurtosis run`
+    # adds another rollup via deploy_agglayer=false (it reuses the agglayer
+    # deployed by the first run), that rollup is never rendered into
+    # agglayer/config.toml unless the FIRST run's agglayer already knew about
+    # it. Since op_el_rpc_url and the default signer keys are deterministic
+    # given deployment_suffix, later rollups can be declared here ahead of
+    # time on the run that deploys the agglayer.
+    # Each entry: {"network_id": <int>, "op_el_rpc_url": <str>, "sequencer_address": <str>}.
+    "agglayer_extra_rollups": [],
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
     # The URL where the aggkit-prover can be reached for gRPC

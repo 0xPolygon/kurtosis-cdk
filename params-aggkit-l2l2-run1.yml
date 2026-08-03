@@ -1,0 +1,68 @@
+# S2 (aggkit-proxy-l2l2 plan): first `kurtosis run` of a 2-L2 enclave.
+# Deploys L1 + agglayer + rollup 1 (network_id 1, op-reth, aggkit-001 +
+# aggkit-001-bridge) on the develop aggkit image. A second `kurtosis run`
+# with params-aggkit-l2l2-run2.yml (SAME enclave) adds rollup 2.
+#
+# Modeled on params-aggkit-ui.yml (single-L2 baseline) and on aggkit's own
+# multi-chain CI recipe (agglayer/aggkit .github/test_e2e_op_args_base.json +
+# _chain_1.json, agglayer/e2e aggkit-e2e-multi-chains.yml).
+
+deployment_stages:
+  deploy_op_succinct: false
+  # Legacy zkevm-bridge-service is not needed; aggkit-001-bridge (a second
+  # aggkit instance with --components=bridge) is deployed unconditionally.
+  deploy_cdk_bridge_infra: false
+
+args:
+  sequencer_type: op-reth
+  # ecdsa-multisig (not pessimistic): the develop aggkit build routes every
+  # certificate through an on-chain multisig validator committee. Pessimistic
+  # contracts don't expose that interface, so aggsender's committee query
+  # reverts and L2->L1 exits never settle to L1.
+  consensus_contract_type: ecdsa-multisig
+  aggkit_image: ghcr.io/agglayer/aggkit:develop_2026_08_03_13_20_56c849c
+  aggkit_components: "aggsender,aggoracle"
+
+  # aggsender multisig committee: 1 validator, threshold 1.
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # No bridge_ui yet (S5) and bridge_spammer off for determinism while
+  # stabilizing the 2-chain topology.
+  additional_services: []
+
+  l2_chain_id: 20201
+
+  # Rollup 2 is deployed by a SECOND `kurtosis run` (params-aggkit-l2l2-run2.yml)
+  # into this same enclave with deploy_agglayer: false — it reuses the
+  # agglayer deployed by THIS run. Since deploy_agglayer only runs once, this
+  # run's agglayer/config.toml render is the only chance to register rollup 2
+  # in [full-node-rpcs] / [proof-signers] (otherwise hardcoded to rollup 1
+  # only). op_el_rpc_url is deterministic from deployment_suffix.
+  #
+  # sequencer_address is the DEFAULT l2_sequencer_address
+  # (0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed) — run2 must NOT override
+  # l2_sequencer_address (or any other l2_* role key: admin/sequencer/
+  # aggregator/dac/aggoracle/sovereignadmin). Those roles are baked into L1
+  # RollupManager permissions (deploy_parameters.json's admin/
+  # timelockAdminAddress/deployerPvtKey = l2_admin_address/private_key,
+  # granted admin role on the RollupManager during THIS run) and into
+  # deterministic CREATE2 genesis addresses computed from them. Overriding
+  # them per-run breaks rollup-2 creation ("Deployer does not have admin
+  # role") and sovereign genesis generation ("AgglayerBridge proxy address
+  # ... does not match expectedBridgeAddress") — confirmed by a failed
+  # attempt during S2 bring-up. See agglayer_extra_rollups in
+  # src/package_io/input_parser.star.
+  agglayer_extra_rollups:
+    - network_id: 2
+      op_el_rpc_url: "http://op-el-1-op-reth-op-node-002:8545"
+      sequencer_address: "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
+
+optimism_package:
+  chains:
+    "001":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20201"

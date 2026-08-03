@@ -1,0 +1,59 @@
+# S2 (aggkit-proxy-l2l2 plan): second `kurtosis run` into the SAME enclave as
+# params-aggkit-l2l2-run1.yml. Adds rollup 2 (network_id 2, deployment_suffix
+# -002, op-reth, aggkit-002 + aggkit-002-bridge), settling certificates
+# through the agglayer instance run1 already deployed.
+#
+# Must be run with `kurtosis run --enclave cdk --args-file params-aggkit-l2l2-run2.yml .`
+# AFTER run1 has completed in the same enclave. Do NOT `kurtosis enclave rm`
+# between run1 and run2 — that would tear down L1/agglayer/rollup 1 too.
+
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: ecdsa-multisig
+  aggkit_image: ghcr.io/agglayer/aggkit:develop_2026_08_03_13_20_56c849c
+  aggkit_components: "aggsender,aggoracle"
+
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  additional_services: []
+
+  deployment_suffix: "-002"
+  l2_chain_id: 20202
+  l2_network_id: 2
+
+  # NOTE: do NOT override l2_admin_address / l2_sequencer_address / other
+  # l2_* role keys here. A first attempt at "distinct prefunded keys per
+  # chain" did override l2_admin_address for run2 and broke rollup-2
+  # creation: deploy_parameters.json templates admin/timelockAdminAddress/
+  # deployerPvtKey from l2_admin_address/private_key, and that address was
+  # already granted the RollupManager admin role by run1 (deploy_agglayer_
+  # contracts_on_l1 only runs once, at L1-deploy time). A different run2
+  # l2_admin_address has no admin role on the (already-deployed) L1
+  # RollupManager -> "Deployer does not have admin role" from
+  # 4_createRollup.ts, plus a CREATE2 genesis bridge-address mismatch
+  # ("AgglayerBridge proxy address ... does not match expectedBridgeAddress")
+  # since those addresses are deterministic functions of the deployer key.
+  # This matches aggkit's own CI recipe (test_e2e_op_args_chain_2.json),
+  # which likewise reuses every default key across chains.
+  #
+  # "Distinct prefunded keys per chain" (S2 work item) is instead satisfied
+  # by using separate, non-protocol-role EOAs as the `cast` bridge-sender
+  # wallets for chain-2 test traffic (see enclave-notes.md) -- those are
+  # funded by the L1->L2 deposit bridge txs themselves, not by genesis
+  # role-account funding.
+
+optimism_package:
+  chains:
+    "002":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20202"

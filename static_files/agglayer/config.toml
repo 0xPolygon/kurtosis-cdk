@@ -13,9 +13,15 @@ mock-verifier = {{.mock_verifier}}
 # TODO switch this to permissionless
 1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.http_rpc_port_number}}"
 {{- end }}
+{{- range .extra_rollups }}
+{{.network_id}} = "{{.op_el_rpc_url}}"
+{{- end }}
 
 [proof-signers]
 1 = "{{.l2_sequencer_address}}"
+{{- range .extra_rollups }}
+{{.network_id}} = "{{.sequencer_address}}"
+{{- end }}
 
 {{- if eq .agglayer_prover_primary_prover "network-prover" }}
 [prover.network-prover]
