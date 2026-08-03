@@ -41,10 +41,14 @@ kurtosis run --enclave cdk --args-file params.yml .
 After deployment, retrieve the server url:
 
 ```bash
-kurtosis port print pos agglayer-dev-ui-proxy-001 http
+kurtosis port print cdk agglayer-dev-ui-proxy-001 http
 ```
 
 Open the printed URL in your browser to access the interface and start bridging assets between L1 and L2.
+
+### Advanced: 2-L2 Setup with L2-to-L2 Bridging
+
+For testing cross-rollup (L2-to-L2) bridging scenarios, see the [AggKit 2-L2 with Bridge UI](../../advanced/aggkit-2l2-with-bridge-ui.md) guide. It sets up two L2 rollups with automated claim routing (autoclaim) and browser-based bridging between all chains (L1↔L2-1, L1↔L2-2, L2-1↔L2-2).
 
 ## How to Bridge
 
