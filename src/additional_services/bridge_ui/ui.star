@@ -125,8 +125,9 @@ def run_proxy(
     ]
 
     # Back-compat: the bare /l2rpc route (consumed by the existing dev-ui
-    # script) stays aliased to chain 1 -- see the S5 route-map decision in
-    # enclave-notes.md. If bridge_ui_l2_rpc_urls declares a "-001" entry,
+    # script) stays aliased to chain 1 -- see the "HAProxy Route Map" section
+    # of docs/docs/advanced/aggkit-2l2-with-bridge-ui.md. If
+    # bridge_ui_l2_rpc_urls declares a "-001" entry,
     # prefer it over l2_rpc_url (which is this run's OWN l2_context.rpc_url,
     # i.e. chain 2 when bridge_ui is deployed alongside run2's rollup); a
     # single-L2 deployment has no such entry and l2_rpc_url is used exactly

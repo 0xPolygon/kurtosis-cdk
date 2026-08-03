@@ -420,7 +420,8 @@ DEFAULT_ARGS = (
         # L2 JSON-RPC routes rendered by the haproxy proxy in ADDITION to the
         # bare /l2rpc route (which stays aliased to the "-001" entry here, if
         # present, for back-compat with the existing dev-ui script -- see the
-        # S5 route-map decision in enclave-notes.md). Each entry renders an
+        # "HAProxy Route Map" section of
+        # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md). Each entry renders an
         # `/l2rpc{path_suffix}` route, e.g. path_suffix "-001" -> /l2rpc-001.
         # Each entry: {"path_suffix": <str>, "url": <str>}.
         "bridge_ui_l2_rpc_urls": [],

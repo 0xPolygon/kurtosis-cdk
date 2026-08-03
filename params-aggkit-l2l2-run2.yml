@@ -18,7 +18,10 @@ args:
   consensus_contract_type: ecdsa-multisig
   # S5 (aggkit-proxy-l2l2 plan): switched from the develop image to the
   # locally patched image that fixes the L2->L2 autoclaim readiness bug
-  # found in S3 -- see run1's params file and enclave-notes.md S3 section.
+  # found in S3 (upstream fix: https://github.com/agglayer/aggkit/pull/1761).
+  # Local docker tag, not on any registry -- it MUST be built before this run.
+  # See run1's params file and the "Image Version" section of
+  # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md.
   aggkit_image: aggkit:fix-autoclaim-l2tolx-local
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (2) gets an AutoClaim claimer -- see
@@ -52,7 +55,8 @@ args:
   aggkit_proxy_url: "http://aggkit-proxy-001:8080"
   # Per-chain L2 JSON-RPC routes: /l2rpc-001 -> rollup 1, /l2rpc-002 ->
   # rollup 2. The bare /l2rpc route stays aliased to the "-001" entry here
-  # for back-compat (see the S5 route-map decision in enclave-notes.md).
+  # for back-compat (see the "HAProxy Route Map" section of
+  # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md).
   bridge_ui_l2_rpc_urls:
     - path_suffix: "-001"
       url: "http://op-el-1-op-reth-op-node-001:8545"
@@ -113,7 +117,7 @@ args:
   #
   # "Distinct prefunded keys per chain" (S2 work item) is instead satisfied
   # by using separate, non-protocol-role EOAs as the `cast` bridge-sender
-  # wallets for chain-2 test traffic (see enclave-notes.md) -- those are
+  # wallets for chain-2 test traffic -- those are
   # funded by the L1->L2 deposit bridge txs themselves, not by genesis
   # role-account funding.
 

@@ -38,7 +38,11 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, auto
 
 ### Prerequisites
 
-This setup requires the **develop branch** of the AggKit image or later, which includes both `aggkit` and `aggkit-proxy` binaries. See the "Image version" section below.
+This setup requires the **develop branch** of the AggKit image or later, which includes both `aggkit` and `aggkit-proxy` binaries.
+
+The params files below additionally pin a **locally-built patched image that you must build
+yourself before the first run** — it is not on any registry. See [Image Version](#image-version)
+for the build command and for what the failure looks like if you skip it.
 
 ## Deployment
 
@@ -276,7 +280,43 @@ Both networks use the **same proxy URL** — routing to different backends happe
 
 The params files currently pin a **locally-built patched image** `aggkit:fix-autoclaim-l2tolx-local` pending upstream PR [#1761](https://github.com/agglayer/aggkit/pull/1761).
 
-Once PR #1761 is merged and released, update both params files to use the released develop image (e.g., `ghcr.io/agglayer/aggkit:develop_<date>_<sha>`).
+:::warning This tag exists on no registry
+`aggkit:fix-autoclaim-l2tolx-local` is a **local Docker tag only**. Kurtosis resolves it from
+your machine's local image store; there is nothing to `docker pull`. On a machine that has not
+built it, `kurtosis run` fails at service creation with an image-not-found error along the lines
+of `Unable to find image 'aggkit:fix-autoclaim-l2tolx-local' locally` /
+`pull access denied for aggkit`. That failure is **not** a params-file or enclave problem — you
+are simply missing the image.
+:::
+
+**Build it before the first run:**
+
+```bash
+git clone https://github.com/agglayer/aggkit.git
+cd aggkit
+git checkout fix/autoclaim-l2tolx-blocknum   # PR #1761, base: develop
+docker build --build-arg INCLUDE_SHELL=false -t aggkit:fix-autoclaim-l2tolx-local .
+```
+
+Verify both binaries are present in the built image (the proxy service overrides the image's
+`aggkit` entrypoint to run `aggkit-proxy`):
+
+```bash
+docker run --rm aggkit:fix-autoclaim-l2tolx-local version
+docker run --rm --entrypoint /usr/local/bin/aggkit-proxy \
+  aggkit:fix-autoclaim-l2tolx-local version
+```
+
+Both should print the same `Version:` string (e.g. `v0.11.0-rc1-6-gd0895a3c`).
+
+**Why the patch is needed:** on an unpatched `develop` image the L2→L2 autoclaim never fires —
+the claimer compares an L1 info-tree leaf's L1 block number against the source rollup's own L2
+block number, so on a devnet whose L2 height exceeds L1's the readiness gate never opens and
+requests stay queued indefinitely (`proof not ready for request constraints`, retrying forever).
+L1→L2 autoclaim is unaffected. If you run the unpatched image anyway, expect L2→L2 deposits to
+reach `LEAF_INCLUDED`/`READY_TO_CLAIM` and never auto-claim.
+
+Once PR #1761 is merged and released, update both params files to use the released develop image (e.g., `ghcr.io/agglayer/aggkit:develop_<date>_<sha>`) and this whole section can go away.
 
 ### Non-Idempotency Warning
 
@@ -290,9 +330,23 @@ kurtosis enclave rm -f cdk
 
 ### Certificate Cadence and E2E Timeouts
 
-AggKit's aggsender enforces `MinimumNewCertificateInterval: 5m0s` between certificate send attempts. A deposit submitted just after a certificate window closes can wait up to 5 minutes for the next window.
+AggKit's aggsender logs `MinimumNewCertificateInterval: 5m0s` (aggkit's own default, `config/default.go`).
+Despite the name this is **not** a minimum spacing between certificates and **not** a rate limit —
+it is a maximum-idle heartbeat. `fulfillMinimumInterval`
+(`aggsender/trigger/trigger_asap.go`) schedules an extra trigger 5 minutes after the last event and
+then **skips it if any other trigger was already programmed** in the meantime. The primary driver is
+the ASAP trigger: a new certificate is attempted as soon as the previous one reaches a final state
+(settled or in error), subject to `DelayBetweenCertificates: 1s`. In a live 2-L2 enclave the
+aggsender logs a certificate attempt roughly every 2 seconds.
 
-The dev-ui E2E suite's `l2-to-l2.spec.ts` has a `E2E_L2_TO_L2_CLAIM_TIMEOUT_MS: 300000` (5 minutes, **identical to the certificate interval**), leaving **zero margin** against unlucky timing. If this timeout triggers in CI, budget 7-8 minutes instead, or keep L1 block production fast enough to stay ahead of L2 block height for the test duration.
+So a deposit does **not** wait up to 5 minutes for a "certificate window". Measured end-to-end
+L2→L2 send→claimed latencies in this topology were ~87 s (busy enclave) to ~2 m 11 s (idle enclave).
+
+The dev-ui E2E suite's `l2-to-l2.spec.ts` budget (`E2E_L2_TO_L2_CLAIM_TIMEOUT_MS`, default 8 minutes)
+is therefore sized off those measured latencies, not off the 5-minute heartbeat. It is deliberately
+generous: an earlier triage run did time out at a 5-minute budget, and every latency figure here is
+a single sample from a shared, traffic-contaminated enclave. Override with
+`E2E_L2_TO_L2_CLAIM_TIMEOUT_MS` if your enclave is faster or slower.
 
 ### Shared Wallet State
 
