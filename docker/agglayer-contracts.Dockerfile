@@ -40,4 +40,5 @@ RUN apt-get update \
   && cp /root/.foundry/bin/* /usr/local/bin \
   && pip3 install --no-cache-dir --break-system-packages flask flask_wtf gunicorn
 
-USER node
+# The `node` user (uid 1000) is created by the node:22-bookworm base image.
+USER 1000
