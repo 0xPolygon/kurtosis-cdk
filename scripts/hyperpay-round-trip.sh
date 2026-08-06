@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# S11b T8 — the round trip, as far as it goes today.
+# S11b — the full round trip: L1 -> HyperPay -> payments -> HyperPay -> L1.
 #
 #   L1 deposit -> claim on the bridge shard          (T7, composed below)
 #   -> paced payments across both shards             (hp-scenario, stock)
 #   -> withdrawal as a payment-shard bridge_exit_intent
 #   -> LET leaf + BridgeEvent + aggkit bridgesync
-#   -> [settlement]                                  <-- BLOCKED, see below
-#   -> [claimAsset on L1]                            <-- needs settlement
+#   -> settlement: onVerifyPessimistic writes lastStateRoot on L1
+#   -> claimAsset on L1, exact delta to a non-payer recipient
 #
 # Usage (needs a running enclave from scripts/hyperpay-up.sh):
 #   scripts/hyperpay-round-trip.sh
@@ -14,29 +14,35 @@
 #   SKIP_DEPOSIT=1 scripts/hyperpay-round-trip.sh    # reuse an existing claim
 #
 # ---------------------------------------------------------------------------
-# HONEST STATUS: the settlement phase CANNOT PASS on this merge base
+# Settlement is reachable as of the shard prover's max-lag timer arm
 # ---------------------------------------------------------------------------
-# Every certificate attempt fails `epoch close failed: Rejected(ShardCoverage)`
-# in both aggsender and the aggregator. It is not a wiring fault in this fork:
+# Until 2026-08-06 this script could not get past phase 4. Every certificate
+# attempt failed `epoch close failed: Rejected(ShardCoverage)` in both aggsender
+# and the aggregator, for a reason upstream of anything in this fork:
 #
-#   * `hyperpay_agg_program::run` requires EXACT shard coverage — every shard in
+#   * `hyperpay_agg_program::run` requires EXACT shard coverage -- every shard in
 #     the genesis topology must contribute a child to the epoch.
-#   * `hyperpay-shard-prover`'s daemon loop is purely block-driven. A batch
-#     closes only when the NEXT block arrives in a different epoch, so a payment
-#     shard that stops receiving blocks keeps its batch open forever and emits
-#     no SBP at all. Measured: shard prover 0 produced ZERO SBPs at DA head 3.
-#   * `BatchPolicy::lag_exceeded` — the max-lag force-close that would fix
-#     exactly this — exists, is unit-tested, and has ZERO production call sites.
-#     The generated `shard-prover-<i>.toml` even documents the behaviour
-#     (`max_lag_s = 15`, "so a bridge-idle epoch still produces an SBP").
+#   * `hyperpay-shard-prover`'s daemon loop was purely block-driven: a batch
+#     closed only when the NEXT block arrived in a different epoch, so a burst of
+#     payments followed by silence closed nothing at all. Measured: BOTH shard
+#     provers held 0 SBPs after 200 payments.
+#   * `BatchPolicy::lag_exceeded` -- the max-lag force-close that fixes exactly
+#     this -- existed, was unit-tested, and had ZERO production call sites, while
+#     the generated `shard-prover-<i>.toml` documented the timer as working.
 #
-# So this script runs the phases that CAN pass, then reports the settlement
-# state it actually observes instead of pretending to wait it out. It exits
-# non-zero from the settlement phase with that diagnosis, by design: a
-# round-trip script that exits 0 without an L1 claim would be a lie.
+# Fixed in the hyperpay repo: the daemon's loop is now
+# `hyperpay_shard_prover::pipeline::run_loop`, a `tokio::select!` whose second
+# arm ticks off `max_lag_s` and calls `lag_exceeded`. Both close paths share one
+# `close_open_batch`, so the SBP is byte-identical whichever arm fired
+# (`hyperpay-shard-prover/tests/lag_timer.rs`).
+#
+# So phases 4 and 5 are now real assertions rather than a documented stop. They
+# still exit non-zero when settlement does not happen, and still print the
+# rejection reason, the aggregator's counters and each prover's SBP count when
+# they do -- a round-trip script that exits 0 without an L1 claim would be a lie.
 #
 # Full write-up, with every value read: `mvp/results/s11b-round-trip.md` in the
-# hyperpay repo, §5.
+# hyperpay repo, sections 5 and 8.
 set -uo pipefail
 
 PKG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -301,13 +307,21 @@ if [ "${count}" -lt "${REQUIRE_SETTLEMENTS}" ] || [ "${lbn}" -le "${LBN_BASE}" ]
   kurtosis service logs "${ENCLAVE}" hyperpay-aggregator-001 2>&1 | grep -oE 'Rejected\([A-Za-z]+\)' | sort | uniq -c | sed 's/^/  /'
   die "NOT SETTLED: ${count} PaymentsStateUpdated (want ${REQUIRE_SETTLEMENTS}), latestBlockNumber ${LBN_BASE} -> ${lbn}.
 
-If the rejection above is Rejected(ShardCoverage) with a shard prover at 0 SBPs,
-this is the KNOWN blocker in this script's header: hyperpay-shard-prover's daemon
-loop has no max-lag timer, so an idle payment shard never closes its open batch
-and never contributes a child, and hyperpay_agg_program::run's exact-shard-
-coverage check rejects every epoch. Cheapest cut: call the already-tested
-BatchPolicy::lag_exceeded from a timer arm in the prover daemon's loop.
-Full diagnosis: mvp/results/s11b-round-trip.md §5 in the hyperpay repo."
+Read the two diagnostics above together:
+
+  * Rejected(ShardCoverage) WITH a shard prover at 0 SBPs means the max-lag
+    timer is not running in the image under test -- check that the deployed
+    hyperpay-node image carries pipeline::run_loop ('max-lag force-close timer
+    armed' is logged once at prover startup), and that max_lag_s in the
+    generated shard-prover-<i>.toml is well under epoch_length_secs.
+  * Rejected(ShardCoverage) with BOTH provers at >= 1 SBP is a different
+    problem: the epoch the aggregator is trying to close has no child from one
+    of them. Compare the retained ranges' epochs, not just their counts.
+  * polls_without_bridge_child > 0 with epochs_settled 0 is the bridge child,
+    not the payment shards.
+
+Full diagnosis and the values a good run reads: mvp/results/s11b-round-trip.md
+sections 5 and 8 in the hyperpay repo."
 fi
 ok "settled: ${count} PaymentsStateUpdated, latestBlockNumber ${LBN_BASE} -> ${lbn}"
 ok "lastStateRoot() = $(eth_call "${L1_URL}" "${ROLLUP_ADDRESS}" '0xb70de0d9')"
