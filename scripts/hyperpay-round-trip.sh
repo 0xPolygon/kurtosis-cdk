@@ -221,26 +221,25 @@ GW_IN="http://hyperpay-gateway-${CLAIMED_DEST_SHARD_PREFIX}-001:$([ "${CLAIMED_D
 # SHARD. That is a cast artifact, not a failure — the assertions below are on
 # the bridge shard's own state, which is the only thing that counts.
 #
-# NO `--legacy`. This is load-bearing and it cost a run. `--legacy` makes cast
-# emit an EIP-155 legacy envelope (`0xf9…`); the GATEWAY accepts it, because
-# ADR-006 §1 deliberately admits legacy as a secondary envelope ("`cast send
-# --legacy` and older wallets emit it"). The SHARD PROVER then refuses it:
-# `hyperpay-sbp-program`'s in-circuit envelope decoder is type-2 only (ADR-008
-# gap 1; its module doc says legacy "is out of this pass's scope"), and the
-# refusal is a FATAL daemon exit —
+# NO `--legacy`, and as of 2026-08-06 the gateway enforces that rather than
+# trusting this comment. `--legacy` makes cast emit an EIP-155 legacy envelope
+# (`0xf9…`), which the in-circuit envelope decoder cannot verify (type-2 only,
+# ADR-008 gap 1) and whose refusal is a FATAL shard-prover exit —
 #
 #   Error: Authorization("Envelope(UnsupportedType(249))")     # 249 == 0xf9
 #
-# — after which that shard's prover is wedged permanently: on restart it
-# re-ingests the same block from height 1 and dies again, so the shard never
-# contributes another SBP and no epoch can ever close. Measured on a live
+# — after which that shard's prover was wedged permanently: on restart it
+# re-ingested the same block from height 1 and died again. Measured on a live
 # enclave (shard-prover-1 Exited(1), aggregator then failing `Pull(Rpc(dns
-# error))` because the container was gone). Recorded in the hyperpay repo's
-# `mvp/results/QUESTIONS.md`.
+# error))` because the container was gone).
 #
-# Type-2 is ADR-006's *normative* envelope and the gateway serves
-# `eth_maxPriorityFeePerGas`/`eth_feeHistory`, so plain `cast send` produces
-# `0x02f9…` and needs no extra flag.
+# ADR-006's 2026-08-06 amendment closes that at the gateway: a legacy envelope
+# for either circuit-verified kind is now refused at ingress with
+# `-32000 / legacy_envelope_unprovable`, so this script could no longer wedge a
+# shard even if someone re-added the flag — it would get a clean JSON-RPC error
+# and fail loudly here instead. Type-2 remains ADR-006's normative envelope and
+# the gateway serves `eth_maxPriorityFeePerGas`/`eth_feeHistory`, so plain
+# `cast send` produces `0x02f9…` and needs no extra flag.
 cx cast send "${HYPERPAY_FACADE_BRIDGE}" \
   "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
   0 "${L1_RECIPIENT}" "${WITHDRAW_WEI}" "${CLAIMED_TOKEN_FACADE}" true "0x" \
@@ -345,7 +344,38 @@ Full diagnosis and the values a good run reads: mvp/results/s11b-round-trip.md
 sections 5 and 8 in the hyperpay repo."
 fi
 ok "settled: ${count} PaymentsStateUpdated, latestBlockNumber ${LBN_BASE} -> ${lbn}"
-ok "lastStateRoot() = $(eth_call "${L1_URL}" "${ROLLUP_ADDRESS}" '0xb70de0d9')"
+
+# `lastStateRoot()` is only meaningful if it is (a) not the seeded genesis word
+# and (b) EXACTLY what the aggregator committed. Both are asserted, and (b) is
+# read from the aggregator's own "epoch settled" log line
+# (`new_protocol_state_root`, bytes 4..36 of the `custom_chain_data` aggsender
+# submitted) -- not re-derived by the thing under test.
+LSR="$(eth_call "${L1_URL}" "${ROLLUP_ADDRESS}" '0xb70de0d9')"
+GENESIS_ROOT="$(docker run --rm hyperpay-node:local hp-stack genesis-root --profile payments \
+  2>/dev/null | tr -d '\r' | grep -oE '0x[0-9a-f]{64}' | head -1)"
+[ -n "${LSR}" ] || die "lastStateRoot() returned nothing"
+[ "${LSR}" != "${GENESIS_ROOT}" ] || die \
+"lastStateRoot() is still the SEEDED GENESIS word ${GENESIS_ROOT} -- no
+onVerifyPessimistic has written it, so the PaymentsStateUpdated count above
+cannot be what it appears to be."
+ok "lastStateRoot() = ${LSR} (not the seeded genesis word ${GENESIS_ROOT})"
+
+AGG_ROOT="$(kurtosis service logs "${ENCLAVE}" hyperpay-aggregator-001 2>&1 \
+  | grep 'epoch settled' | grep -oE 'new_protocol_state_root=0x[0-9a-f]{64}' \
+  | tail -1 | cut -d= -f2)"
+if [ -z "${AGG_ROOT}" ]; then
+  die "the aggregator logged no 'epoch settled' line carrying new_protocol_state_root --
+either the deployed hyperpay-node image predates that log line, or nothing
+settled locally and the L1 writes above came from somewhere else. Either way the
+equality below cannot be checked, and an unchecked round trip is not a round
+trip."
+fi
+[ "${LSR}" = "${AGG_ROOT}" ] || die \
+"lastStateRoot() ${LSR} != the aggregator's last committed protocol state root
+${AGG_ROOT}. A real onVerifyPessimistic stores exactly the word the aggregator
+put in custom_chain_data, so a mismatch means the L1 state was written by
+something other than this aggregator's certificate."
+ok "lastStateRoot() == the aggregator's committed protocol state root (${AGG_ROOT})"
 
 # ---------------------------------------------------------------------------
 # 5. Claim on L1 — the only thing that makes this a round trip.
