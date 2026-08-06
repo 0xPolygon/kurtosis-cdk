@@ -56,6 +56,15 @@ WITHDRAW_WEI="${WITHDRAW_WEI:-100000000000000000}"
 PAYMENT_ROUNDS="${PAYMENT_ROUNDS:-1}"
 PAYMENT_COUNT="${PAYMENT_COUNT:-20}"
 REQUIRE_SETTLEMENTS="${REQUIRE_SETTLEMENTS:-3}"
+# Which payment phase runs (see phase 2's header for why this exists at all):
+#   e3            hp-scenario e3 — the stock scenario, SYNTHETICALLY funded.
+#                 Exercises the payment path hardest, but cannot settle: see below.
+#   claimed-only  cross-shard transfers out of the REALLY-CLAIMED address only.
+#                 Weaker payment coverage, but every wei on both shards traces to
+#                 a claimed imported bridge exit, so the fold is sound.
+PAYMENTS_MODE="${PAYMENTS_MODE:-e3}"
+CLAIMED_ONLY_COUNT="${CLAIMED_ONLY_COUNT:-10}"
+CLAIMED_ONLY_WEI="${CLAIMED_ONLY_WEI:-10000000000000000}"
 SETTLE_TIMEOUT="${SETTLE_TIMEOUT:-600}"
 PRIVATE_KEY="${PRIVATE_KEY:-0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625}"
 L1_RECIPIENT="${L1_RECIPIENT:-0x1111111111111111111111111111111111111111}"
@@ -108,13 +117,129 @@ WITHDRAW_WEI, or claim more first (${CLAIMED_ENV} is the only authority)."
 ok "withdrawal cap: ${WITHDRAW_WEI} <= really-claimed ${CLAIMED_WEI}"
 
 # ---------------------------------------------------------------------------
-# 2. Payments across both shards, on the existing hp-scenario machinery.
+# 2. Payments across both shards.
+#
+# TWO MODES, because the stock one provably cannot settle. Measured 2026-08-06,
+# on a clean bring-up with BOTH of that day's fixes in (the genesis bridge leaf
+# and the gateway's legacy refusal): phases 1-3 pass, and then EVERY certificate
+# attempt is refused
+#
+#   epoch close failed error=Rejected(InboxAheadOfOutbox {
+#       src: ShardPrefix { bits: [171, 192, 0, ...], len: 12 },   # the bridge shard
+#       dst: ShardPrefix { bits: [0, 0, 0, ...],     len: 1  } }) # payment shard 0
+#
+# `hyperpay_agg_program::run`'s FORGED-MINT check (`run.rs`: `if seq_i > o.0`)
+# refuses an epoch in which a payment shard's inbox for the `(bridge -> shard)`
+# pair is ahead of the bridge shard's own outbox for it. `hyperpay_e2e::fund`
+# credits payers by injecting a `ClaimCredit` receipt onto exactly that inbox
+# chain, signed with the bridge shard's key — so it advances the INBOX while the
+# real bridge shard's OUTBOX never moves. E3's own log says it plainly:
+#
+#   E3: funded 11 payer(s) on shard 0 (seq 0..11)
+#   E3: funded  9 payer(s) on shard 1 (seq 1..10)
+#
+# and shard 0 never received a real claim at all, so its bridge outbox is 0.
+# 11 > 0, forever: the inbox watermark never goes down, so once funding has run,
+# THAT ENCLAVE CAN NEVER SETTLE.
+#
+# This is not a bug in `fund` and not a bug in the check. It is S11b §1.5 /
+# ruling D6 ("keep synthetic `fund`... transfers never touch agglayer's local
+# balance tree") meeting a rule it was never checked against: the justification
+# is about AGGLAYER's local balance tree, and it is correct about that — but
+# HyperPay's OWN aggregation statement has a forged-mint rule on the
+# bridge->payment queue pair, and a synthetic `ClaimCredit` is formally a forged
+# mint. Both components are behaving exactly as documented.
+#
+# So `PAYMENTS_MODE` picks which property this run is asserting:
+#
+#   e3            the stock scenario, synthetically funded. Hardest payment
+#                 coverage; settlement is unreachable, by construction.
+#   claimed-only  every wei that moves traces to the REAL claim from phase 1.
+#                 Cross-shard transfers out of the claimed address give BOTH
+#                 shards sealed blocks (burn on the payer's shard, mint leg on
+#                 the payee's) with a real outbox delta behind every inbox
+#                 advance, so the fold has nothing to refuse.
 #
 # hp-scenario needs a WRITABLE `--out` and endpoints it can reach. `/out` in the
 # enclave is a kurtosis files artifact holding ENCLAVE DNS names, so the tree is
 # copied out and re-pointed at the mapped host ports. Nothing about the payment
 # path is reimplemented here — E1/E2/E3 are the stock scenarios.
 # ---------------------------------------------------------------------------
+if [ "${PAYMENTS_MODE}" = "claimed-only" ]; then
+  log "2/5 payments: ${CLAIMED_ONLY_COUNT} cross-shard transfers of ${CLAIMED_ONLY_WEI} out of the REALLY-CLAIMED address (no synthetic funding)"
+
+  # The payee must live on the OTHER shard, so the transfer is cross-shard and
+  # both shards seal blocks. With `shard_prefix_bits = 1` the shard is the
+  # address's top bit, so 0x11.. is shard 0 and 0xE3.. (the claimed address) is
+  # shard 1 — asserted rather than assumed, because a preset with more bits
+  # would silently make every transfer same-shard and starve one shard of SBPs.
+  CO_PAYEE="${CO_PAYEE:-0x2222222222222222222222222222222222222222}"
+  co_shard() { python3 -c "
+import sys
+a=int(sys.argv[1],16); bits=1
+print(a >> (160-bits))" "$1"; }
+  [ "$(co_shard "${CO_PAYEE}")" != "$(co_shard "${CLAIMED_DEST}")" ] || die \
+"CO_PAYEE ${CO_PAYEE} is on the SAME shard as the claimed address ${CLAIMED_DEST}.
+claimed-only mode needs a CROSS-shard payee, or one shard seals no blocks, has
+no SBP, and the fold refuses the epoch as ShardCoverage."
+  ok "payee ${CO_PAYEE} is on shard $(co_shard "${CO_PAYEE}"), payer on shard $(co_shard "${CLAIMED_DEST}") — cross-shard"
+
+  # Leave the withdrawal covered: moving out more than (claimed - withdrawal)
+  # would make phase 3's burn fail on balance rather than on anything
+  # interesting.
+  CO_TOTAL=$(( CLAIMED_ONLY_COUNT * CLAIMED_ONLY_WEI ))
+  [ "$(( CO_TOTAL + WITHDRAW_WEI ))" -le "${CLAIMED_WEI}" ] || die \
+"claimed-only would move ${CO_TOTAL} out of the claimed ${CLAIMED_WEI}, leaving
+less than WITHDRAW_WEI ${WITHDRAW_WEI} for phase 3. Lower CLAIMED_ONLY_COUNT."
+
+  GW_PAY="http://hyperpay-gateway-${CLAIMED_DEST_SHARD_PREFIX}-001:$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 8545 || echo 8555)"
+
+  # `--async` and an EXPLICIT nonce, both deliberate:
+  #
+  #  * `--async` submits and returns the hash. Without it `cast` polls the
+  #    GATEWAY for a receipt while a cross-shard payment finalizes on the
+  #    PAYEE's shard, so every send would burn its full timeout for nothing
+  #    (phase 3 documents the same artifact for the exit).
+  #  * the nonce is read ONCE and then incremented locally. `cast` otherwise
+  #    asks the gateway per send, and the gateway answers from the read
+  #    replica — which lags a few blocks behind, so a burst would hand the
+  #    same nonce to several sends and the sequencer would refuse all but one
+  #    on its nonce window. Nothing would report it except a short balance.
+  CO_NONCE0="$(cx cast nonce "${CLAIMED_DEST}" --rpc-url "${GW_PAY}" 2>/dev/null | tr -d '\r')"
+  case "${CO_NONCE0}" in ''|*[!0-9]*) CO_NONCE0=0 ;; esac
+  echo "  starting nonce for ${CLAIMED_DEST}: ${CO_NONCE0}"
+  co_sent=0
+  i=0
+  while [ "${i}" -lt "${CLAIMED_ONLY_COUNT}" ]; do
+    if cx cast send "${CLAIMED_TOKEN_FACADE}" "transfer(address,uint256)" \
+         "${CO_PAYEE}" "${CLAIMED_ONLY_WEI}" \
+         --rpc-url "${GW_PAY}" --private-key "${PRIVATE_KEY}" \
+         --chain-id 4337 --gas-limit 1250000 \
+         --nonce "$(( CO_NONCE0 + i ))" --async >/dev/null 2>&1; then
+      co_sent=$(( co_sent + 1 ))
+    fi
+    i=$(( i + 1 ))
+  done
+  note "${co_sent}/${CLAIMED_ONLY_COUNT} transfers submitted (nonces ${CO_NONCE0}..$(( CO_NONCE0 + CLAIMED_ONLY_COUNT - 1 )))"
+  [ "${co_sent}" -gt 0 ] || die "not one transfer was accepted by the gateway"
+
+  # The real assertion: the cross-shard payee is credited, read off the OTHER
+  # shard's gateway.
+  GW_OTHER="http://hyperpay-gateway-$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 1 || echo 0)-001:$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 8555 || echo 8545)"
+  CO_BAL=0
+  for _ in $(seq 1 24); do
+    CO_BAL="$(cx cast call "${CLAIMED_TOKEN_FACADE}" "balanceOf(address)(uint256)" \
+      "${CO_PAYEE}" --rpc-url "${GW_OTHER}" 2>/dev/null | tr -d '\r' | awk '{print $1}')"
+    case "${CO_BAL}" in ''|*[!0-9]*) CO_BAL=0 ;; esac
+    [ "${CO_BAL}" -gt 0 ] && break
+    sleep 5
+  done
+  [ "${CO_BAL}" -gt 0 ] || die \
+"the cross-shard payee ${CO_PAYEE} was never credited (balanceOf = 0 on the
+payee's own shard). No value moved, so there is nothing for the fold to prove."
+  ok "cross-shard payee credited: balanceOf(${CO_PAYEE}) = ${CO_BAL} on its own shard"
+  ok "every wei that moved traces to the real claim — no synthetic bridge credit exists on this enclave"
+else
 log "2/5 payments across both shards (hp-scenario e3, ${PAYMENT_ROUNDS} round(s) x ${PAYMENT_COUNT})"
 HP_SCENARIO="${HYPERPAY_REPO}/target/release/hp-scenario"
 [ -x "${HP_SCENARIO}" ] || die "${HP_SCENARIO} not built — run 'make -C ${HYPERPAY_REPO} release'"
@@ -201,6 +326,8 @@ trap 'cp -f "${SCENARIO_OUT}/funding.json" "${LEDGER}" 2>/dev/null || true' EXIT
   --rounds "${PAYMENT_ROUNDS}" --count "${PAYMENT_COUNT}" \
   || die "the payment phase failed (conservation, dup/loss or drop counters) — see the E3 report"
 ok "payments done, per-token conservation exact (E3's own assertion)"
+note "PAYMENTS_MODE=e3 uses SYNTHETIC funding; settlement in phase 4 is unreachable by construction (see phase 2's header)"
+fi
 
 # ---------------------------------------------------------------------------
 # 3. The withdrawal: a payment-shard bridge_exit_intent, with stock tooling.
