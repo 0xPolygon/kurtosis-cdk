@@ -80,15 +80,28 @@ args:
   # hyperpay repo (`hyperpay-e2e/topologies/<profile>.toml`) that
   # `hp-stack materialize` turns into every service's config.
   #
-  # `payments` is the profile that EXISTS today: 2 payment shards, 2 gateways,
-  # no proving/settlement plane. The full topology this step targets needs the
-  # `settlement` profile, which S11b T6 adds; T5 must switch both lines below
-  # together (profile AND hyperpay_settlement) once it does.
+  # `settlement` (S11b step B) is the full topology: 2 payment shards, 2
+  # gateways, a shard prover per shard, the bridge shard and the aggregator.
+  # The two lines below MOVE TOGETHER — `hyperpay_settlement` decides which
+  # services are added, and the profile decides which configs exist for them
+  # to load. `settlement` + `false` would generate config nothing uses;
+  # `payments` + `true` would add three services with no config at all.
+  #
+  # KNOWN, MEASURED LIMIT of the settlement plane in this preset
+  # (mvp/results/QUESTIONS.md, "S11b (T6) — the local settlement fold is
+  # blocked"): `hyperpay-bridge-shard`'s daemon runs no block-production loop,
+  # so its prover serves an empty SBP list, and
+  # `hyperpay_aggregator::epoch::try_close_next_epoch` short-circuits on the
+  # mandatory bridge child. Every service here comes up and stays up; NO
+  # certificate can be produced until that loop is wired. Set to true anyway
+  # because the whole rest of the handshake -- contract deploy, vkey and
+  # genesis-root seeding, aggoracle, bridgesync -- is exercised by having the
+  # real topology present.
   # ---------------------------------------------------------------------------
-  hyperpay_stack_profile: payments
+  hyperpay_stack_profile: settlement
   hyperpay_shard_count: 2
   hyperpay_gateway_count: 2
-  hyperpay_settlement: false
+  hyperpay_settlement: true
 
   # ---------------------------------------------------------------------------
   # Trap T-d (PP value conservation). agglayer's pessimistic proof credits a

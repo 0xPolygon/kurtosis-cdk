@@ -4,9 +4,22 @@
 # Every function here runs ONE `hp-stack` subcommand inside
 # `hyperpay_node_image` and captures its stdout. None of them computes,
 # defaults, or reformats anything: if a value is wrong, it is wrong in the
-# hyperpay repo where it is tested, not silently different here. Each
-# subcommand prints the bare value on stdout and all diagnostics on stderr,
-# which is why `| tr -d '\n'` is enough (the precedent's idiom, kept).
+# hyperpay repo where it is tested, not silently different here.
+#
+# `2>/dev/null` IS LOAD-BEARING, and this cost a bring-up to learn.
+# `plan.run_sh(...).output` is the command's COMBINED stdout+stderr, not its
+# stdout. Every `hp-stack` plan-time subcommand deliberately prints the bare
+# value on stdout and its derivation note on stderr (so a human sees WHY a
+# value is what it is), and without the redirect that whole multi-line note
+# lands in the value. The first live T5 bring-up died at
+# `render_templates(create_new_rollup.json)` with
+#   Caused by: invalid character '\n' in string literal
+# and an `aggchain_vkey_hash` whose value was the vkey essay. A dry-run cannot
+# see this: it never executes `run_sh`.
+#
+# `tail -n1` on top of that is belt and braces: the contract is one line of
+# stdout, and if a subcommand ever prints a second, the LAST line is still the
+# value rather than a silently concatenated pair.
 
 
 def get_hash(plan, image):
@@ -21,7 +34,7 @@ def get_hash(plan, image):
         name="hyperpay-vkey-hash-getter",
         description="Getting the HyperPay aggchain vkey hash",
         image=image,
-        run="hp-stack vkey | tr -d '\n'",
+        run="hp-stack vkey 2>/dev/null | tail -n1 | tr -d '\n'",
     )
     return result.output
 
@@ -45,7 +58,9 @@ def get_genesis_root(plan, image, profile):
         name="hyperpay-genesis-root-getter",
         description="Computing the HyperPay genesis (height-0) protocol state root",
         image=image,
-        run="hp-stack genesis-root --profile {} | tr -d '\n'".format(profile),
+        run="hp-stack genesis-root --profile {} 2>/dev/null | tail -n1 | tr -d '\n'".format(
+            profile
+        ),
     )
     return result.output
 
@@ -63,7 +78,7 @@ def get_facade_address(plan, image, profile, field):
         name="hyperpay-facade-{}-getter".format(field),
         description="Reading the HyperPay {} facade address".format(field),
         image=image,
-        run="hp-stack facades --profile {} --field {} | tr -d '\n'".format(
+        run="hp-stack facades --profile {} --field {} 2>/dev/null | tail -n1 | tr -d '\n'".format(
             profile, field
         ),
     )

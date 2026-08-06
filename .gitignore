@@ -36,3 +36,9 @@ snapshots
 # Solidity build artifacts
 out/
 cache/
+
+# S11b T5: resolved enclave addresses and the T-l baseline, written by
+# scripts/hyperpay-up.sh / scripts/hyperpay-check-handshake.sh. Per-run values
+# (kurtosis host ports are ephemeral per enclave) -- never committed.
+.hyperpay-addresses.env
+.hyperpay-baseline.env
