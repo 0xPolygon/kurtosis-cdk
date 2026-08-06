@@ -36,9 +36,11 @@ def _suffix(args):
 def service_names(args):
     """Every HyperPay service name, in one place.
 
-    These are also the enclave DNS names. THEY ARE LOAD-BEARING: see the
-    networking note at the bottom of this file — when the generator grows a
-    kurtosis net mode, the names it emits must be exactly these.
+    These are also the enclave DNS names, and they are LOAD-BEARING: they are
+    the exact strings `hp-stack materialize --net kurtosis --service-suffix
+    <suffix>` writes into the generated config as peer addresses
+    (`hyperpay_e2e::net::Addressing::service_names`). The two are one scheme
+    with two spellings; see the note at the bottom of this file.
     """
     suffix = _suffix(args)
     shards = args["hyperpay_shard_count"]
@@ -73,13 +75,34 @@ def materialize(plan, args):
     compile-time workspace root the host build uses does not exist in a
     container, so `materialize` would otherwise fail looking for presets. See
     `hyperpay-e2e/src/plan.rs`.
+
+    `--net kurtosis --service-suffix <deployment_suffix>` is what makes the
+    output usable here at all, and it is a **generator** flag on purpose. The
+    generator's default (`--net host`) emits `127.0.0.1` for every peer, which
+    is correct for ADR-010's host supervisor and resolves to the CALLER when
+    each component is its own container: the services start and never connect,
+    and no dry-run can see it. In kurtosis mode `hp-stack materialize` emits
+    the enclave DNS names below and binds `0.0.0.0`. Rewriting those addresses
+    on this side instead would be the ADR-010 violation S11b exists to avoid.
+    `hyperpay_e2e::net::Addressing::service_names` is the mirror of
+    `service_names()` above, pinned by
+    `kurtosis_service_names_match_the_fork_launcher` in that module.
     """
     profile = args["hyperpay_stack_profile"]
     result = plan.run_sh(
         name="hyperpay-materialize",
         description="Generating HyperPay config for profile " + profile,
         image=args["hyperpay_node_image"],
-        run="hp-stack materialize --profile {} --out {}".format(profile, CONFIG_MOUNT),
+        run="hp-stack materialize --profile {} --out {} --net kurtosis --service-suffix {}".format(
+            profile,
+            CONFIG_MOUNT,
+            # A `-`-leading value; the generator's arg is declared
+            # `allow_hyphen_values` so this space-separated spelling works.
+            # Quoted so an empty deployment_suffix does not eat the next
+            # argument (there is none today, but this is the shape that
+            # cannot break when one is added).
+            "'" + _suffix(args) + "'",
+        ),
         store=[
             StoreSpec(
                 src=CONFIG_MOUNT,
@@ -427,21 +450,24 @@ def _add_aggregator(plan, args, names, files):
 
 
 # ------------------------------------------------------------------------------
-# KNOWN GAP FOR T5 — the generated config binds loopback
+# CLOSED (S11b step A) — the generated config no longer binds loopback
 #
-# `hp-stack materialize` emits every PEER address as `127.0.0.1:<port>`
+# `hp-stack materialize` used to emit every PEER address as `127.0.0.1:<port>`
 # (`HYPERPAY_DA_ENDPOINT`, `HYPERPAY_NATS_URL`, the replica's `da_endpoint`,
 # the gateway's `redis.url` and its `[[shards]]` table, and all of
 # `endpoints.json`), because the host supervisor runs the whole fabric as one
 # process group. In an enclave each component is its own container, so a peer
-# address of `127.0.0.1` resolves to the CALLER. A dry-run cannot see this:
-# the plan interprets, the mounts are correct, and the services start — they
-# just never connect.
+# address of `127.0.0.1` resolves to the CALLER — services that start and
+# never connect, which no dry-run can detect.
 #
-# This is deliberately NOT worked around here (a Starlark-side rewrite of
-# generated config is precisely what ADR-010 forbids). It is recorded in the
-# hyperpay repo's `mvp/results/QUESTIONS.md` — "S11b (T4) — materialize's
-# generated config binds loopback" — with two options, and T5 must land one
-# BEFORE bring-up. The service names in `service_names()` above are the names
-# the preferred option (a `--net kurtosis` mode in the generator) must emit.
+# Fixed where it belongs: in the GENERATOR, as the named `--net kurtosis` mode
+# `materialize()` above now passes (`hyperpay_e2e::net`). This file still
+# rewrites nothing — that Starlark-side rewrite is what ADR-010 forbids.
+#
+# The one obligation this leaves here: `service_names()` above and
+# `hyperpay_e2e::net::Addressing::service_names` are TWO SPELLINGS OF ONE
+# SCHEME. Rename a service here and the generated peer addresses stop
+# resolving. The hyperpay-side test
+# `net::tests::kurtosis_service_names_match_the_fork_launcher` pins every
+# string, so the rename has to happen in both repos in the same change.
 # ------------------------------------------------------------------------------
