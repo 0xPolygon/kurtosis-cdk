@@ -220,11 +220,32 @@ GW_IN="http://hyperpay-gateway-${CLAIMED_DEST_SHARD_PREFIX}-001:$([ "${CLAIMED_D
 # it polls the GATEWAY for a receipt while the exit is folded on the BRIDGE
 # SHARD. That is a cast artifact, not a failure — the assertions below are on
 # the bridge shard's own state, which is the only thing that counts.
+#
+# NO `--legacy`. This is load-bearing and it cost a run. `--legacy` makes cast
+# emit an EIP-155 legacy envelope (`0xf9…`); the GATEWAY accepts it, because
+# ADR-006 §1 deliberately admits legacy as a secondary envelope ("`cast send
+# --legacy` and older wallets emit it"). The SHARD PROVER then refuses it:
+# `hyperpay-sbp-program`'s in-circuit envelope decoder is type-2 only (ADR-008
+# gap 1; its module doc says legacy "is out of this pass's scope"), and the
+# refusal is a FATAL daemon exit —
+#
+#   Error: Authorization("Envelope(UnsupportedType(249))")     # 249 == 0xf9
+#
+# — after which that shard's prover is wedged permanently: on restart it
+# re-ingests the same block from height 1 and dies again, so the shard never
+# contributes another SBP and no epoch can ever close. Measured on a live
+# enclave (shard-prover-1 Exited(1), aggregator then failing `Pull(Rpc(dns
+# error))` because the container was gone). Recorded in the hyperpay repo's
+# `mvp/results/QUESTIONS.md`.
+#
+# Type-2 is ADR-006's *normative* envelope and the gateway serves
+# `eth_maxPriorityFeePerGas`/`eth_feeHistory`, so plain `cast send` produces
+# `0x02f9…` and needs no extra flag.
 cx cast send "${HYPERPAY_FACADE_BRIDGE}" \
   "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
   0 "${L1_RECIPIENT}" "${WITHDRAW_WEI}" "${CLAIMED_TOKEN_FACADE}" true "0x" \
   --rpc-url "${GW_IN}" --private-key "${PRIVATE_KEY}" \
-  --chain-id 4337 --legacy --gas-limit 1250000 2>&1 | tail -3
+  --chain-id 4337 --gas-limit 1250000 2>&1 | tail -3
 
 BRIDGE_TOPIC="0x501781209a1f8899323b96b4ef08b168df93e0a90c673d1e4cce39366cb62f9b"
 LET_AFTER="${LET_BEFORE}"; N_EVENTS=0
