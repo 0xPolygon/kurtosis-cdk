@@ -1,5 +1,6 @@
 cdk_erigon_launcher = import_module("./cdk-erigon/launcher.star")
 constants = import_module("../package_io/constants.star")
+hyperpay_launcher = import_module("./hyperpay/launcher.star")
 input_parser = import_module("../package_io/input_parser.star")
 op_reth_launcher = import_module("./op-reth/launcher.star")
 zkevm_bridge_service = import_module("./shared/zkevm_bridge_service.star")
@@ -36,6 +37,19 @@ def launch(
             sovereign_contract_setup_addresses,
             deployment_stages,
         )
+    elif sequencer_type == constants.SEQUENCER_TYPE.hyperpay:
+        plan.print("Deploying HyperPay chain")
+        context = hyperpay_launcher.launch(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            deployment_stages,
+        )
+        # HyperPay-owned values (its genesis facade addresses) that the
+        # zkevm-bridge-service template below also needs. The launcher read
+        # them from `hp-stack facades`; nothing here invents them.
+        args = args | context.template_args
     else:
         fail(
             "Unsupported sequencer type: '{}', please use one of: '{}'".format(

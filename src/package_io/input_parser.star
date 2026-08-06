@@ -229,6 +229,33 @@ DEFAULT_L2_ARGS = {
     "chain_name": "kurtosis",
     # Config name for OP stack rollup
     "sovereign_chain_name": "op-sovereign",
+    # ---------------------------------------------------------------------
+    # S11b HyperPay args. Only ONE of these carries HyperPay behaviour, and
+    # it names a topology profile rather than restating it: the profile is
+    # owned by the hyperpay repo (hyperpay-e2e/topologies/<profile>.toml) and
+    # `hp-stack materialize --profile <p>` is what turns it into config
+    # (ADR-010: the fork consumes the generated output, it never authors a
+    # config key).
+    # ---------------------------------------------------------------------
+    # Which hyperpay-e2e topology profile to materialize and deploy.
+    # `payments` (2 payment shards, 2 gateways, no proving/settlement plane)
+    # is the profile that exists today. The full topology this step targets
+    # needs the `settlement` profile, which S11b T6 adds in the hyperpay
+    # repo; until then a `hyperpay_settlement: true` bring-up will fail AT
+    # RUN TIME in the materialize step, loudly, naming the missing file.
+    "hyperpay_stack_profile": "payments",
+    # How many payment shards the profile above declares. The fork needs the
+    # count (and only the count) to know how many DA/sequencer/replica/
+    # shard-prover services to add; it is cross-checked against the
+    # generated `endpoints.json` by T5's handshake script rather than
+    # trusted. Must match the profile's `shard_count`.
+    "hyperpay_shard_count": 2,
+    # How many gateways the profile above declares. Same contract as above.
+    "hyperpay_gateway_count": 2,
+    # Whether to deploy the settlement plane (per-shard shard-provers + the
+    # aggregator). False until T6's `settlement` profile exists, because
+    # those services' configs come from the profile.
+    "hyperpay_settlement": False,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -415,11 +442,13 @@ VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.pessimistic,
     constants.CONSENSUS_TYPE.fep,
     constants.CONSENSUS_TYPE.ecdsa_multisig,
+    constants.CONSENSUS_TYPE.payments,
 ]
 
 VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.cdk_erigon,
     constants.SEQUENCER_TYPE.op_reth,
+    constants.SEQUENCER_TYPE.hyperpay,
 ]
 
 VALID_L1_ENGINES = [
@@ -598,6 +627,9 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
         in [
             constants.CONSENSUS_TYPE.ecdsa_multisig,
             constants.CONSENSUS_TYPE.fep,
+            # AggchainPayments is an AggchainBase subclass, so it takes the
+            # aggchain fork id like the others (CONSENSUS_TYPE = 1).
+            constants.CONSENSUS_TYPE.payments,
         ]
         or sequencer_type == constants.SEQUENCER_TYPE.op_reth
     ):
@@ -831,6 +863,31 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         "l1_additional_services", []
     ):
         fail("Blockscout is only supported to target L2 network.")
+
+    # S11b: `payments` and `hyperpay` are a fixed pair, checked in both
+    # directions (the precedent's paychain flavour did the same). HyperPay is
+    # the only L2 that serves the AggchainPayments settlement flow in this
+    # fork, and AggchainPayments is the only contract HyperPay's aggregator
+    # produces `aggchain_params` for (its Blueprint formula matches
+    # AggchainPayments.sol byte-for-byte).
+    if (
+        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.payments
+        and args["sequencer_type"] != constants.SEQUENCER_TYPE.hyperpay
+    ):
+        fail("consensus_contract_type 'payments' requires sequencer_type 'hyperpay'")
+    if (
+        args["sequencer_type"] == constants.SEQUENCER_TYPE.hyperpay
+        and args["consensus_contract_type"] != constants.CONSENSUS_TYPE.payments
+    ):
+        fail("sequencer_type 'hyperpay' requires consensus_contract_type 'payments'")
+
+    # A shard/gateway count of zero would silently plan a chain with no
+    # payment fabric at all, which looks like a successful bring-up.
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.hyperpay:
+        if args["hyperpay_shard_count"] < 1:
+            fail("hyperpay_shard_count must be >= 1")
+        if args["hyperpay_gateway_count"] < 1:
+            fail("hyperpay_gateway_count must be >= 1")
 
 
 def validate_consensus_type(consensus_type):

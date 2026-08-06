@@ -46,6 +46,14 @@ def run(
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     "sequencer_type": sequencer_type,
+                    # S11b: HyperPay's own genesis facade addresses, read at
+                    # plan time by the HyperPay launcher (`hp-stack facades`)
+                    # and merged into `args` by src/chain/launcher.star. Empty
+                    # for every other flavour, whose branches never read them.
+                    "hyperpay_bridge_address": args.get("hyperpay_bridge_address", ""),
+                    "hyperpay_ger_manager_address": args.get(
+                        "hyperpay_ger_manager_address", ""
+                    ),
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,

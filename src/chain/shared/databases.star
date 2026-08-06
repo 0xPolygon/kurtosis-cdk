@@ -96,6 +96,11 @@ def get_db_configs(suffix, sequencer_type):
         dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS
     elif sequencer_type == constants.SEQUENCER_TYPE.op_reth:
         dbs = CENTRAL_ENV_DBS | OP_SUCCINCT_PROPOSER_DBS
+    elif sequencer_type == constants.SEQUENCER_TYPE.hyperpay:
+        # aggkit's own databases only. HyperPay keeps all of its state in its
+        # own stores (RocksDB-backed component data dirs, NATS, Redis) and
+        # needs no postgres, so there is nothing to add to CENTRAL_ENV_DBS.
+        dbs = CENTRAL_ENV_DBS
     else:
         fail("Unsupported sequencer type: %s" % sequencer_type)
 

@@ -35,6 +35,11 @@ CONSENSUS_TYPE = struct(
     pessimistic="pessimistic",
     ecdsa_multisig="ecdsa-multisig",
     fep="fep",
+    # S11b: the AggchainPayments settlement flow. Reused verbatim from the
+    # paychain precedent (kurtosis-cdk@feat/cdk-payments) -- the contract, the
+    # create-rollup path and the vkey selector are identical; only the L2
+    # implementation differs (hyperpay, not paychain-node).
+    payments="payments",
 )
 
 CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
@@ -43,21 +48,36 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
     CONSENSUS_TYPE.pessimistic: "PolygonPessimisticConsensus",
     CONSENSUS_TYPE.ecdsa_multisig: "AggchainECDSAMultisig",
     CONSENSUS_TYPE.fep: "AggchainFEP",
+    # Absent from the pinned agglayer-contracts:v12.2.3 image; supplied by
+    # agglayer-contracts:hyperpay-local, built from a vendored 2-commit patch
+    # (hyperpay repo, e2e/vendor/agglayer-contracts-payments-e6f7f189.patch).
+    CONSENSUS_TYPE.payments: "AggchainPayments",
 }
 
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_reth="op-reth",
+    # S11b: HyperPay's payment fabric (bridge shard + N payment shards, each
+    # sequencer/DA/replica/shard-prover, gateways, aggregator, NATS, Redis).
+    # There is no EVM anywhere in it -- see src/chain/hyperpay/launcher.star.
+    hyperpay="hyperpay",
 )
 
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
+    # HyperPay has one payment sequencer PER SHARD and none of them speaks
+    # JSON-RPC; the service that answers `eth_*` for the chain as a whole (and
+    # therefore the one aggkit, aggoracle and bridgesync must talk to) is the
+    # BRIDGE SHARD. Both mappings point at it deliberately.
+    SEQUENCER_TYPE.hyperpay: "hyperpay-bridge-shard",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
     SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
+    # See L2_SEQUENCER_MAPPING above: the bridge shard is the chain's RPC.
+    SEQUENCER_TYPE.hyperpay: "hyperpay-bridge-shard",
 }
 
 FORK_ID_TO_NAME = {
@@ -126,6 +146,11 @@ DEFAULT_IMAGES = {
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
     # match its own. Bump both together once a newer aggkit-prover ships.
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.10.0-agglayer",
+    # S11b: built by `make e2e-images` in the hyperpay repo (release binaries +
+    # the harness presets and topologies, e2e/docker/Dockerfile). There is no
+    # registry to pull it from -- see the ordering warning in that Makefile
+    # about `kurtosis clean -a` pruning unused local images.
+    "hyperpay_node_image": "hyperpay-node:local",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.9",
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",

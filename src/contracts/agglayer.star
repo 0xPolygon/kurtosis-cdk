@@ -1,5 +1,6 @@
 aggchain_vkey = import_module("../vkey/aggchain.star")
 agglayer_vkey = import_module("../vkey/agglayer.star")
+hyperpay_vkey = import_module("../vkey/hyperpay.star")
 constants = import_module("../package_io/constants.star")
 contracts_util = import_module("./util.star")
 cdk_data_availability = import_module("../chain/cdk-erigon/cdk_data_availability.star")
@@ -81,11 +82,39 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
     aggkit_prover_image = args.get("aggkit_prover_image")
-    aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
-        aggchain_vkey_selector = "0x00000000"
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.payments:
+        # S11b: HyperPay's aggchain vkey comes from HyperPay itself, not from
+        # aggkit-prover (there is no aggkit-prover in this flavour — the
+        # aggregator serves AggchainProofService directly), and it is
+        # registered as an OWNED vkey under the fixed selector 0x1000‖0001
+        # (`hyperpay_agg_program::params::AGGCHAIN_VKEY_SELECTOR`).
+        aggchain_vkey_hash = hyperpay_vkey.get_hash(
+            plan, args.get("hyperpay_node_image")
+        )
+        aggchain_vkey_selector = "0x10000001"
+        # Trap T-a, the precedent's last settlement blocker: seed
+        # AggchainPayments' initial `lastStateRoot` with HyperPay's height-0
+        # protocol state root, which is what the first certificate carries as
+        # `prev_state_root`. Both values come from ONE function in the hyperpay
+        # repo (`hyperpay_aggregator::genesis::genesis_state`), so the contract
+        # and the prover cannot disagree. Flows into
+        # `create_new_rollup.json`'s `aggchainParams.startingStateRoot` below.
+        hyperpay_genesis_root = hyperpay_vkey.get_genesis_root(
+            plan,
+            args.get("hyperpay_node_image"),
+            args.get("hyperpay_stack_profile"),
+        )
     else:
-        aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
+        aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
+        # Only the payments flavour seeds a genesis state root; the others
+        # leave the (unused-by-them) startingStateRoot at the zero hash.
+        hyperpay_genesis_root = BYTES32_ZERO_HASH
+        if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
+            aggchain_vkey_selector = "0x00000000"
+        else:
+            aggchain_vkey_selector = aggchain_vkey.get_selector(
+                plan, aggkit_prover_image
+            )
 
     # Set program vkey based on the consensus type.
     # For non pessimistic consensus types, we use the bytes32 zero hash.
@@ -95,6 +124,9 @@ def run(plan, args, deployment_stages, op_stack_args):
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
         constants.CONSENSUS_TYPE.ecdsa_multisig,
+        # AggchainPayments verifies an aggchain proof, not a pessimistic one:
+        # the pessimistic program vkey must be the zero hash for it.
+        constants.CONSENSUS_TYPE.payments,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
@@ -118,6 +150,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "pp_vkey_selector": pp_vkey_selector,
         "aggchain_vkey_hash": aggchain_vkey_hash,
         "aggchain_vkey_selector": aggchain_vkey_selector,
+        "hyperpay_genesis_root": hyperpay_genesis_root,
         "program_vkey": program_vkey,
         "contracts_dir": constants.CONTRACTS_DIR,
         "keystores_dir": constants.KEYSTORES_DIR,

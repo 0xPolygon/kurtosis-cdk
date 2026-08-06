@@ -17,6 +17,11 @@ L1URL = "{{.l1_rpc_url}}"
 L2URL = "{{.l2_rpc_url}}"
 {{- else if eq .sequencer_type "op-reth" }}
 L2URL = "{{.op_el_rpc_url}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+# HyperPay's BRIDGE SHARD is the chain's JSON-RPC surface (there is no EVM and
+# no per-shard RPC). `l2_rpc_url` is built for it in aggkit.star, on the
+# generated port map's bridge RPC port -- not 8545.
+L2URL = "{{.l2_rpc_url}}"
 {{- else}}
 L2URL = ""
 {{- end }}
@@ -29,9 +34,17 @@ AggLayerURL = "{{.agglayer_grpc_url}}"
 AggLayerURL = "{{.agglayer_readrpc_url}}"
 {{- end }}
 
+{{- if eq .sequencer_type "hyperpay" }}
+# There is no aggkit-prover in this flavour: hyperpay-aggregator serves the
+# unmodified `aggkit.prover.v1.AggchainProofService` itself, and aggsender
+# talks to it directly. The URL is passed in by the HyperPay launcher, which
+# owns the service name and reads the port from the generated map.
+AggchainProofURL= "{{.hyperpay_aggregator_grpc_url}}"
+{{- else }}
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port_number}}"
+{{- end }}
 
-{{- if or (eq .sequencer_type "op-reth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
+{{- if or (eq .sequencer_type "op-reth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
@@ -94,6 +107,9 @@ polTokenAddress = "{{.pol_token_address}}"
 polygonZkEVMAddress = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+# The AggchainPayments instance created for this rollup.
+polygonZkEVMAddress = "{{.rollup_address}}"
 {{- else }}
 polygonZkEVMAddress = ""
 {{- end }}
@@ -115,6 +131,13 @@ BridgeAddr = "{{.l1_bridge_address}}"
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootAddr = "{{.l2_ger_address}}"
 BridgeAddr = "{{.l2_bridge_address}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+# HyperPay's facades are at ITS OWN genesis addresses (read at plan time with
+# `hp-stack facades`), NOT at the sovereign deploy's L2 predeploys. Trap T-n:
+# aggoracle reads `globalExitRootUpdater()` on this GER facade at startup and
+# refuses to run unless it is its own signer.
+GlobalExitRootAddr = "{{.hyperpay_ger_manager_address}}"
+BridgeAddr = "{{.hyperpay_bridge_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
@@ -407,6 +430,8 @@ EnableAggOracleCommittee = false
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootL2 = "{{.l2_ger_address}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+GlobalExitRootL2 = "{{.hyperpay_ger_manager_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
@@ -552,10 +577,27 @@ L1ChainID = "{{.l2_chain_id}}"
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 BridgeAddr = "{{.l2_bridge_address}}"
-{{- else if eq .sequencer_type "op-reth" }}
-BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+BridgeAddr = "{{.hyperpay_bridge_address}}"
 {{- else }}
 BridgeAddr = ""
+{{- end }}
+
+# ------------------------------------------------------------------------------
+# SyncFromInBridges gates whether bridgesync extracts tx-internal
+# from-addresses via debug_traceTransaction for Asset events.
+#
+# S11b trap T-g / doubts D7-D8, and the orchestrator's ruling on them: HyperPay's
+# bridge shard DOES answer debug_traceTransaction, but ADR-007's no-EVM design
+# means it cannot produce a real execution trace, and "a plausible-but-wrong
+# trace is worse than none -- it converts a loud failure into a silent
+# mis-sync". So this is false: bridgesync's no-trace fast path is what the
+# design targets (synthetic import txs carry `to = <bridge facade>` with
+# bridgeAsset-shaped calldata). If T5 finds bridgesync actually needs traces,
+# that is a finding to record, not a value to flip quietly.
+# ------------------------------------------------------------------------------
+{{- if eq .sequencer_type "hyperpay" }}
+SyncFromInBridges = "false"
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -670,6 +712,8 @@ BlockFinality = "LatestBlock"
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 SovereignRollupAddr = "{{.rollup_address}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+SovereignRollupAddr = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 {{- else }}
@@ -682,6 +726,8 @@ SovereignRollupAddr = ""
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootL2 = "{{.l2_ger_address}}"
+{{- else if eq .sequencer_type "hyperpay" }}
+GlobalExitRootL2 = "{{.hyperpay_ger_manager_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}

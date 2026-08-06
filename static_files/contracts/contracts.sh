@@ -416,7 +416,7 @@ create_agglayer_rollup() {
 
     cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
     # shellcheck disable=SC1054,SC1072,SC1083
-    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+    {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
     cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     # shellcheck disable=SC1073,1009
     {{ else }}
@@ -438,7 +438,7 @@ create_agglayer_rollup() {
         # Foundry cache is corrupted/invalid at this point for some reason
         # Maybe the source image has cached older contract versions
         rm -fr out cache
-            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+            {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
             forge create \
                 --broadcast \
                 --json \
@@ -469,7 +469,7 @@ create_agglayer_rollup() {
             {{ end }}
         {{ else }}
         _echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
-            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+            {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
             jq \
                 --arg c "{{ .gas_token_address }}" \
                 '.gasTokenAddress = $c' \
@@ -487,7 +487,7 @@ create_agglayer_rollup() {
 
     cp "$contracts_dir"/deployment/v2/genesis.json "$output_dir"/
 
-    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+    {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
     jq 'walk(if type == "object" then 
             with_entries(
@@ -673,7 +673,12 @@ create_agglayer_rollup() {
     _echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
     if [[ -e create_rollup_output.json ]]; then
         jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' "$output_dir"/genesis.json > "dynamic-{{.chain_name}}-conf.json"
-        batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
+        # S11b trap T-i: `firstBatchData` is an OBJECT only for cdk-erigon
+        # rollups; for sovereign rollups (op-reth, hyperpay) it is the empty
+        # string "", and `.firstBatchData.timestamp` then dies with
+        # "Cannot index string with timestamp". Default to 0 instead of
+        # crashing the whole contract deploy.
+        batch_timestamp=$(jq '(.firstBatchData | if type == "object" then .timestamp else 0 end) // 0' combined.json)
         jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "dynamic-{{.chain_name}}-conf.json" > tmp_output.json
         mv tmp_output.json "dynamic-{{.chain_name}}-conf.json"
     else

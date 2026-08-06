@@ -138,10 +138,18 @@ def _create_deployment_context(
         args["deployment_suffix"], args["sequencer_type"]
     )
     keystore_artifacts = get_keystores_artifacts(plan, args)
+    # S11b: HyperPay's chain RPC is served by its BRIDGE SHARD, which binds the
+    # generated port map's bridge RPC port (`hyperpay-e2e/src/ports.rs`), not
+    # 8545. Everything downstream of `l2_rpc_url` (L2URL, the aggoracle's
+    # ethtxmanager, bridgesync) therefore points at the right place without a
+    # second URL variable.
+    l2_rpc_port = ports_package.HTTP_RPC_PORT_NUMBER
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.hyperpay:
+        l2_rpc_port = ports_package.HYPERPAY_BRIDGE_RPC_PORT_NUMBER
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"],
         args["deployment_suffix"],
-        ports_package.HTTP_RPC_PORT_NUMBER,
+        l2_rpc_port,
     )
 
     # Update sovereign contract addresses with committee address if needed

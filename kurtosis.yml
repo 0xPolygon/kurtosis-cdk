@@ -14,7 +14,17 @@ description: |
 # pinned inline in a `.star` file, or if an entry here is missing a version.
 replace:
   github.com/agglayer/optimism-package: github.com/agglayer/optimism-package@v2.0.0  # 2026-07-30
-  github.com/ethpandaops/ethereum-package: github.com/ethpandaops/ethereum-package@199620b24ac979c676010c5a68b2893c2bce4f1f  # 2026-08-04, ahead of v6.1.0
+  # S11b (HyperPay fork): pinned back to the 6.1.0 TAG. `origin/main`'s
+  # floating post-6.1.0 commit (199620b2) cannot be interpreted at all by the
+  # pinned kurtosis CLI 1.15.2 — its `src/zkboost/zkboost_launcher.star:311`
+  # uses the `GpuConfig` builtin, which that CLI does not provide, so EVERY
+  # args-file fails with `undefined: GpuConfig` before a single service is
+  # planned. Measured: 199620b2 and its predecessor b5b3af65 both fail; 6.1.0
+  # interprets the whole plan (mvp/results/s11b-environment.md §1 in the
+  # hyperpay repo). `docs/DEPENDENCIES.md` there pins the CLI at 1.15.2 with
+  # "do not upgrade", so the CLI is not the variable. A tag is also a stronger
+  # pin than the floating commit it replaces.
+  github.com/ethpandaops/ethereum-package: github.com/ethpandaops/ethereum-package@6.1.0
   github.com/kurtosis-tech/prometheus-package: github.com/kurtosis-tech/prometheus-package@f3402ebad8cffe98eef990e41ca863f7e8746c21  # 2026-06-24
   github.com/kurtosis-tech/grafana-package: github.com/kurtosis-tech/grafana-package@c8ff0b52d25deb0bc4ec95971dcf25b2fca11287  # 2025-03-31
   github.com/xavier-romero/kurtosis-blockscout: github.com/xavier-romero/kurtosis-blockscout@9de7765a6c98c8c357f747ff953fdbc0e39ebc3d  # 2025-01-29

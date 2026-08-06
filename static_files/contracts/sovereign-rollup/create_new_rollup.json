@@ -38,6 +38,8 @@
     "aggchainParams": {
         "aggchainManager": "{{ .l2_sovereignadmin_address }}",
         "aggchainManagerPvtKey": "{{.l2_sovereignadmin_private_key}}",
+        "startingBlockNumber": 0,
+        "startingStateRoot": "{{ .hyperpay_genesis_root }}",
         "initParams": {
             "l2BlockTime": "{{ .sp1_l2_block_time }}",
             "rollupConfigHash": "{{.sp1_rollup_config_hash}}",
