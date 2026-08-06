@@ -515,6 +515,8 @@ L1_BAL_BEFORE="$(hex2dec "$(rpc "${L1_URL}" eth_getBalance "[\"${L1_RECIPIENT}\"
 IC_BEFORE="$(hex2dec "$(eth_call "${L1_URL}" "${L1_BRIDGE}" "0xcc461632$(printf '%064x%064x' "${WD_COUNT}" "${ROLLUP_ID}")")")"
 [ "${IC_BEFORE}" = "0" ] || die "L1 isClaimed(${WD_COUNT}, ${ROLLUP_ID}) is already true"
 
+CLAIM_LOG="${SCENARIO_OUT}.claim.log"
+mkdir -p "$(dirname "${CLAIM_LOG}")" 2>/dev/null || true
 cx polycli ulxly claim asset \
   --bridge-address "${L1_BRIDGE}" \
   --deposit-count "${WD_COUNT}" --deposit-network "${ROLLUP_ID}" \
@@ -522,7 +524,24 @@ cx polycli ulxly claim asset \
   --bridge-service-url "http://${BRIDGE_REST_SVC}:5577" --legacy=false \
   --rpc-url "http://${L1_SVC}:8545" --private-key "${PRIVATE_KEY}" \
   --chain-id "$(cx cast chain-id --rpc-url "http://${L1_SVC}:8545" | tr -d '\r')" \
-  --gas-limit 3000000 --wait 300s --pretty-logs=false 2>&1 | tail -6
+  --gas-limit 3000000 --wait 300s --pretty-logs=false 2>&1 | tee "${CLAIM_LOG}" | tail -6
+
+# The claim's own L1 receipt must say `status: 1`. The balance delta and the
+# isClaimed flip below are the stronger facts, but a reverted claimAsset that
+# happened to coincide with either would otherwise read as a pass — and the
+# receipt is one `curl` away, trusting no HyperPay component.
+CLAIM_TX="$(grep -oE '0x[0-9a-fA-F]{64}' "${CLAIM_LOG}" | tail -1)"
+if [ -n "${CLAIM_TX}" ]; then
+  CLAIM_STATUS="$(rpc "${L1_URL}" eth_getTransactionReceipt "[\"${CLAIM_TX}\"]" \
+    | python3 -c 'import sys,json; r=json.load(sys.stdin).get("result") or {}; print(r.get("status") or "")')"
+  [ "${CLAIM_STATUS}" = "0x1" ] || die \
+"the L1 claimAsset receipt ${CLAIM_TX} has status ${CLAIM_STATUS:-<none>}, not 0x1 —
+a reverted claim cannot be a round trip, whatever the balances say."
+  ok "L1 claimAsset ${CLAIM_TX} receipt status = 0x1"
+else
+  die "no L1 transaction hash in polycli's output — nothing to read a receipt for.
+See ${CLAIM_LOG}."
+fi
 
 L1_BAL_AFTER="$(hex2dec "$(rpc "${L1_URL}" eth_getBalance "[\"${L1_RECIPIENT}\",\"latest\"]" \
   | python3 -c 'import sys,json; print(json.load(sys.stdin).get("result") or "0x0")')")"
