@@ -47,3 +47,9 @@ cache/
 # UUID); committing it would let a stale cap authorise a withdrawal larger than
 # the value that actually entered, which is the permanent-wedge failure.
 .hyperpay-claimed.env
+
+# S11b T8: hp-scenario's bridge-inbox funding ledger, per enclave. A reused
+# seq_no is an IdempotentAck -- acked and silently never credited -- so this must
+# persist across runs of one enclave and never be shared between enclaves.
+.hyperpay-funding-*.json
+.hyperpay-scenario/
