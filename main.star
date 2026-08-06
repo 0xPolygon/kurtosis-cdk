@@ -1,6 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./src/package_io/input_parser.star")
 contracts_util = import_module("./src/contracts/util.star")
+hyperpay_vkey = import_module("./src/vkey/hyperpay.star")
 op_succinct_package = import_module("./src/chain/op-reth/op_succinct_proposer.star")
 
 # Main service packages.
@@ -17,10 +18,47 @@ mitm_package = "./src/mitm.star"
 def run(plan, args={}):
     # Parse args.
     (deployment_stages, args, op_stack_args) = input_parser.parse_args(plan, args)
-    plan.print("Deploying the following components: " + str(deployment_stages))
-    plan.print("Deploying CDK stack with the following configuration: " + str(args))
     sequencer_type = args.get("sequencer_type")
     consensus_type = args.get("consensus_contract_type")
+
+    # S11b: HyperPay's chain id is a GENESIS value, so this fork must take it
+    # from HyperPay rather than register the rollup with its own default.
+    #
+    # This is done here, before anything reads `args`, because `l2_chain_id`
+    # reaches the create-rollup input, the aggkit templates and
+    # `get-rollup-info.sh` — every one of them has to agree.
+    #
+    # The failure it prevents cost a bring-up and was invisible in every
+    # health check: aggkit signs its **L2** transactions with the chain id it
+    # reads back from the RollupManager, not with `eth_chainId`. Registered as
+    # `2151908` against a bridge shard whose genesis `chain_id` is `4337`,
+    # aggoracle's GER-injection tx is correctly refused by the bridge shard
+    # (`eth_sendRawTransaction` -> `wrong chain id`), aggkit's ethtxmanager
+    # then loops forever on `failed to add tx to get monitored: already
+    # exists`, NO GER is ever injected, and so every `claimAsset` fails
+    # `ger_not_injected` — with all 28 services `RUNNING` and no crash
+    # anywhere. See `hyperpay_e2e::plan::chain_id`.
+    if sequencer_type == constants.SEQUENCER_TYPE.hyperpay:
+        hyperpay_chain_id = hyperpay_vkey.get_chain_id(
+            plan,
+            args.get("hyperpay_node_image"),
+            args.get("hyperpay_stack_profile"),
+        )
+        plan.print(
+            "HyperPay owns the chain id: overriding l2_chain_id {} -> {}".format(
+                args.get("l2_chain_id"), hyperpay_chain_id
+            )
+        )
+        # Left as the run_sh RUNTIME VALUE, deliberately: `int()` on it is an
+        # interpretation-time error ("invalid literal with base 10:
+        # {{kurtosis:...}}") because the command has not run yet. Every consumer
+        # is a template (`"chainID": "{{ .l2_chain_id }}"`,
+        # `get-rollup-info.sh`, the aggkit configs), and templates resolve
+        # runtime values at render time, so a string is the correct shape here.
+        args = args | {"l2_chain_id": hyperpay_chain_id}
+
+    plan.print("Deploying the following components: " + str(deployment_stages))
+    plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
     # Deploy a local L1.
     l1_context = None

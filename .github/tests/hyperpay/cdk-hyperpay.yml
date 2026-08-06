@@ -87,16 +87,19 @@ args:
   # to load. `settlement` + `false` would generate config nothing uses;
   # `payments` + `true` would add three services with no config at all.
   #
-  # KNOWN, MEASURED LIMIT of the settlement plane in this preset
-  # (mvp/results/QUESTIONS.md, "S11b (T6) — the local settlement fold is
-  # blocked"): `hyperpay-bridge-shard`'s daemon runs no block-production loop,
-  # so its prover serves an empty SBP list, and
-  # `hyperpay_aggregator::epoch::try_close_next_epoch` short-circuits on the
-  # mandatory bridge child. Every service here comes up and stays up; NO
-  # certificate can be produced until that loop is wired. Set to true anyway
-  # because the whole rest of the handshake -- contract deploy, vkey and
-  # genesis-root seeding, aggoracle, bridgesync -- is exercised by having the
-  # real topology present.
+  # The bridge shard's block-production loop is WIRED (hyperpay @ 670434c):
+  # `eth_blockNumber` advances one heartbeat block per `epoch_length_secs` even
+  # when idle, and submitted `insertGlobalExitRoot`/`claimAsset` mine.
+  #
+  # WHAT STILL GATES A FOLD, and it is a property of the design rather than a
+  # bug: `hyperpay_agg_program::run` requires EXACT shard coverage — every shard
+  # in the genesis topology must contribute at least one SBP to the epoch
+  # (`children_by_shard.len() != topology_by_shard.len()` -> `ShardCoverage`).
+  # Payment shards only produce SBPs when their sequencers seal blocks, and they
+  # seal on traffic. So an IDLE stack cannot settle, by construction: aggsender
+  # logs `epoch close failed: Rejected(ShardCoverage)` until BOTH payment shards
+  # have traffic inside the epoch window. That is what T8's paced payment phase
+  # provides, and it is why §1.9's pacing parameters are load-bearing.
   # ---------------------------------------------------------------------------
   hyperpay_stack_profile: settlement
   hyperpay_shard_count: 2

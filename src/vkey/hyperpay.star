@@ -65,6 +65,29 @@ def get_genesis_root(plan, image, profile):
     return result.output
 
 
+def get_chain_id(plan, image, profile):
+    """The profile's EVM chain id — the chain id the rollup must be REGISTERED
+    with on L1.
+
+    aggkit takes the chain id it signs **L2** transactions with from the
+    RollupManager (`rollupIDToRollupData`), never from `eth_chainId`. So the
+    create-rollup input, not just HyperPay, has to carry HyperPay's genesis
+    `chain_id`; `main.star` overrides `l2_chain_id` with this before any
+    consumer reads it. The failure a mismatch produces is silent at every
+    health check — see the note in `main.star` and in
+    `hyperpay_e2e::plan::chain_id`.
+    """
+    result = plan.run_sh(
+        name="hyperpay-chain-id-getter",
+        description="Reading the HyperPay genesis chain id",
+        image=image,
+        run="hp-stack chain-id --profile {} 2>/dev/null | tail -n1 | tr -d '\n'".format(
+            profile
+        ),
+    )
+    return result.output
+
+
 def get_facade_address(plan, image, profile, field):
     """One of the bridge shard's facade addresses (`bridge`, `ger-manager`).
 
