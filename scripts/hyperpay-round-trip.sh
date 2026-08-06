@@ -43,6 +43,40 @@
 #
 # Full write-up, with every value read: `mvp/results/s11b-round-trip.md` in the
 # hyperpay repo, sections 5 and 8.
+#
+# ---------------------------------------------------------------------------
+# THE TRAFFIC IN PHASE 4 IS LOAD-BEARING, NOT DECORATIVE
+# ---------------------------------------------------------------------------
+# Read this before lowering `PHASE4_TRICKLE_PER_TICK` to 0 to "speed the run up".
+#
+# `hyperpay_agg_program::run` requires EXACT shard coverage: every shard in the
+# genesis topology must contribute a child to the epoch being folded. A payment
+# shard contributes a child only if its prover has an SBP, and its prover has an
+# SBP only if the sequencer sealed a block — and an IDLE payment shard seals
+# nothing at all. There is no empty-block heartbeat on a payment shard.
+#
+# So this script used to assert something the design cannot do. It sent one burst
+# of payments up front, then waited up to `SETTLE_TIMEOUT` in silence for
+# `REQUIRE_SETTLEMENTS` epochs. The burst covers ONE epoch; every later epoch has
+# two idle payment shards and is refused. Measured on the 2026-08-06 run: 457
+# `Rejected(ShardCoverage)` refusals during a silent wait. That count was not a
+# defect report — it was the design correctly refusing to fold epochs that had no
+# payment blocks in them.
+#
+# Phase 4 therefore sends a steady trickle for the WHOLE duration of the wait,
+# interleaved with the L1 polling (one batch per poll tick, both directions,
+# through both gateways) rather than backgrounded — so it cannot outlive the
+# script and cannot silently stop. Every epoch the wait crosses then has real
+# blocks on both payment shards to cover.
+#
+# Two properties the trickle must keep, and does:
+#
+#   * every wei it moves still traces to the REAL claim from phase 1 — it moves
+#     value between two keyed accounts, one per shard, and mints nothing. A
+#     synthetic `ClaimCredit` would be a forged mint (see phase 2's header) and
+#     would wedge settlement permanently.
+#   * it never eats into `WITHDRAW_WEI`. The whole window's spend is bounded up
+#     front and asserted against the claimed balance minus the withdrawal.
 set -uo pipefail
 
 PKG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -66,6 +100,16 @@ PAYMENTS_MODE="${PAYMENTS_MODE:-e3}"
 CLAIMED_ONLY_COUNT="${CLAIMED_ONLY_COUNT:-10}"
 CLAIMED_ONLY_WEI="${CLAIMED_ONLY_WEI:-10000000000000000}"
 SETTLE_TIMEOUT="${SETTLE_TIMEOUT:-600}"
+# Phase 4's sustained traffic (see the header: it is what gives each epoch in the
+# settlement window blocks to cover). One batch per poll tick, both directions.
+PHASE4_POLL_SECS="${PHASE4_POLL_SECS:-15}"
+PHASE4_TRICKLE_PER_TICK="${PHASE4_TRICKLE_PER_TICK:-2}"
+PHASE4_TRICKLE_WEI="${PHASE4_TRICKLE_WEI:-1000000000000000}"
+# The cross-shard counterparty is a KEYED account, not a bare address, because
+# phase 4 needs it to send as well as receive — that is what puts traffic through
+# BOTH gateways instead of one. Its address is derived at run time (never
+# hard-coded as a derived value) and asserted to live on the other shard.
+CO_PAYEE_KEY="${CO_PAYEE_KEY:-0x00000000000000000000000000000000000000000000000000000000000a11d2}"
 PRIVATE_KEY="${PRIVATE_KEY:-0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625}"
 L1_RECIPIENT="${L1_RECIPIENT:-0x1111111111111111111111111111111111111111}"
 
@@ -115,6 +159,41 @@ a network's local balance tree only from CLAIMED imported bridge exits, so an
 over-large exit underflows it and leaves the chain InError permanently. Lower
 WITHDRAW_WEI, or claim more first (${CLAIMED_ENV} is the only authority)."
 ok "withdrawal cap: ${WITHDRAW_WEI} <= really-claimed ${CLAIMED_WEI}"
+
+# ---------------------------------------------------------------------------
+# The cross-shard counterparty and the per-shard gateway map, shared by phase 2
+# (claimed-only) and phase 4 (the sustained trickle).
+#
+# With `shard_prefix_bits = 1` a shard IS the address's top bit, so 0x10.. is
+# shard 0 and 0xE3.. (the claimed address) is shard 1. Both facts are asserted
+# rather than assumed: a preset with more prefix bits would silently make every
+# transfer same-shard, starving one shard of SBPs — which reads as
+# `Rejected(ShardCoverage)` and looks like a settlement bug.
+# ---------------------------------------------------------------------------
+co_shard() { python3 -c 'import sys; print(int(sys.argv[1],16) >> (160-1))' "$1"; }
+gw_of() { case "$1" in 0) echo "http://hyperpay-gateway-0-001:8545";; *) echo "http://hyperpay-gateway-1-001:8555";; esac; }
+
+CO_PAYEE="${CO_PAYEE:-$(cx cast wallet address --private-key "${CO_PAYEE_KEY}" | tr -d '\r')}"
+[ -n "${CO_PAYEE}" ] || die "could not derive an address from CO_PAYEE_KEY"
+CO_PAYEE_SHARD="$(co_shard "${CO_PAYEE}")"
+CLAIMED_SHARD="$(co_shard "${CLAIMED_DEST}")"
+[ "${CO_PAYEE_SHARD}" != "${CLAIMED_SHARD}" ] || die \
+"the counterparty ${CO_PAYEE} is on the SAME shard (${CO_PAYEE_SHARD}) as the
+claimed address ${CLAIMED_DEST}. Every transfer would then be same-shard, one
+shard would seal no blocks, its prover would hold no SBP, and the fold would
+refuse every epoch as ShardCoverage. Pick a CO_PAYEE_KEY whose address is on the
+other shard."
+[ "${CLAIMED_SHARD}" = "${CLAIMED_DEST_SHARD_PREFIX}" ] || die \
+"the claimed address ${CLAIMED_DEST} derives to shard ${CLAIMED_SHARD} but T7
+recorded CLAIMED_DEST_SHARD_PREFIX=${CLAIMED_DEST_SHARD_PREFIX}. The preset's
+shard_prefix_bits is not 1, so this script's shard arithmetic is wrong."
+ok "counterparty ${CO_PAYEE} on shard ${CO_PAYEE_SHARD}, payer ${CLAIMED_DEST} on shard ${CLAIMED_SHARD} — cross-shard, and both are keyed"
+
+# Phase 4's whole-window spend, bounded UP FRONT so the withdrawal can never be
+# eaten by traffic. One batch per poll tick, per direction, for the full timeout.
+PHASE4_TICKS=$(( SETTLE_TIMEOUT / PHASE4_POLL_SECS + 1 ))
+PHASE4_BUDGET=$(( PHASE4_TICKS * PHASE4_TRICKLE_PER_TICK * PHASE4_TRICKLE_WEI ))
+ok "phase 4 trickle: <= ${PHASE4_TICKS} ticks x ${PHASE4_TRICKLE_PER_TICK} x ${PHASE4_TRICKLE_WEI} = ${PHASE4_BUDGET} wei per direction"
 
 # ---------------------------------------------------------------------------
 # 2. Payments across both shards.
@@ -168,31 +247,25 @@ ok "withdrawal cap: ${WITHDRAW_WEI} <= really-claimed ${CLAIMED_WEI}"
 if [ "${PAYMENTS_MODE}" = "claimed-only" ]; then
   log "2/5 payments: ${CLAIMED_ONLY_COUNT} cross-shard transfers of ${CLAIMED_ONLY_WEI} out of the REALLY-CLAIMED address (no synthetic funding)"
 
-  # The payee must live on the OTHER shard, so the transfer is cross-shard and
-  # both shards seal blocks. With `shard_prefix_bits = 1` the shard is the
-  # address's top bit, so 0x11.. is shard 0 and 0xE3.. (the claimed address) is
-  # shard 1 — asserted rather than assumed, because a preset with more bits
-  # would silently make every transfer same-shard and starve one shard of SBPs.
-  CO_PAYEE="${CO_PAYEE:-0x2222222222222222222222222222222222222222}"
-  co_shard() { python3 -c "
-import sys
-a=int(sys.argv[1],16); bits=1
-print(a >> (160-bits))" "$1"; }
-  [ "$(co_shard "${CO_PAYEE}")" != "$(co_shard "${CLAIMED_DEST}")" ] || die \
-"CO_PAYEE ${CO_PAYEE} is on the SAME shard as the claimed address ${CLAIMED_DEST}.
-claimed-only mode needs a CROSS-shard payee, or one shard seals no blocks, has
-no SBP, and the fold refuses the epoch as ShardCoverage."
-  ok "payee ${CO_PAYEE} is on shard $(co_shard "${CO_PAYEE}"), payer on shard $(co_shard "${CLAIMED_DEST}") — cross-shard"
-
-  # Leave the withdrawal covered: moving out more than (claimed - withdrawal)
-  # would make phase 3's burn fail on balance rather than on anything
-  # interesting.
+  # The payee is the shared keyed counterparty derived above: on the OTHER
+  # shard, so every transfer is cross-shard and both shards seal blocks — and
+  # keyed, so phase 4 can send value back through the other gateway.
+  #
+  # Leave the withdrawal AND phase 4's whole trickle budget covered. Moving out
+  # more than that would make phase 3's burn, or phase 4's traffic, fail on
+  # balance rather than on anything interesting.
   CO_TOTAL=$(( CLAIMED_ONLY_COUNT * CLAIMED_ONLY_WEI ))
-  [ "$(( CO_TOTAL + WITHDRAW_WEI ))" -le "${CLAIMED_WEI}" ] || die \
+  [ "$(( CO_TOTAL + WITHDRAW_WEI + PHASE4_BUDGET ))" -le "${CLAIMED_WEI}" ] || die \
 "claimed-only would move ${CO_TOTAL} out of the claimed ${CLAIMED_WEI}, leaving
-less than WITHDRAW_WEI ${WITHDRAW_WEI} for phase 3. Lower CLAIMED_ONLY_COUNT."
+less than WITHDRAW_WEI ${WITHDRAW_WEI} plus phase 4's trickle budget
+${PHASE4_BUDGET} for phases 3 and 4. Lower CLAIMED_ONLY_COUNT."
+  # Phase 4's return leg spends from the counterparty, so phase 2 must leave it
+  # enough to send: this is the reason CO_TOTAL is not simply "as much as
+  # possible".
+  [ "${CO_TOTAL}" -ge "${PHASE4_BUDGET}" ] || note \
+    "phase 2 moves ${CO_TOTAL} to the counterparty, less than phase 4's ${PHASE4_BUDGET} budget — its return leg will stop early"
 
-  GW_PAY="http://hyperpay-gateway-${CLAIMED_DEST_SHARD_PREFIX}-001:$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 8545 || echo 8555)"
+  GW_PAY="$(gw_of "${CLAIMED_DEST_SHARD_PREFIX}")"
 
   # `--async` and an EXPLICIT nonce, both deliberate:
   #
@@ -225,7 +298,7 @@ less than WITHDRAW_WEI ${WITHDRAW_WEI} for phase 3. Lower CLAIMED_ONLY_COUNT."
 
   # The real assertion: the cross-shard payee is credited, read off the OTHER
   # shard's gateway.
-  GW_OTHER="http://hyperpay-gateway-$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 1 || echo 0)-001:$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 8555 || echo 8545)"
+  GW_OTHER="$(gw_of "${CO_PAYEE_SHARD}")"
   CO_BAL=0
   for _ in $(seq 1 24); do
     CO_BAL="$(cx cast call "${CLAIMED_TOKEN_FACADE}" "balanceOf(address)(uint256)" \
@@ -341,7 +414,7 @@ fi
 log "3/5 withdrawing ${WITHDRAW_WEI} via bridge_exit_intent on a payment shard"
 LET_BEFORE="$(curl -s -m 10 "$(port hyperpay-bridge-shard-001 bridge-ops)/metrics" \
   | awk '/^bridge_let_count/ {print $2}')"
-GW_IN="http://hyperpay-gateway-${CLAIMED_DEST_SHARD_PREFIX}-001:$([ "${CLAIMED_DEST_SHARD_PREFIX}" = "0" ] && echo 8545 || echo 8555)"
+GW_IN="$(gw_of "${CLAIMED_DEST_SHARD_PREFIX}")"
 
 # `cast send` will report "transaction was not confirmed within the timeout":
 # it polls the GATEWAY for a receipt while the exit is folded on the BRIDGE
@@ -420,24 +493,116 @@ ok "origin is native L1 ETH — the L1 claim in phase 5 can release value"
 # 4. Settlement, asserted the T-l way: PaymentsStateUpdated count and a
 #    strictly-advancing latestBlockNumber against a recorded BASELINE, never
 #    getRollupExitRoot() (non-zero at startup, and unchanged per settlement).
+#
+#    WITH SUSTAINED TRAFFIC FOR THE WHOLE WAIT — see this file's header. An idle
+#    payment shard seals no block, so an epoch spanning an idle window has no
+#    payment child and `run` refuses it as ShardCoverage. Waiting in silence for
+#    N settlements is therefore asking the design for something it cannot do; the
+#    457 ShardCoverage refusals the previous run recorded were that refusal, not
+#    a defect. Each poll tick below sends a small batch BOTH ways between the two
+#    keyed accounts, so every epoch the wait crosses has real blocks on both
+#    payment shards, and every wei still traces to phase 1's real claim.
 # ---------------------------------------------------------------------------
-log "4/5 waiting up to ${SETTLE_TIMEOUT}s for >= ${REQUIRE_SETTLEMENTS} settlements"
+log "4/5 waiting up to ${SETTLE_TIMEOUT}s for >= ${REQUIRE_SETTLEMENTS} settlements, with a trickle of traffic throughout"
 PSU_TOPIC='0xb093baec53b3de33590cc9c750af0710b04a205c4400ebc158bdd5ca847724ec'
 psu_count() {
   rpc "${L1_URL}" eth_getLogs \
     "[{\"address\":\"${ROLLUP_ADDRESS}\",\"fromBlock\":\"0x0\",\"toBlock\":\"latest\",\"topics\":[\"${PSU_TOPIC}\"]}]" \
     | python3 -c 'import sys,json; print(len(json.load(sys.stdin).get("result") or []))'
 }
+sbp_count() { kurtosis service logs "${ENCLAVE}" "hyperpay-shard-prover-$1-001" 2>&1 | grep -c 'SBP retained'; }
+
+GW_A="$(gw_of "${CLAIMED_SHARD}")"      # the claimed payer's own gateway
+GW_B="$(gw_of "${CO_PAYEE_SHARD}")"     # the counterparty's own gateway
+bal_of() { # bal_of <addr> <gateway>
+  local v
+  v="$(cx cast call "${CLAIMED_TOKEN_FACADE}" "balanceOf(address)(uint256)" "$1" \
+        --rpc-url "$2" 2>/dev/null | tr -d '\r' | awk '{print $1}')"
+  case "${v}" in ''|*[!0-9]*) echo 0 ;; *) echo "${v}" ;; esac
+}
+
+# The nonce discipline from phase 2, made resilient across a long window: the
+# gateway answers `eth_getTransactionCount` from the READ REPLICA, which lags,
+# so a tick that trusted it alone would reuse a nonce it already spent and the
+# sequencer would drop the duplicate with nothing to report but a short balance.
+# Each side therefore keeps a local high-water mark and uses max(read, local+1).
+A_NEXT=0; B_NEXT=0
+# `send_leg` reports through the global LEG_SENT rather than stdout on purpose:
+# `$(send_leg ...)` would run it in a SUBSHELL, and the nonce high-water mark it
+# advances would be lost every tick — handing the same nonce out over and over.
+LEG_SENT=0
+send_leg() { # send_leg <from_key> <from_addr> <to_addr> <gateway> <nonce_var_name>
+  local key="$1" from="$2" to="$3" gw="$4" nvar="$5" read_n n=0 i=0
+  read_n="$(cx cast nonce "${from}" --rpc-url "${gw}" 2>/dev/null | tr -d '\r')"
+  case "${read_n}" in ''|*[!0-9]*) read_n=0 ;; esac
+  if [ "${read_n}" -gt "${!nvar}" ]; then printf -v "${nvar}" '%s' "${read_n}"; fi
+  while [ "${i}" -lt "${PHASE4_TRICKLE_PER_TICK}" ]; do
+    if cx cast send "${CLAIMED_TOKEN_FACADE}" "transfer(address,uint256)" \
+         "${to}" "${PHASE4_TRICKLE_WEI}" \
+         --rpc-url "${gw}" --private-key "${key}" --chain-id 4337 --gas-limit 1250000 \
+         --nonce "${!nvar}" --async >/dev/null 2>&1; then
+      n=$(( n + 1 ))
+    fi
+    printf -v "${nvar}" '%s' "$(( ${!nvar} + 1 ))"
+    i=$(( i + 1 ))
+  done
+  LEG_SENT="${n}"
+}
+
+SBP0_BASE="$(sbp_count 0)"; SBP1_BASE="$(sbp_count 1)"
+BAL_A_BASE="$(bal_of "${CLAIMED_DEST}" "${GW_A}")"
+BAL_B_BASE="$(bal_of "${CO_PAYEE}" "${GW_B}")"
+echo "  baseline SBPs retained: shard 0 = ${SBP0_BASE}, shard 1 = ${SBP1_BASE}"
+echo "  baseline balances: payer ${BAL_A_BASE}, counterparty ${BAL_B_BASE}"
+# The return leg only runs while the counterparty can actually pay. Said out
+# loud rather than discovered as silently-dropped sends.
+RETURN_LEG=1
+if [ "${BAL_B_BASE}" -lt "$(( PHASE4_TRICKLE_PER_TICK * PHASE4_TRICKLE_WEI ))" ]; then
+  RETURN_LEG=0
+  note "the counterparty holds ${BAL_B_BASE} — too little to send, so this window's traffic is one-directional (still cross-shard, so both shards still seal blocks)"
+fi
+
 LBN_BASE="$(hex2dec "$(eth_call "${L1_URL}" "${ROLLUP_ADDRESS}" '0x4599c788')")"
 echo "  baseline latestBlockNumber = ${LBN_BASE}"
 deadline=$(( $(date +%s) + SETTLE_TIMEOUT ))
-count=0; lbn="${LBN_BASE}"
+count=0; lbn="${LBN_BASE}"; sent_a=0; sent_b=0; ticks=0
 while [ "$(date +%s)" -lt "${deadline}" ]; do
+  # Traffic FIRST, then read L1: a tick that polled and broke out early would
+  # otherwise leave the last epoch of the window without blocks.
+  send_leg "${PRIVATE_KEY}" "${CLAIMED_DEST}" "${CO_PAYEE}" "${GW_A}" A_NEXT
+  n_a="${LEG_SENT}"; sent_a=$(( sent_a + n_a )); n_b=0
+  if [ "${RETURN_LEG}" = "1" ] \
+     && [ "$(bal_of "${CO_PAYEE}" "${GW_B}")" -ge "$(( PHASE4_TRICKLE_PER_TICK * PHASE4_TRICKLE_WEI ))" ]; then
+    send_leg "${CO_PAYEE_KEY}" "${CO_PAYEE}" "${CLAIMED_DEST}" "${GW_B}" B_NEXT
+    n_b="${LEG_SENT}"; sent_b=$(( sent_b + n_b ))
+  fi
+  ticks=$(( ticks + 1 ))
+
   count="$(psu_count)"; lbn="$(hex2dec "$(eth_call "${L1_URL}" "${ROLLUP_ADDRESS}" '0x4599c788')")"
-  printf '  [%s] PaymentsStateUpdated=%s latestBlockNumber=%s\n' "$(date +%T)" "${count}" "${lbn}"
+  printf '  [%s] PaymentsStateUpdated=%s latestBlockNumber=%s  (tick %s: %s->%s %s, %s->%s %s)\n' \
+    "$(date +%T)" "${count}" "${lbn}" "${ticks}" \
+    "${CLAIMED_SHARD}" "${CO_PAYEE_SHARD}" "${n_a}" \
+    "${CO_PAYEE_SHARD}" "${CLAIMED_SHARD}" "${n_b}"
   if [ "${count}" -ge "${REQUIRE_SETTLEMENTS}" ] && [ "${lbn}" -gt "${LBN_BASE}" ]; then break; fi
-  sleep 15
+  sleep "${PHASE4_POLL_SECS}"
 done
+
+# The traffic has to have been real, or the wait above proved nothing about
+# coverage. Both are asserted from the components' own state, not from the send
+# count: an accepted `cast send` only means the gateway took the envelope.
+SBP0_AFTER="$(sbp_count 0)"; SBP1_AFTER="$(sbp_count 1)"
+note "traffic over ${ticks} tick(s): ${sent_a} sends shard ${CLAIMED_SHARD}->${CO_PAYEE_SHARD}, ${sent_b} sends shard ${CO_PAYEE_SHARD}->${CLAIMED_SHARD}"
+note "SBPs retained: shard 0 ${SBP0_BASE} -> ${SBP0_AFTER}, shard 1 ${SBP1_BASE} -> ${SBP1_AFTER}"
+[ "${sent_a}" -gt 0 ] || die "not one trickle transfer was accepted during the settlement window —
+the wait was silent, so every epoch it spans has idle payment shards and
+ShardCoverage is the CORRECT refusal. Fix the traffic, not the fold."
+if [ "${SBP0_AFTER}" -le "${SBP0_BASE}" ] || [ "${SBP1_AFTER}" -le "${SBP1_BASE}" ]; then
+  die "a payment shard sealed nothing during the settlement window (shard 0 ${SBP0_BASE} -> ${SBP0_AFTER},
+shard 1 ${SBP1_BASE} -> ${SBP1_AFTER}). The trickle reached the gateway but did not
+become blocks on both shards, so exact shard coverage is unreachable and any
+ShardCoverage refusal below is a consequence of that, not of the fold."
+fi
+ok "both payment shards sealed blocks throughout the window — every epoch in it had children to cover"
 
 if kurtosis service logs "${ENCLAVE}" agglayer 2>/dev/null | grep -qiE 'BalanceUnderflow|InError'; then
   kurtosis service logs "${ENCLAVE}" agglayer 2>/dev/null | grep -iE 'BalanceUnderflow|InError' | tail -5
@@ -447,10 +612,8 @@ ok "agglayer logs: no BalanceUnderflow, no InError"
 
 if [ "${count}" -lt "${REQUIRE_SETTLEMENTS}" ] || [ "${lbn}" -le "${LBN_BASE}" ]; then
   note "lastStateRoot() = $(eth_call "${L1_URL}" "${ROLLUP_ADDRESS}" '0xb70de0d9')"
-  note "aggregator: $(curl -s -m 10 "$(port hyperpay-aggregator-001 metrics)/metrics" | grep -E '^hyperpay_aggregator_(epochs_settled|polls_without_bridge_child)' | tr '\n' ' ')"
-  for i in 0 1; do
-    note "shard prover ${i} SBPs: $(kurtosis service logs "${ENCLAVE}" "hyperpay-shard-prover-${i}-001" 2>&1 | grep -c 'SBP retained')"
-  done
+  note "aggregator: $(curl -s -m 10 "$(port hyperpay-aggregator-001 metrics)/metrics" | grep -E '^hyperpay_aggregator_(epochs_settled|polls_without_bridge_child|proofs_served_from_retained)' | tr '\n' ' ')"
+  note "aggsender: $(kurtosis service logs "${ENCLAVE}" aggkit 2>&1 | grep -ciE 'no epoch is currently closable') requests answered 'no epoch is currently closable'"
   kurtosis service logs "${ENCLAVE}" hyperpay-aggregator-001 2>&1 | grep -oE 'Rejected\([A-Za-z]+\)' | sort | uniq -c | sed 's/^/  /'
   die "NOT SETTLED: ${count} PaymentsStateUpdated (want ${REQUIRE_SETTLEMENTS}), latestBlockNumber ${LBN_BASE} -> ${lbn}.
 
@@ -466,6 +629,18 @@ Read the two diagnostics above together:
     of them. Compare the retained ranges' epochs, not just their counts.
   * polls_without_bridge_child > 0 with epochs_settled 0 is the bridge child,
     not the payment shards.
+  * epochs_settled >= 1 with 0 PaymentsStateUpdated means the epoch settled
+    LOCALLY and never became a certificate. Check proofs_served_from_retained:
+    if it is 0 while epochs_settled rises, aggsender is not reaching this
+    aggregator at all; if it rises too, the certificate is being built and the
+    refusal is on agglayer's side, not here.
+  * Rejected(ShardCoverage) with both provers advancing AND traffic asserted
+    above is the epoch-ATTRIBUTION problem, not a coverage one: per-shard
+    sealing clocks are independent (each payment prover has its own max-lag
+    timer, the bridge shard has a wall-clock epoch), and this driver attributes
+    every unacked payment SBP to the epoch of `bridge_new.first()`. That is a
+    protocol question, not a script one -- see ADR-009 and
+    plans/S11b-kurtosis-bridge-flow.md's 2026-08-06 section.
 
 Full diagnosis and the values a good run reads: mvp/results/s11b-round-trip.md
 sections 5 and 8 in the hyperpay repo."
