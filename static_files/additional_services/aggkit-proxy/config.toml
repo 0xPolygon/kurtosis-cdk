@@ -8,10 +8,13 @@
 # HealthCheckPath "/" since the aggkit bridge REST service serves its health
 # check at the root path, not "/health"). [Tracker] mirrors the binary's own
 # defaults (proxy/config/default.go) except RetentionPeriod, raised so a slow
-# L2->L1 demo certificate stays inspectable through /tracker/v1. BridgeAddrs /
-# L1GlobalExitRootAddress are intentionally left unset -- the
-# configuration_based_on_kurtosis.sh recipe doesn't set them either, and the
-# tracker's own on-chain discovery covers this package's needs.
+# L2->L1 demo certificate stays inspectable through /tracker/v1. BridgeAddrs is
+# intentionally left unset -- the tracker's own on-chain discovery covers this
+# package's needs there (an absent entry still matches logs on the event
+# signature alone). L1GlobalExitRootAddress has NO such fallback (confirmed in
+# aggkit's bridgetracker/sources/ger.go): left unset it defaults to the zero
+# address, which permanently stalls StepWaitingGERUpdate for every L1->L2
+# bridge, so it must be set explicitly below.
 
 [Log]
 Environment = "development"
@@ -66,6 +69,7 @@ RegisterResolveTimeout = "3s"
 L1BlockFinality = "LatestBlock"
 L2BlockFinality = "LatestBlock"
 MaxTrackedBridges = 100000
+L1GlobalExitRootAddress = "{{.l1_global_exit_root_address}}"
 
 [Tracker.AgglayerClient]
 Cached = true

@@ -60,6 +60,7 @@ def _render_config(plan, args, contract_setup_addresses):
     template_data = {
         "l1_rpc_url": args["l1_rpc_url"],
         "rollup_manager_address": contract_setup_addresses["rollup_manager_address"],
+        "l1_global_exit_root_address": contract_setup_addresses["l1_ger_address"],
         "aggkit_proxy_bridge_urls": args.get("aggkit_proxy_bridge_urls", []),
         "aggkit_proxy_rpc_urls": args.get("aggkit_proxy_rpc_urls", []),
         "agglayer_grpc_url": args["agglayer_grpc_url"],
