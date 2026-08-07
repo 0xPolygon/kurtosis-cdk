@@ -17,10 +17,20 @@ def test_extract_aggkit_version(plan):
 
 
 def test_get_agglayer_endpoint(plan):
+    # Regression test for the version-gate bug: _get_agglayer_endpoint used to
+    # compare _extract_aggkit_version's collapsed float (`version >= 0.3`).
+    # That collapses "<major>.<minor>" into a single float, so "0.11" becomes
+    # 0.11, which is numerically LESS than 0.3 even though minor version 11 is
+    # ordinally newer than minor version 3. ghcr.io/agglayer/aggkit:0.11.0-rc4
+    # is exactly the case that tripped this -- it wrongly returned "readrpc",
+    # which breaks certificate settlement against agglayer. Now uses
+    # _parse_aggkit_major_minor, which parses major/minor as integers and
+    # compares them as a tuple, ordering correctly regardless of digit count.
     valid_cases = [
         ("ghcr.io/agglayer/aggkit:0.5.0-beta1", "grpc"),
         ("ghcr.io/agglayer/aggkit:local", "grpc"),
         ("ghcr.io/agglayer/aggkit:1.0.0", "grpc"),
+        ("ghcr.io/agglayer/aggkit:0.11.0-rc4", "grpc"),  # the bug case
         ("ghcr.io/agglayer/aggkit:0.2.14", "readrpc"),
         ("ghcr.io/agglayer/aggkit:0.1", "readrpc"),
         ("ghcr.io/agglayer/aggkit:0", "readrpc"),

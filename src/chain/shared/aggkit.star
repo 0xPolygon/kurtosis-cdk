@@ -711,14 +711,18 @@ def create_bridge_config_artifact(
 
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
+#
+# NOTE: this deliberately does NOT compare _extract_aggkit_version's float
+# (`version >= 0.3`) -- that collapses "<major>.<minor>" into a single float,
+# so "0.11" becomes 0.11, which is numerically LESS than 0.3 even though minor
+# version 11 is ordinally newer than minor version 3. Verified empirically:
+# for aggkit_image "...:0.11.0-rc4", the float comparison wrongly returns
+# "readrpc", which breaks certificate settlement against agglayer. Uses
+# _parse_aggkit_major_minor instead (see _render_legacy_bridge_addr), which
+# parses major/minor as integers and compares them as a tuple -- correct
+# regardless of minor-version digit count.
 def _get_agglayer_endpoint(aggkit_image):
-    # If the aggkit image is a local build, we assume it uses grpc.
-    if "local" in aggkit_image:
-        return "grpc"
-
-    # Extract the aggkit version from the image name.
-    version = _extract_aggkit_version(aggkit_image)
-    if version >= 0.3:
+    if _parse_aggkit_major_minor(aggkit_image) >= (0, 3):
         return "grpc"
     else:
         return "readrpc"
@@ -788,16 +792,30 @@ def _render_legacy_bridge_addr(aggkit_image):
     the deprecated (aggkit >=0.8 hard-fails config load on it, non-WarnOnly)
     polygonBridgeAddr key should be rendered into config.toml / cdk-config.toml.
 
-    Parses major/minor as integers and compares them as a tuple -- NOT via
-    _extract_aggkit_version's float, which is only safely comparable against
-    a fixed threshold like 0.8 for single-digit minors. A two-(or-more)-digit
-    minor collapses into a float that is numerically smaller: "0.11" parses to
-    0.11, and 0.11 < 0.8 even though minor version 11 is ordinally newer than
-    minor version 8. Tuple comparison, e.g. (0, 11) < (0, 8), orders correctly
-    regardless of digit count.
+    Uses _parse_aggkit_major_minor's integer tuple -- NOT _extract_aggkit_version's
+    float, which is only safely comparable against a fixed threshold like 0.8
+    for single-digit minors. A two-(or-more)-digit minor collapses into a
+    float that is numerically smaller: "0.11" parses to 0.11, and 0.11 < 0.8
+    even though minor version 11 is ordinally newer than minor version 8.
+    Tuple comparison, e.g. (0, 11) < (0, 8), orders correctly regardless of
+    digit count.
+    """
+    return _parse_aggkit_major_minor(aggkit_image) < (0, 8)
+
+
+def _parse_aggkit_major_minor(aggkit_image):
+    """Parse (major, minor) from an aggkit image tag as integers, so version
+    threshold comparisons (e.g. in _render_legacy_bridge_addr and
+    _get_agglayer_endpoint) order correctly regardless of minor-version digit
+    count -- unlike _extract_aggkit_version's float, under which "0.11"
+    collapses to 0.11 and is numerically LESS than "0.8"/"0.3" despite minor
+    version 11 being ordinally newer.
+
+    Local builds and non-numeric CI build tags (see _extract_aggkit_version)
+    are treated as the latest version and return (999, 9).
     """
     if "local" in aggkit_image:
-        return False  # local build == latest == not legacy
+        return (999, 9)  # local build == latest
 
     tag = aggkit_image.split(":")[-1]
     tag_without_suffix = tag.split("-")[0]
@@ -812,9 +830,9 @@ def _render_legacy_bridge_addr(aggkit_image):
 
     # Non-numeric / CI build tags (see _extract_aggkit_version): assume latest.
     if not found_digit or not _is_simple_version(version):
-        return False
+        return (999, 9)
 
     parts = version.split(".")
     major = int(parts[0])
     minor = int(parts[1]) if len(parts) > 1 else 0
-    return (major, minor) < (0, 8)
+    return (major, minor)
