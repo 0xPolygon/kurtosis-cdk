@@ -2,10 +2,13 @@
 #
 # Runs the `aggkit-proxy` binary (bundled in the same image as `aggkit`,
 # entrypoint overridden explicitly since the image's own ENTRYPOINT is
-# `aggkit`) in --components=proxy mode: a single stateless REST reverse
-# proxy in front of every participating network's aggkit bridge REST
-# service, routing ANY /bridge/v1/*any by the mandatory `network_id` query
-# param. It has no health endpoint of its own in proxy-only mode.
+# `aggkit`) with --components=proxy,tracker:
+# - proxy: a single stateless REST reverse proxy in front of every
+#   participating network's aggkit bridge REST service, routing ANY
+#   /bridge/v1/*any by the mandatory `network_id` query param. It has no
+#   health endpoint of its own in proxy-only mode.
+# - tracker: serves /tracker/v1 (bridge tracking), reading agglayer state
+#   via [Tracker.AgglayerClient.GRPC] -- see config.toml.
 #
 # On-chain resolution isn't usable in this package (no BRIDGE_SERVICE_URL
 # aggchain metadata registered, and network 0/L1 is never enumerated
@@ -44,7 +47,7 @@ def run(plan, args, contract_setup_addresses):
         cmd=[
             "run",
             "--cfg=/etc/aggkit-proxy/config.toml",
-            "--components=proxy",
+            "--components=proxy,tracker",
         ],
     )
 
@@ -59,6 +62,7 @@ def _render_config(plan, args, contract_setup_addresses):
         "rollup_manager_address": contract_setup_addresses["rollup_manager_address"],
         "aggkit_proxy_bridge_urls": args.get("aggkit_proxy_bridge_urls", []),
         "aggkit_proxy_rpc_urls": args.get("aggkit_proxy_rpc_urls", []),
+        "agglayer_grpc_url": args["agglayer_grpc_url"],
     }
 
     return plan.render_templates(

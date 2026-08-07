@@ -454,6 +454,26 @@ def _build_config_data(args, deployment_context, extra_data=None):
         | {
             "agglayer_endpoint": agglayer_endpoint,
             "aggkit_version": aggkit_version,
+            # Decide this in Starlark rather than inside the Go template: Kurtosis
+            # stringifies aggkit_version before handing it to text/template, so
+            # `{{- if lt .aggkit_version "0.8" }}` there does a lexicographic STRING
+            # comparison, and "0.11" < "0.8" is true digit-by-digit -- wrongly gating
+            # the legacy/deprecated polygonBridgeAddr key on for aggkit 0.11.x.
+            #
+            # NOTE: this deliberately does NOT compare the `aggkit_version` float
+            # above (`aggkit_version < 0.8`) -- that has the exact same bug one
+            # level down. _extract_aggkit_version collapses "<major>.<minor>" into
+            # a single float, so "0.11" becomes 0.11, which is numerically LESS
+            # than 0.8 even though minor version 11 is ordinally newer than minor
+            # version 8. Verified empirically: for aggkit_image
+            # "...:0.11.0-rc4", `_extract_aggkit_version(...) < 0.8` is True, which
+            # would still (wrongly) render the deprecated field. Use
+            # _render_legacy_bridge_addr instead, which parses major/minor as
+            # integers and compares them as a tuple -- correct regardless of
+            # minor-version digit count. See config.toml / cdk-config.toml.
+            "render_legacy_bridge_addr": _render_legacy_bridge_addr(
+                args.get("aggkit_image")
+            ),
             "l2_rpc_url": deployment_context.l2_rpc_url,
             "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
             # Whether THIS instance's own destination network (l2_network_id)
@@ -761,3 +781,40 @@ def _is_simple_version(version):
         if c != "." and not c.isdigit():
             return False
     return True
+
+
+def _render_legacy_bridge_addr(aggkit_image):
+    """True iff aggkit_image's version is strictly older than 0.8, i.e. whether
+    the deprecated (aggkit >=0.8 hard-fails config load on it, non-WarnOnly)
+    polygonBridgeAddr key should be rendered into config.toml / cdk-config.toml.
+
+    Parses major/minor as integers and compares them as a tuple -- NOT via
+    _extract_aggkit_version's float, which is only safely comparable against
+    a fixed threshold like 0.8 for single-digit minors. A two-(or-more)-digit
+    minor collapses into a float that is numerically smaller: "0.11" parses to
+    0.11, and 0.11 < 0.8 even though minor version 11 is ordinally newer than
+    minor version 8. Tuple comparison, e.g. (0, 11) < (0, 8), orders correctly
+    regardless of digit count.
+    """
+    if "local" in aggkit_image:
+        return False  # local build == latest == not legacy
+
+    tag = aggkit_image.split(":")[-1]
+    tag_without_suffix = tag.split("-")[0]
+
+    version = tag_without_suffix
+    found_digit = False
+    for i in range(len(tag_without_suffix)):
+        if tag_without_suffix[i].isdigit():
+            version = tag_without_suffix[i:]
+            found_digit = True
+            break
+
+    # Non-numeric / CI build tags (see _extract_aggkit_version): assume latest.
+    if not found_digit or not _is_simple_version(version):
+        return False
+
+    parts = version.split(".")
+    major = int(parts[0])
+    minor = int(parts[1]) if len(parts) > 1 else 0
+    return (major, minor) < (0, 8)

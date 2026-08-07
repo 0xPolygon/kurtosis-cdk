@@ -1,13 +1,17 @@
-# aggkit-proxy config (proxy component only -- no tracker section rendered,
-# the binary's own defaults for [Tracker] are unused since --components=proxy
-# never starts that component).
+# aggkit-proxy config (proxy + tracker components; --components=proxy,tracker
+# -- see aggkit_proxy.star).
 #
 # Values chosen to mirror aggkit's own
 # proxy/scripts/configuration_based_on_kurtosis.sh recipe for a local devnet
 # (LatestBlock instead of FinalizedBlock -- FinalizedBlock lags too much on a
 # local devnet; PollInterval 10s instead of the 30s upstream default;
 # HealthCheckPath "/" since the aggkit bridge REST service serves its health
-# check at the root path, not "/health").
+# check at the root path, not "/health"). [Tracker] mirrors the binary's own
+# defaults (proxy/config/default.go) except RetentionPeriod, raised so a slow
+# L2->L1 demo certificate stays inspectable through /tracker/v1. BridgeAddrs /
+# L1GlobalExitRootAddress are intentionally left unset -- the
+# configuration_based_on_kurtosis.sh recipe doesn't set them either, and the
+# tracker's own on-chain discovery covers this package's needs.
 
 [Log]
 Environment = "development"
@@ -47,4 +51,41 @@ Host = "0.0.0.0"
 Port = 8080
 ReadTimeout = "5m"
 WriteTimeout = "5m"
-MaxRequestsPerIPAndSecond = 10
+# Raised from the binary's default of 10: ALL browser traffic (proxy + tracker
+# polling/websocket) reaches this service funneled through haproxy's single
+# source IP, so a low per-IP limit throttles every real user at once.
+MaxRequestsPerIPAndSecond = 50
+
+[Tracker]
+# RetentionPeriod raised from the binary's 10m default so a slow L2->L1 demo
+# certificate (agglayer settlement can take a while) stays queryable through
+# /tracker/v1 instead of falling out of the registry mid-demo.
+RetentionPeriod = "30m"
+IdleTimeout = "30m"
+RegisterResolveTimeout = "3s"
+L1BlockFinality = "LatestBlock"
+L2BlockFinality = "LatestBlock"
+MaxTrackedBridges = 100000
+
+[Tracker.AgglayerClient]
+Cached = true
+[Tracker.AgglayerClient.ConfigurationCache]
+TTL = "1s"
+Capacity = 100
+SendCertificate = "forbidden"
+GetCertificateHeader = "cached"
+GetEpochConfiguration = "cached"
+GetLatestPendingCertificateHeader = "cached"
+GetNetworkInfo = "cached"
+
+[Tracker.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+UseTLS = false
+MinConnectTimeout = "5s"
+RequestTimeout = "300s"
+
+[Tracker.AgglayerClient.GRPC.Retry]
+InitialBackoff = "1s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+MaxAttempts = 20

@@ -20,15 +20,12 @@ args:
   # contracts don't expose that interface, so aggsender's committee query
   # reverts and L2->L1 exits never settle to L1.
   consensus_contract_type: ecdsa-multisig
-  # S5 (aggkit-proxy-l2l2 plan): switched from the develop image to the
-  # locally patched image that fixes the L2->L2 autoclaim readiness bug
-  # found in S3 (root-caused in agglayer/aggkit's claimer.go/rollup_preparer.go
-  # -- upstream fix: https://github.com/agglayer/aggkit/pull/1761). This is a
-  # local docker tag, not on any registry; kurtosis resolves it from the local
-  # docker image store, so it MUST be built first. Build command, verification
-  # and failure mode: see the "Image Version" section of
-  # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md.
-  aggkit_image: aggkit:fix-autoclaim-l2tolx-local
+  # S2 (bridge-tracker plan): bumped to the upstream rc4 release image. The
+  # L2->L2 autoclaim readiness bug found in S3 of the aggkit-proxy-l2l2 plan
+  # (root-caused in agglayer/aggkit's claimer.go/rollup_preparer.go) is fixed
+  # upstream in rc4 (https://github.com/agglayer/aggkit/pull/1761), so the
+  # locally-built patched image is no longer needed.
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc4
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (1) gets an AutoClaim claimer -- see
   # aggkit_autoclaim_destinations below.

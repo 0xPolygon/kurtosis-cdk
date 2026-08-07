@@ -16,13 +16,11 @@ deployment_stages:
 args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
-  # S5 (aggkit-proxy-l2l2 plan): switched from the develop image to the
-  # locally patched image that fixes the L2->L2 autoclaim readiness bug
-  # found in S3 (upstream fix: https://github.com/agglayer/aggkit/pull/1761).
-  # Local docker tag, not on any registry -- it MUST be built before this run.
-  # See run1's params file and the "Image Version" section of
-  # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md.
-  aggkit_image: aggkit:fix-autoclaim-l2tolx-local
+  # S2 (bridge-tracker plan): bumped to the upstream rc4 release image, same
+  # as run1 -- the L2->L2 autoclaim readiness bug (upstream fix:
+  # https://github.com/agglayer/aggkit/pull/1761) is fixed in rc4, so the
+  # locally-built patched image is no longer needed.
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc4
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (2) gets an AutoClaim claimer -- see
   # aggkit_autoclaim_destinations below.
