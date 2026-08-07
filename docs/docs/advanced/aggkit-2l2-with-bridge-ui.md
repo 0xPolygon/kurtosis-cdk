@@ -18,13 +18,15 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, auto
 - **AggKit bridge services** (one per L2, syncing the shared L1 bridge state):
   - `aggkit-001-bridge:5577` (REST)
   - `aggkit-002-bridge:5577` (REST)
-- **AggKit proxy** (`aggkit-proxy-001:8080`) — multiplexes all three networks (L1 + both L2s) via query parameter routing
+- **AggKit proxy** (`aggkit-proxy-001:8080`) — runs with `--components=proxy,tracker`:
+  - **proxy**: multiplexes all three networks (L1 + both L2s) via `network_id` query parameter routing
+  - **tracker**: serves `/tracker/v1` (per-bridge-transaction status/progress tracking, backed by the Agglayer gRPC endpoint)
 - **HAProxy** (`agglayer-dev-ui-proxy-002`) — handles CORS and routes the UI's API calls:
   - `/l1rpc` → L1 EL RPC
   - `/l2rpc` → L2-1 RPC (chain-1-only back-compat alias)
   - `/l2rpc-001` → L2-1 RPC
   - `/l2rpc-002` → L2-2 RPC
-  - `/aggkitapi` → AggKit proxy (all networks, selected via `?network_id=`)
+  - `/aggkitapi` → AggKit proxy (all networks, selected via `?network_id=`; also fronts `/aggkitapi/tracker/v1/...`)
 - **Automated claim routing** (autoclaim) on both L2s, with configurable destinations
 - **UI and supporting services**:
   - [Agglayer Dev UI](https://github.com/agglayer/agglayer-dev-ui) for browser-based bridging
@@ -38,11 +40,9 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, auto
 
 ### Prerequisites
 
-This setup requires the **develop branch** of the AggKit image or later, which includes both `aggkit` and `aggkit-proxy` binaries.
-
-The params files below additionally pin a **locally-built patched image that you must build
-yourself before the first run** — it is not on any registry. See [Image Version](#image-version)
-for the build command and for what the failure looks like if you skip it.
+This setup requires an AggKit image that includes both the `aggkit` and `aggkit-proxy` binaries.
+The params files below pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc4` — no local
+build is needed. See [Image Version](#image-version) for details.
 
 ## Deployment
 
@@ -56,6 +56,10 @@ The 2-L2 setup uses **two consecutive runs** into the same enclave (idempotent L
 args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
+
+  # AggKit image: registry release, includes the aggkit-proxy binary and the
+  # bridge-tracker (see Image Version below)
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc4
 
   # AggKit components: aggsender and aggoracle on the main service, plus autoclaim
   aggkit_components: "aggsender,aggoracle,autoclaim"
@@ -94,6 +98,9 @@ deployment_stages:
 args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
+
+  # Same registry image as run1
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc4
 
   # Create a second rollup (L2-2)
   deployment_suffix: "-002"
@@ -238,6 +245,66 @@ The proxy multiplexes all three networks (L1 + both L2s) via the `network_id` qu
 
 Both maps are supplied at run2 time (they require both bridge services to already exist).
 
+### Bridge Tracker Configuration
+
+`aggkit-proxy-001` runs with `--components=proxy,tracker`, so the same process also serves
+`/tracker/v1` — per-bridge-transaction status and step-by-step progress, read from the
+Agglayer gRPC endpoint. The template lives at
+`static_files/additional_services/aggkit-proxy/config.toml` under `[Tracker]`:
+
+```toml
+[Tracker]
+RetentionPeriod = "30m"
+IdleTimeout = "30m"
+RegisterResolveTimeout = "3s"
+L1BlockFinality = "LatestBlock"
+L2BlockFinality = "LatestBlock"
+MaxTrackedBridges = 100000
+L1GlobalExitRootAddress = "{{.l1_global_exit_root_address}}"
+
+[Tracker.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+```
+
+**Why `L1GlobalExitRootAddress` matters:** unlike `BridgeAddrs` (which the tracker can discover
+on-chain if left unset), `L1GlobalExitRootAddress` has **no on-chain discovery fallback**
+(confirmed in aggkit's `bridgetracker/sources/ger.go`). Left unset, it defaults to the zero
+address, which permanently stalls `StepWaitingGERUpdate` for **every** L1→L2 bridge, because the
+tracker's `GERSource` filters L1 logs by that exact address. This package threads it through
+`contract_setup_addresses["l1_ger_address"]` — the same mechanism already used for
+`rollup_manager_address` — into `aggkit_proxy.star`'s template data. If you fork this config for a
+new environment, do not drop this field.
+
+**Other notable settings:**
+- `RetentionPeriod = "30m"` — raised from the binary's 10m default so a slow L2→L1 demo
+  certificate (agglayer settlement can take a while) stays queryable through `/tracker/v1`
+  instead of falling out of the registry mid-demo. Once a tracked bridge is evicted, the next
+  poll simply re-registers it (status `registered`, `all_steps: null`) — see the SDK's
+  `getBridgeTracking` docs for how a client should handle this.
+- `[REST] MaxRequestsPerIPAndSecond = 50` — raised from the binary's default of 10, since all
+  browser traffic (bridge proxy + tracker polling) reaches this service funneled through
+  haproxy's single source IP; a low per-IP limit would throttle every real user at once.
+
+Reachable through haproxy at `/aggkitapi/tracker/v1/...` (haproxy strips the `/aggkitapi` prefix
+before forwarding to the proxy's `/tracker/v1/...`).
+
+**Smoke-test the tracker once the enclave is up:**
+
+```bash
+HAPROXY_PORT=$(kurtosis port print cdk agglayer-dev-ui-proxy-002 http)
+
+# Health check
+curl -s "http://127.0.0.1:${HAPROXY_PORT}/aggkitapi/tracker/v1/health"
+
+# Register/query a bridge transaction's tracking status (first call registers it if unseen)
+curl -s "http://127.0.0.1:${HAPROXY_PORT}/aggkitapi/tracker/v1/network/1/tx/0x<bridgeTxHash>"
+```
+
+The tx-tracking response includes `tracking_status` (e.g. `registered`, `tracking`, `finished`,
+`error`), `bridge_type`, and (once populated) `all_steps` with a `step_name`/`status` per step. See
+the [AggLayer SDK](https://github.com/agglayer/sdk)'s `getBridgeTracking` client method for the
+full wire-format reference and polling guidance.
+
 ### HAProxy Route Map
 
 The UI's browser requests are routed through HAProxy (`agglayer-dev-ui-proxy-002`), which:
@@ -251,6 +318,7 @@ The UI's browser requests are routed through HAProxy (`agglayer-dev-ui-proxy-002
 | `/l2rpc-001` | L2-1 RPC | L2-1 |
 | `/l2rpc-002` | L2-2 RPC | L2-2 |
 | `/aggkitapi` | AggKit proxy (aggkit-proxy-001:8080) | All networks (selected by `?network_id=`) |
+| `/aggkitapi/tracker/v1/...` | AggKit proxy's tracker component (aggkit-proxy-001:8080) | All networks (selected by network id in the path) |
 
 **Dev UI configuration:**
 The script `scripts/kurtosisDevnetEnv.mjs` writes:
@@ -278,45 +346,37 @@ Both networks use the **same proxy URL** — routing to different backends happe
 
 ### Image Version
 
-The params files currently pin a **locally-built patched image** `aggkit:fix-autoclaim-l2tolx-local` pending upstream PR [#1761](https://github.com/agglayer/aggkit/pull/1761).
+Both params files pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc4`. No local build is
+required — `kurtosis run` pulls it like any other image.
 
-:::warning This tag exists on no registry
-`aggkit:fix-autoclaim-l2tolx-local` is a **local Docker tag only**. Kurtosis resolves it from
-your machine's local image store; there is nothing to `docker pull`. On a machine that has not
-built it, `kurtosis run` fails at service creation with an image-not-found error along the lines
-of `Unable to find image 'aggkit:fix-autoclaim-l2tolx-local' locally` /
-`pull access denied for aggkit`. That failure is **not** a params-file or enclave problem — you
-are simply missing the image.
-:::
-
-**Build it before the first run:**
+`aggkit:0.11.0-rc4` bundles both the `aggkit` and `aggkit-proxy` binaries; the proxy service
+overrides the image's `aggkit` entrypoint to run `aggkit-proxy` (see
+`src/additional_services/aggkit_proxy.star`). You can confirm both binaries are present with:
 
 ```bash
-git clone https://github.com/agglayer/aggkit.git
-cd aggkit
-git checkout fix/autoclaim-l2tolx-blocknum   # PR #1761, base: develop
-docker build --build-arg INCLUDE_SHELL=false -t aggkit:fix-autoclaim-l2tolx-local .
-```
-
-Verify both binaries are present in the built image (the proxy service overrides the image's
-`aggkit` entrypoint to run `aggkit-proxy`):
-
-```bash
-docker run --rm aggkit:fix-autoclaim-l2tolx-local version
+docker run --rm ghcr.io/agglayer/aggkit:0.11.0-rc4 version
 docker run --rm --entrypoint /usr/local/bin/aggkit-proxy \
-  aggkit:fix-autoclaim-l2tolx-local version
+  ghcr.io/agglayer/aggkit:0.11.0-rc4 version
 ```
 
-Both should print the same `Version:` string (e.g. `v0.11.0-rc1-6-gd0895a3c`).
+**Why rc4 specifically:** an earlier iteration of this guide pinned a locally-built patched image
+because L2→L2 autoclaim never fired on the `develop` image at the time — the claimer compared an
+L1 info-tree leaf's L1 block number against the source rollup's own L2 block number, so on a
+devnet whose L2 height exceeds L1's the readiness gate never opened and requests stayed queued
+indefinitely (`proof not ready for request constraints`, retrying forever). That fix
+(agglayer/aggkit [#1761](https://github.com/agglayer/aggkit/pull/1761)) is now upstream in rc4, so
+the local build is no longer needed. rc4 also carries the `aggkit-proxy` bridge-tracker component
+used by this guide (see [Bridge Tracker Configuration](#bridge-tracker-configuration)).
 
-**Why the patch is needed:** on an unpatched `develop` image the L2→L2 autoclaim never fires —
-the claimer compares an L1 info-tree leaf's L1 block number against the source rollup's own L2
-block number, so on a devnet whose L2 height exceeds L1's the readiness gate never opens and
-requests stay queued indefinitely (`proof not ready for request constraints`, retrying forever).
-L1→L2 autoclaim is unaffected. If you run the unpatched image anyway, expect L2→L2 deposits to
-reach `LEAF_INCLUDED`/`READY_TO_CLAIM` and never auto-claim.
-
-Once PR #1761 is merged and released, update both params files to use the released develop image (e.g., `ghcr.io/agglayer/aggkit:develop_<date>_<sha>`) and this whole section can go away.
+:::note Version-gate correctness
+This package's Starlark version-comparison helpers (`_parse_aggkit_major_minor` in
+`src/chain/shared/aggkit.star`) parse `<major>.<minor>` as an integer tuple rather than collapsing
+it to a float or comparing it lexicographically as a string. Both of those alternatives put
+`0.11` *below* `0.3`/`0.8` (`"0.11" < "0.8"` lexicographically, and `0.11 < 0.8` as a float), which
+would wrongly render the hard-failing deprecated `polygonBridgeAddr` config key and route rc4 to
+the `readrpc` agglayer endpoint instead of `grpc`. If you bump to a future aggkit minor version
+past single digits again, this is already handled — no template changes needed.
+:::
 
 ### Non-Idempotency Warning
 
