@@ -299,6 +299,15 @@ class VersionMatrixExtractor:
                     return f"https://github.com/{repo}/releases/latest"
         return None
 
+    @staticmethod
+    def _is_prerelease(tag_name: str) -> bool:
+        """Whether a tag looks like a prerelease rather than a stable version.
+
+        Covers the usual alpha/beta/rc markers plus test builds such as
+        op-deployer's "0.8.0-pcd-test.2", which must never be reported as stable.
+        """
+        return re.search(r'-(alpha|beta|rc|test)', tag_name, re.IGNORECASE) is not None
+
     def _get_latest_version(self, component: str) -> Optional[str]:
         """Fetch the latest version from GitHub releases."""
         repo = self.repos.get(component)
@@ -317,8 +326,8 @@ class VersionMatrixExtractor:
                         if 'tag_name' in release:
                             tag_name = release['tag_name']
                             if tag_name.startswith(component):
-                                # Skip prereleases (alpha/beta/rc) when picking latest stable
-                                if re.search(r'-(alpha|beta|rc)', tag_name, re.IGNORECASE):
+                                # Skip prereleases when picking latest stable
+                                if self._is_prerelease(tag_name):
                                     continue
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
@@ -347,8 +356,8 @@ class VersionMatrixExtractor:
                             if component == 'zkevm-prover' and tag_name.startswith('v9'):
                                 continue
 
-                            # Skip prereleases (alpha/beta/rc) when picking latest stable
-                            if re.search(r'-(alpha|beta|rc)', tag_name, re.IGNORECASE):
+                            # Skip prereleases when picking latest stable
+                            if self._is_prerelease(tag_name):
                                 continue
 
                             latest_version = re.sub(r'^v?', '', tag_name)
