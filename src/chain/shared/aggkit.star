@@ -750,7 +750,7 @@ def _extract_aggkit_version(aggkit_image):
             break
 
     # Some CI-built tags (e.g. feature-branch build tags like
-    # "feat-autoclaim-l2-lx_2026_07_13_07_54_421ba23") don't start with a
+    # "feat-autoclaim-l2-lx_2026_07_13_07_54_42f1a23") don't start with a
     # numeric version at all once the first "-"-delimited segment is taken.
     # Treat these the same as "local": assume they're built from the latest
     # source and are therefore the latest version (grpc-capable), instead of
