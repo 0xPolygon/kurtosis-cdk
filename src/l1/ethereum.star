@@ -112,6 +112,12 @@ def run(plan, args):
             "deneb_fork_epoch": 1,
             "electra_fork_epoch": 2,
             "fulu_fork_epoch": 3,  # Requires a supernode or perfect PeerDAS to be enabled.
+            # Blob parameter only (BPO) forks bump the blob target/max. They require Fulu, so
+            # every bpo_*_epoch must be >= fulu_fork_epoch. The ethereum package defaults them
+            # to epoch 0, which is before our Fulu activation, so we schedule them explicitly.
+            # BPO 3 to 5 stay disabled, as in the ethereum package defaults.
+            "bpo_1_epoch": 3,
+            "bpo_2_epoch": 3,
         },
         "additional_services": args["l1_additional_services"],
     }
