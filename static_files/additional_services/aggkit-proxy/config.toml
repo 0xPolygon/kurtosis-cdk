@@ -63,7 +63,7 @@ WriteTimeout = "5m"
 # RESTConfig-backed sections (no middleware reads it) -- upstream's own
 # default changed 10 -> 0 and docs/common_config.md's new RESTConfig section
 # documents it as "unused; apply rate limiting at the infra layer" (see
-# plans/bridge-tracker-rc5/discovery.md §(c)). Matching the upstream default
+# agglayer/aggkit#1783). Matching the upstream default
 # here rather than pinning a value that implies in-process enforcement it
 # doesn't have. Rate limiting for this service, if ever needed, belongs at
 # haproxy or another fronting layer.

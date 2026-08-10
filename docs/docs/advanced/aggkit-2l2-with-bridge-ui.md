@@ -376,11 +376,13 @@ bridge-tracker component used by this guide (see
 
 **Why rc5 specifically (over rc4):** rc5 adds fail-fast startup validation on
 `[Tracker].L1GlobalExitRootAddress` (see [Why `L1GlobalExitRootAddress`
-matters](#bridge-tracker-configuration) above) and changes `MaxRequestsPerIPAndSecond`'s default
+matters](#bridge-tracker-configuration) above, [agglayer/aggkit#1782](https://github.com/agglayer/aggkit/issues/1782))
+and changes `MaxRequestsPerIPAndSecond`'s default
 in `RESTConfig`-backed sections from `10` to `0` (see [Other notable
-settings](#bridge-tracker-configuration) above), plus an unrelated bridgesync DB-index
-performance fix. None of these required a config change in this package — see
-`plans/bridge-tracker-rc5/discovery.md` for the full rc4→rc5 delta analysis.
+settings](#bridge-tracker-configuration) above, [agglayer/aggkit#1783](https://github.com/agglayer/aggkit/issues/1783)),
+plus the `bridgetracker/API.md` doc correction ([agglayer/aggkit#1781](https://github.com/agglayer/aggkit/issues/1781),
+fixed by [PR #1784](https://github.com/agglayer/aggkit/pull/1784)) and an unrelated bridgesync
+DB-index performance fix. None of these required a config change in this package.
 
 :::note Version-gate correctness
 This package's Starlark version-comparison helpers (`_parse_aggkit_major_minor` in
@@ -473,6 +475,84 @@ If the enclave gets into an inconsistent state:
 kurtosis enclave rm -f cdk    # Clean teardown
 # Then re-run both params files from scratch
 ```
+
+### After an enclave reset: recovering your wallet and UI
+
+`kurtosis enclave rm` + a fresh bring-up resets every chain to genesis, but browser wallets
+(MetaMask and similar injected wallets) cache per-account, per-network nonces and balances
+locally — they have no way to know the chain moved. The first transaction sent after a reset
+uses the wallet's stale, now-too-high cached nonce and hangs or fails silently.
+
+**Symptoms:**
+
+| Symptom | Cause |
+|---------|-------|
+| Transaction stuck "pending" forever | Wallet sent it with a nonce higher than the reset chain expects |
+| Wallet shows "nonce too high" | Same — the wallet's cached nonce no longer matches on-chain state |
+| Wrong/stale balances after reset | Wallet is still showing cached balance from before the reset |
+
+**Fix the wallet:**
+
+- **MetaMask**: Settings → Advanced → **Clear activity tab data**. This resets MetaMask's
+  per-account, per-network nonce cache (and clears stale pending-tx history) without removing
+  the account itself.
+- **Other injected wallets**: look for an equivalent "reset activity"/"clear activity" action, or
+  as a fallback, re-import the account.
+
+**Re-sync the UI:**
+
+1. Re-run `node scripts/kurtosisDevnetEnv.mjs --enclave cdk` from the dev-ui repo — the enclave's
+   service ports are re-derived per instance on every bring-up (they are not stable across
+   `enclave rm`/recreate cycles, only within one enclave's lifetime).
+2. Restart `pnpm dev` so it picks up the rewritten `.env.local`/`config.json`.
+3. Hard-reload the browser tab. The app's own `localStorage` caches (app mode, custom token
+   imports) survive a reset and remain valid — chain ids are deterministic across enclave
+   recreates, so the wallet's existing network entries stay correct. Only the RPC URLs' ports
+   move, and step 1 already rewrote those into the config the app reads.
+
+### Tracker troubleshooting
+
+See [Bridge Tracker Configuration](#bridge-tracker-configuration) for the config reference. Common
+failure modes when a row's tracking doesn't behave as expected:
+
+1. **`WaitingClaim` step showing, but the UI's "Claim tokens" button hasn't appeared yet.** This
+   is expected, not a bug — see upstream [agglayer/aggkit#1786](https://github.com/agglayer/aggkit/issues/1786)
+   (OPEN). The tracker's `WaitingClaim` step reflects only a fast-path read of the settlement
+   tx's own L1 receipt; it does not mean aggkit's bridge-service has finished the separate
+   L1-info-tree sync that the claim button's `READY_TO_CLAIM` status (and the claim proof fetch)
+   actually depends on. Measured on rc5: the tracker enters `WaitingClaim` roughly 16–22s before
+   `/claim-proof` is actually servable. The dev-ui deliberately shows "Finalizing claim data…"
+   during this window and gates the Claim button on its own `READY_TO_CLAIM` check, not on the
+   tracker step — do not "fix" this by changing the UI copy while #1786 is open.
+2. **A row shows no progress bar at all.** One of three causes:
+   - The tracker hasn't resolved the bridge's route yet (`all_steps: null`, `tracking_status:
+     registered` — normal, will populate shortly);
+   - the bridge was evicted from the tracker's retention window and silently re-registered (see
+     `RetentionPeriod` above) — same signature as a fresh registration, not an error;
+   - the tracker gave up resolving the transaction entirely (`tracking_status: error` with
+     `bridge_status: null`) — the UI shows a "Tracking unavailable" alert in this case.
+
+   Diagnose with:
+   ```bash
+   curl -s "http://127.0.0.1:${HAPROXY_PORT}/aggkitapi/tracker/v1/network/<id>/tx/<hash>"
+   ```
+   and read `tracking_status`/`bridge_status`/`error` in the response.
+3. **A step is stalled and not progressing.** Check which component that step depends on:
+   - `WaitingGERUpdate` / `WaitingLERUpdate` — the L1 GlobalExitRoot contract and this package's
+     `L1GlobalExitRootAddress` config (see above — a zero/misconfigured address now fails fast at
+     rc5 startup instead of stalling silently, so if the proxy is running at all this is likely
+     already correct);
+   - `PendingInclusion` / `CertificatePending` — the aggsender/agglayer certificate pipeline;
+     remember agglayer's own `MinimumNewCertificateInterval` cadence (5m by default — see
+     [Certificate Cadence and E2E Timeouts](#certificate-cadence-and-e2e-timeouts));
+   - `WaitingGERInjection` — the destination chain's aggoracle.
+
+   Also check `tracker/v1/health` and the proxy's own logs
+   (`kurtosis service logs cdk aggkit-proxy-001`) for errors.
+4. **Suspected flooding/abuse.** `MaxRequestsPerIPAndSecond` is declared but unenforced in-process
+   (see [Other notable settings](#bridge-tracker-configuration) above,
+   [agglayer/aggkit#1783](https://github.com/agglayer/aggkit/issues/1783)) — if a flood is
+   suspected, look at haproxy/infra-level rate limiting, not this field.
 
 ## References
 
