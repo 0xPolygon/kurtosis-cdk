@@ -27,7 +27,8 @@ args:
   # locally-built patched image is no longer needed.
   # S2 (bridge-tracker-rc5 plan): bumped to rc5 -- fail-fast validation on
   # [Tracker].L1GlobalExitRootAddress plus an unrelated bridgesync DB-index
-  # perf fix (#1779/#1781/#1782/#1783, see plans/bridge-tracker-rc5/discovery.md).
+  # perf fix (aggkit #1779/#1781/#1782/#1783, all folded into
+  # https://github.com/agglayer/aggkit/pull/1784).
   # No kurtosis config change was required: this package already threads a
   # real, non-zero L1 GlobalExitRoot address into the tracker template.
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5

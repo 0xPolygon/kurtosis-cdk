@@ -296,16 +296,17 @@ before forwarding to the proxy's `/tracker/v1/...`).
 **Smoke-test the tracker once the enclave is up:**
 
 ```bash
-HAPROXY_PORT=$(kurtosis port print cdk agglayer-dev-ui-proxy-002 http)
+# `kurtosis port print` outputs the full URL (e.g. http://127.0.0.1:33015)
+HAPROXY_URL=$(kurtosis port print cdk agglayer-dev-ui-proxy-002 http)
 
 # Health check
-curl -s "http://127.0.0.1:${HAPROXY_PORT}/aggkitapi/tracker/v1/health"
+curl -s "${HAPROXY_URL}/aggkitapi/tracker/v1/health"
 
 # Register/query a bridge transaction's tracking status (first call registers it if unseen)
-curl -s "http://127.0.0.1:${HAPROXY_PORT}/aggkitapi/tracker/v1/network/1/tx/0x<bridgeTxHash>"
+curl -s "${HAPROXY_URL}/aggkitapi/tracker/v1/network/1/tx/0x<bridgeTxHash>"
 ```
 
-The tx-tracking response includes `tracking_status` (e.g. `registered`, `tracking`, `finished`,
+The tx-tracking response includes `tracking_status` (`registered`, `running`, `finished`, or
 `error`), `bridge_type`, and (once populated) `all_steps` with a `step_name`/`status` per step. See
 the [AggLayer SDK](https://github.com/agglayer/sdk)'s `getBridgeTracking` client method for the
 full wire-format reference and polling guidance.
@@ -534,7 +535,8 @@ failure modes when a row's tracking doesn't behave as expected:
 
    Diagnose with:
    ```bash
-   curl -s "http://127.0.0.1:${HAPROXY_PORT}/aggkitapi/tracker/v1/network/<id>/tx/<hash>"
+   HAPROXY_URL=$(kurtosis port print cdk agglayer-dev-ui-proxy-002 http)
+   curl -s "${HAPROXY_URL}/aggkitapi/tracker/v1/network/<id>/tx/<hash>"
    ```
    and read `tracking_status`/`bridge_status`/`error` in the response.
 3. **A step is stalled and not progressing.** Check which component that step depends on:

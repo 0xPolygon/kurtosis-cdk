@@ -21,7 +21,7 @@ args:
   # https://github.com/agglayer/aggkit/pull/1761) is fixed in rc4, so the
   # locally-built patched image is no longer needed.
   # S2 (bridge-tracker-rc5 plan): bumped to rc5, same as run1 -- see
-  # plans/bridge-tracker-rc5/discovery.md for the rc4->rc5 delta.
+  # https://github.com/agglayer/aggkit/pull/1784 for the rc4->rc5 delta.
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (2) gets an AutoClaim claimer -- see
