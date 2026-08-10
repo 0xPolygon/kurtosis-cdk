@@ -14,7 +14,12 @@
 # signature alone). L1GlobalExitRootAddress has NO such fallback (confirmed in
 # aggkit's bridgetracker/sources/ger.go): left unset it defaults to the zero
 # address, which permanently stalls StepWaitingGERUpdate for every L1->L2
-# bridge, so it must be set explicitly below.
+# bridge, so it must be set explicitly below. As of aggkit v0.11.0-rc5
+# (bridgetracker/config.go's Config.Validate, PR agglayer/aggkit#1784) the
+# proxy now fails fast at startup with a clear error instead of silently
+# stalling if this resolves to the zero address -- this package's templating
+# already supplies a real address, so the new check is expected to pass
+# without any config change here.
 
 [Log]
 Environment = "development"
@@ -54,10 +59,15 @@ Host = "0.0.0.0"
 Port = 8080
 ReadTimeout = "5m"
 WriteTimeout = "5m"
-# Raised from the binary's default of 10: ALL browser traffic (proxy + tracker
-# polling/websocket) reaches this service funneled through haproxy's single
-# source IP, so a low per-IP limit throttles every real user at once.
-MaxRequestsPerIPAndSecond = 50
+# As of aggkit v0.11.0-rc5, MaxRequestsPerIPAndSecond is unenforced in
+# RESTConfig-backed sections (no middleware reads it) -- upstream's own
+# default changed 10 -> 0 and docs/common_config.md's new RESTConfig section
+# documents it as "unused; apply rate limiting at the infra layer" (see
+# plans/bridge-tracker-rc5/discovery.md §(c)). Matching the upstream default
+# here rather than pinning a value that implies in-process enforcement it
+# doesn't have. Rate limiting for this service, if ever needed, belongs at
+# haproxy or another fronting layer.
+MaxRequestsPerIPAndSecond = 0
 
 [Tracker]
 # RetentionPeriod raised from the binary's 10m default so a slow L2->L1 demo

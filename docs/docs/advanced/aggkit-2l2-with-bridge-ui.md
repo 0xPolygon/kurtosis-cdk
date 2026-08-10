@@ -41,7 +41,7 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, auto
 ### Prerequisites
 
 This setup requires an AggKit image that includes both the `aggkit` and `aggkit-proxy` binaries.
-The params files below pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc4` — no local
+The params files below pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc5` — no local
 build is needed. See [Image Version](#image-version) for details.
 
 ## Deployment
@@ -59,7 +59,7 @@ args:
 
   # AggKit image: registry release, includes the aggkit-proxy binary and the
   # bridge-tracker (see Image Version below)
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc4
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
 
   # AggKit components: aggsender and aggoracle on the main service, plus autoclaim
   aggkit_components: "aggsender,aggoracle,autoclaim"
@@ -100,7 +100,7 @@ args:
   consensus_contract_type: ecdsa-multisig
 
   # Same registry image as run1
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc4
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
 
   # Create a second rollup (L2-2)
   deployment_suffix: "-002"
@@ -268,12 +268,16 @@ URL = "{{.agglayer_grpc_url}}"
 
 **Why `L1GlobalExitRootAddress` matters:** unlike `BridgeAddrs` (which the tracker can discover
 on-chain if left unset), `L1GlobalExitRootAddress` has **no on-chain discovery fallback**
-(confirmed in aggkit's `bridgetracker/sources/ger.go`). Left unset, it defaults to the zero
-address, which permanently stalls `StepWaitingGERUpdate` for **every** L1→L2 bridge, because the
-tracker's `GERSource` filters L1 logs by that exact address. This package threads it through
-`contract_setup_addresses["l1_ger_address"]` — the same mechanism already used for
-`rollup_manager_address` — into `aggkit_proxy.star`'s template data. If you fork this config for a
-new environment, do not drop this field.
+(confirmed in aggkit's `bridgetracker/sources/ger.go`, unchanged through rc5). Left unset, it
+defaults to the zero address, because the tracker's `GERSource` filters L1 logs by that exact
+address. As of aggkit v0.11.0-rc5 (`bridgetracker/config.go`'s `Config.Validate`,
+[agglayer/aggkit#1784](https://github.com/agglayer/aggkit/pull/1784)), the proxy now **fails fast
+at startup** with a clear error if this resolves to the zero address, instead of starting and
+silently stalling `StepWaitingGERUpdate` for every L1→L2 bridge as it did under rc4. This package
+threads a real address through `contract_setup_addresses["l1_ger_address"]` — the same mechanism
+already used for `rollup_manager_address` — into `aggkit_proxy.star`'s template data, so the
+rc5 startup check passes without any config change. If you fork this config for a new
+environment, do not drop this field.
 
 **Other notable settings:**
 - `RetentionPeriod = "30m"` — raised from the binary's 10m default so a slow L2→L1 demo
@@ -281,9 +285,10 @@ new environment, do not drop this field.
   instead of falling out of the registry mid-demo. Once a tracked bridge is evicted, the next
   poll simply re-registers it (status `registered`, `all_steps: null`) — see the SDK's
   `getBridgeTracking` docs for how a client should handle this.
-- `[REST] MaxRequestsPerIPAndSecond = 50` — raised from the binary's default of 10, since all
-  browser traffic (bridge proxy + tracker polling) reaches this service funneled through
-  haproxy's single source IP; a low per-IP limit would throttle every real user at once.
+- `[REST] MaxRequestsPerIPAndSecond = 0` — matches the binary's own default as of aggkit
+  v0.11.0-rc5. This field is unenforced in `RESTConfig`-backed sections (no middleware reads it);
+  aggkit's `docs/common_config.md` documents it as unused and recommends applying rate limiting
+  at the infra layer (e.g. haproxy) instead.
 
 Reachable through haproxy at `/aggkitapi/tracker/v1/...` (haproxy strips the `/aggkitapi` prefix
 before forwarding to the proxy's `/tracker/v1/...`).
@@ -346,27 +351,36 @@ Both networks use the **same proxy URL** — routing to different backends happe
 
 ### Image Version
 
-Both params files pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc4`. No local build is
+Both params files pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc5`. No local build is
 required — `kurtosis run` pulls it like any other image.
 
-`aggkit:0.11.0-rc4` bundles both the `aggkit` and `aggkit-proxy` binaries; the proxy service
+`aggkit:0.11.0-rc5` bundles both the `aggkit` and `aggkit-proxy` binaries; the proxy service
 overrides the image's `aggkit` entrypoint to run `aggkit-proxy` (see
 `src/additional_services/aggkit_proxy.star`). You can confirm both binaries are present with:
 
 ```bash
-docker run --rm ghcr.io/agglayer/aggkit:0.11.0-rc4 version
+docker run --rm ghcr.io/agglayer/aggkit:0.11.0-rc5 version
 docker run --rm --entrypoint /usr/local/bin/aggkit-proxy \
-  ghcr.io/agglayer/aggkit:0.11.0-rc4 version
+  ghcr.io/agglayer/aggkit:0.11.0-rc5 version
 ```
 
-**Why rc4 specifically:** an earlier iteration of this guide pinned a locally-built patched image
+**Why not `develop`:** an earlier iteration of this guide pinned a locally-built patched image
 because L2→L2 autoclaim never fired on the `develop` image at the time — the claimer compared an
 L1 info-tree leaf's L1 block number against the source rollup's own L2 block number, so on a
 devnet whose L2 height exceeds L1's the readiness gate never opened and requests stayed queued
 indefinitely (`proof not ready for request constraints`, retrying forever). That fix
-(agglayer/aggkit [#1761](https://github.com/agglayer/aggkit/pull/1761)) is now upstream in rc4, so
-the local build is no longer needed. rc4 also carries the `aggkit-proxy` bridge-tracker component
-used by this guide (see [Bridge Tracker Configuration](#bridge-tracker-configuration)).
+(agglayer/aggkit [#1761](https://github.com/agglayer/aggkit/pull/1761)) has been upstream since
+rc4, so the local build is no longer needed. The image also carries the `aggkit-proxy`
+bridge-tracker component used by this guide (see
+[Bridge Tracker Configuration](#bridge-tracker-configuration)).
+
+**Why rc5 specifically (over rc4):** rc5 adds fail-fast startup validation on
+`[Tracker].L1GlobalExitRootAddress` (see [Why `L1GlobalExitRootAddress`
+matters](#bridge-tracker-configuration) above) and changes `MaxRequestsPerIPAndSecond`'s default
+in `RESTConfig`-backed sections from `10` to `0` (see [Other notable
+settings](#bridge-tracker-configuration) above), plus an unrelated bridgesync DB-index
+performance fix. None of these required a config change in this package — see
+`plans/bridge-tracker-rc5/discovery.md` for the full rc4→rc5 delta analysis.
 
 :::note Version-gate correctness
 This package's Starlark version-comparison helpers (`_parse_aggkit_major_minor` in
