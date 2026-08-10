@@ -117,7 +117,7 @@ def run(plan, args):
             # to epoch 0, which is before our Fulu activation, so we schedule them explicitly.
             # BPO 3 to 5 stay disabled, as in the ethereum package defaults.
             "bpo_1_epoch": 3,
-            "bpo_2_epoch": 4,
+            "bpo_2_epoch": 3,
         },
         "additional_services": args["l1_additional_services"],
     }
