@@ -126,7 +126,7 @@ DEFAULT_ACCOUNTS = {
 
 LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
 
-_DEFAULT_L1_EL_TYPE = "geth"
+_DEFAULT_L1_EL_TYPE = "reth"
 _DEFAULT_L1_CL_TYPE = "lighthouse"
 
 DEFAULT_L1_ARGS = {
@@ -358,12 +358,26 @@ DEFAULT_ROLLUP_ARGS = {
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
     "agg_sender_multisig_threshold": 1,
+    # When true, the agglayer node is configured with a second (tx-settlement) signer in
+    # [auth.local] private-keys, mirroring the production dual-wallet deployment. The second
+    # signer reuses the already-funded sequencer account keystore (distinct from the aggregator
+    # pp-settlement signer). Default false = single wallet (identical to today's behavior).
+    "agglayer_use_second_signer": False,
     # Maps to TriggerCertMode parameter in the aggkit configs. It is the mode used to trigger certificate sending.
     # Valid values are: "EpochBased", "NewBridge", "ASAP", "Auto"
     # EpochBased: this is the legacy mode that waits until reach a percentage of a epoch (you can configure here: AggSender.TriggerEpochBased)
     # ASAP: this mode try to generate a new certificate after a successful settled certificate
     # NewBridge: Each time that a new bridge is done in L2 it generate a certificate (if it's possible) (experimental)
     "trigger_cert_mode": "ASAP",
+    # Max time the test_runner bridge bats wait for an L2->L1 claim to become ready
+    # (CLAIM_WAIT_DURATION). The default suits sequencer rollups (cdk-erigon / op-reth
+    # pessimistic), whose L2->L1 exit settles from epoch progression alone. The op-succinct/FEP
+    # path needs a larger value: its claim only unblocks once the certificate carrying the L2
+    # exit settles, which for FEP means the deposit's L2 block first becoming finalized+proven
+    # (L1 finalization lag) and then the aggkit-prover generating that certificate's aggchain
+    # proof. Both are slow on a resource-constrained multi-stack CI runner, so raise this for the
+    # FEP rollup (see .github/tests/multi-l2/network-3-op-succinct.yml).
+    "test_runner_claim_wait_duration": "20m",
 }
 
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {

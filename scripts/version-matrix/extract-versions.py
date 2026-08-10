@@ -17,7 +17,7 @@ import yaml
 import requests
 from pathlib import Path
 from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, replace
 from datetime import datetime
 
 
@@ -30,6 +30,21 @@ class ComponentVersion:
     version_source_url: Optional[str] = None
     latest_version_source_url: Optional[str] = None
     status: Optional[str] = None
+    pin_reason: Optional[str] = None
+
+
+# Components deliberately held back from the latest stable release, keyed by
+# (environment, component). These render as "pinned" instead of "behind stable"
+# so that genuine regressions stay visible in the matrix.
+#
+# Keep every reason in the same short form: "Only supports <component> <line> so far."
+PINNED_VERSIONS = {
+    ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
+    ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
+    ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+    ("cdk-erigon-zkrollup", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+    ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
+}
 
 
 @dataclass
@@ -40,12 +55,54 @@ class TestEnvironment:
     components: Dict[str, ComponentVersion]
 
 
+@dataclass
+class PackageVersion:
+    """Represents a pinned external Kurtosis package dependency."""
+    pin: str
+    pin_date: Optional[str] = None
+    pin_source_url: Optional[str] = None
+    latest_version: Optional[str] = None
+    latest_version_date: Optional[str] = None
+    latest_version_source_url: Optional[str] = None
+    status: Optional[str] = None
+    commit_distance: Optional[str] = None
+    tracking_mode: str = "release"
+    pin_reason: Optional[str] = None
+
+
+# External Kurtosis packages deliberately held back, keyed by package locator.
+# Same convention as PINNED_VERSIONS: these render as "pinned" rather than
+# "behind stable" so real drift stays visible.
+PINNED_PACKAGES = {}
+
+# What "latest" means for each package, keyed by package locator.
+#
+# - "release" (default): compare the pin against the latest release/tag. Right
+#   for packages that tag every change worth consuming.
+# - "head": compare the pin against the default branch HEAD. Right for packages
+#   that release rarely and expect consumers to pin commits — ethereum-package
+#   last tagged 6.1.0 in April 2026 while continuing to ship daily, so measuring
+#   against that tag reports "newer than stable" forever and hides real drift.
+PACKAGE_TRACKING_MODE = {
+    "github.com/ethpandaops/ethereum-package": "head",
+    # Has never cut a release or tag, so HEAD is the only comparison point.
+    "github.com/xavier-romero/kurtosis-blockscout": "head",
+}
+
+# A head-tracked pin is always behind HEAD on an active upstream, so distance
+# alone is not a signal. Alarm once the pin is old enough that we are plausibly
+# missing fixes: these packages ship most days, so two weeks is already a
+# meaningful gap.
+HEAD_TRACKING_STALE_AFTER_DAYS = 14
+
+
 class VersionMatrixExtractor:
     """Extracts and manages version matrix information."""
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
+        self.kurtosis_yaml_path = repo_root / "kurtosis.yml"
 
         cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
         op_reth_tests_path = repo_root / ".github" / "tests" / "op-reth"
@@ -70,7 +127,9 @@ class VersionMatrixExtractor:
             "agglayer_contracts_image": "agglayer-contracts",
             "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
+            "status_checker_image": "status-checker",
             "geth_image": "geth",
+            "reth_image": "reth",
             "lighthouse_image": "lighthouse",
             "op_batcher_image": "op-batcher",
             "op_contract_deployer_image": "op-deployer",
@@ -113,6 +172,7 @@ class VersionMatrixExtractor:
             "agglayer-contracts": "agglayer/agglayer-contracts",
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
+            "status-checker": "0xPolygon/status-checker",
             # legacy zkevm components
             "cdk-data-availability": "0xPolygon/cdk-data-availability",
             "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
@@ -128,6 +188,7 @@ class VersionMatrixExtractor:
             "op-succinct-proposer": "agglayer/op-succinct",
             # ethereum components
             "geth": "ethereum/go-ethereum",
+            "reth": "paradigmxyz/reth",
             "lighthouse": "sigp/lighthouse",
         }
 
@@ -238,6 +299,15 @@ class VersionMatrixExtractor:
                     return f"https://github.com/{repo}/releases/latest"
         return None
 
+    @staticmethod
+    def _is_prerelease(tag_name: str) -> bool:
+        """Whether a tag looks like a prerelease rather than a stable version.
+
+        Covers the usual alpha/beta/rc markers plus test builds such as
+        op-deployer's "0.8.0-pcd-test.2", which must never be reported as stable.
+        """
+        return re.search(r'-(alpha|beta|rc|test)', tag_name, re.IGNORECASE) is not None
+
     def _get_latest_version(self, component: str) -> Optional[str]:
         """Fetch the latest version from GitHub releases."""
         repo = self.repos.get(component)
@@ -256,8 +326,8 @@ class VersionMatrixExtractor:
                         if 'tag_name' in release:
                             tag_name = release['tag_name']
                             if tag_name.startswith(component):
-                                # Skip prereleases (alpha/beta/rc) when picking latest stable
-                                if re.search(r'-(alpha|beta|rc)', tag_name, re.IGNORECASE):
+                                # Skip prereleases when picking latest stable
+                                if self._is_prerelease(tag_name):
                                     continue
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
@@ -286,8 +356,8 @@ class VersionMatrixExtractor:
                             if component == 'zkevm-prover' and tag_name.startswith('v9'):
                                 continue
 
-                            # Skip prereleases (alpha/beta/rc) when picking latest stable
-                            if re.search(r'-(alpha|beta|rc)', tag_name, re.IGNORECASE):
+                            # Skip prereleases when picking latest stable
+                            if self._is_prerelease(tag_name):
                                 continue
 
                             latest_version = re.sub(r'^v?', '', tag_name)
@@ -404,8 +474,11 @@ class VersionMatrixExtractor:
                     components_with_defaults = {
                         name: comp for name, comp in components.items()
                     }
+                    # Copy inherited defaults so per-environment adjustments
+                    # (e.g. pinning) don't leak into other environments.
                     components_with_defaults.update({
-                        name: comp for name, comp in default_images.items()
+                        name: replace(comp)
+                        for name, comp in default_images.items()
                         if name not in components
                     })
 
@@ -416,6 +489,8 @@ class VersionMatrixExtractor:
                         name: comp for name, comp in components_with_defaults.items()
                         if name in allowed_components
                     }
+
+                    self._apply_pins(environment_type, filtered_components)
 
                     environments[environment_type] = TestEnvironment(
                         type=environment_type,
@@ -431,6 +506,19 @@ class VersionMatrixExtractor:
             print(f"Error scanning test environments: {e}")
 
         return environments
+
+    def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion]):
+        """Re-label deliberately held-back components as pinned.
+
+        Only downgrades a "behind stable" status: if a pinned component ever
+        catches up with (or overtakes) stable, the real status is kept so that
+        the pin can be retired.
+        """
+        for name, component in components.items():
+            reason = PINNED_VERSIONS.get((environment_name, name))
+            if reason and component.status == "behind stable":
+                component.status = "pinned"
+                component.pin_reason = reason
 
     def _get_allowed_components(self, environment_name: str) -> List[str]:
         """Get list of components allowed for a environment type."""
@@ -674,6 +762,9 @@ class VersionMatrixExtractor:
         print("Extracting test environments...")
         test_environments = self.extract_test_environments(default_images)
 
+        print("Extracting external Kurtosis packages...")
+        packages = self.extract_packages()
+
         # Count environments by type
         environment_counts = {
             'total': len(test_environments)
@@ -693,13 +784,248 @@ class VersionMatrixExtractor:
             'generated_at': datetime.now().isoformat(),
             'default_images': {name: asdict(comp) for name, comp in filtered_default_images.items()},
             'test_environments': {name: asdict(environment) for name, environment in test_environments.items()},
+            'packages': {name: asdict(package) for name, package in packages.items()},
             'summary': {
                 'total_components': len(default_images),
+                'total_packages': len(packages),
                 'environments': environment_counts,
             }
         }
 
         return matrix
+
+    def extract_packages(self) -> Dict[str, PackageVersion]:
+        """Extract external Kurtosis package pins from the kurtosis.yml replace block."""
+        packages = {}
+
+        try:
+            with open(self.kurtosis_yaml_path, 'r') as f:
+                kurtosis_yaml = yaml.safe_load(f)
+        except Exception as e:
+            print(f"Error reading {self.kurtosis_yaml_path}: {e}")
+            return packages
+
+        replace_options = (kurtosis_yaml or {}).get('replace') or {}
+        if not replace_options:
+            print("No `replace` block found in kurtosis.yml, skipping packages.")
+            return packages
+
+        for package_locator, replacement in replace_options.items():
+            # A replacement may redirect to a different repo (e.g. a fork) and
+            # optionally append `@<tag|branch|commit>`. The pin is what actually
+            # gets resolved, so report against the replacement target.
+            target, _, pin = replacement.partition('@')
+            repo = self._repo_from_locator(target)
+            if not repo:
+                print(f"Could not derive a GitHub repo from '{target}', skipping.")
+                continue
+
+            pin = pin or 'HEAD'
+            pin_date = self._get_ref_date(repo, pin)
+            tracking_mode = PACKAGE_TRACKING_MODE.get(package_locator, 'release')
+
+            if tracking_mode == 'head':
+                latest_version, latest_version_date = self._get_head_version(repo)
+                status, commit_distance = self._determine_head_tracked_status(
+                    repo, pin, pin_date, latest_version)
+            else:
+                latest_version, latest_version_date = self._get_latest_package_version(repo)
+                status, commit_distance = self._determine_package_status(
+                    repo, pin, pin_date, latest_version, latest_version_date)
+
+            packages[package_locator] = PackageVersion(
+                pin=pin,
+                pin_date=pin_date,
+                pin_source_url=self._get_package_source_url(repo, pin),
+                latest_version=latest_version,
+                latest_version_date=latest_version_date,
+                latest_version_source_url=(
+                    self._get_package_source_url(repo, latest_version)
+                    if latest_version else None
+                ),
+                status=status,
+                commit_distance=commit_distance,
+                tracking_mode=tracking_mode,
+                pin_reason=PINNED_PACKAGES.get(package_locator),
+            )
+
+        return packages
+
+    def _repo_from_locator(self, locator: str) -> Optional[str]:
+        """Turn a github.com/org/repo[/sub/path] locator into 'org/repo'."""
+        match = re.match(r'(?:https?://)?github\.com/([^/]+)/([^/@]+)', locator)
+        return f"{match.group(1)}/{match.group(2)}" if match else None
+
+    def _is_commit_sha(self, ref: str) -> bool:
+        return bool(re.fullmatch(r'[0-9a-f]{7,40}', ref or '', re.IGNORECASE))
+
+    def _github_get(self, path: str, allow_missing: bool = False):
+        """GET a GitHub API path, returning parsed JSON or None.
+
+        Set allow_missing for endpoints where a 404 is a legitimate answer
+        rather than a failure — a repo that has never cut a release returns 404
+        from /releases/latest, and logging that as an error is just noise.
+        """
+        try:
+            response = requests.get(
+                f"https://api.github.com/{path}", timeout=10,
+                headers={'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+            if response.status_code == 200:
+                return response.json()
+            if response.status_code == 404 and allow_missing:
+                return None
+            print(f"Error fetching {path}: {response.status_code}")
+        except Exception as e:
+            print(f"Error fetching {path}: {e}")
+        return None
+
+    def _get_ref_date(self, repo: str, ref: str) -> Optional[str]:
+        """Resolve the commit date (YYYY-MM-DD) of a tag, branch or commit."""
+        if not ref:
+            return None
+
+        candidates = [ref]
+        # Kurtosis pins are often written `@v1.1.0` while the upstream tag is
+        # `1.1.0` (or the reverse), so try both spellings before giving up.
+        if not self._is_commit_sha(ref):
+            stripped = ref.lstrip('v')
+            candidates += [stripped, f"v{stripped}"]
+
+        for candidate in dict.fromkeys(candidates):
+            data = self._github_get(f"repos/{repo}/commits/{candidate}")
+            if data:
+                date = data.get('commit', {}).get('committer', {}).get('date')
+                return date[:10] if date else None
+        return None
+
+    def _get_latest_package_version(self, repo: str) -> tuple:
+        """Return (version, date) of the newest release, falling back to tags.
+
+        A repo with neither is not release-tracked at all; add it to
+        PACKAGE_TRACKING_MODE as "head" rather than silently comparing it
+        against its own branch tip, which would always look up to date.
+        """
+        # A 404 here just means the repo has never published a release.
+        release = self._github_get(
+            f"repos/{repo}/releases/latest", allow_missing=True)
+        if release and release.get('tag_name'):
+            return release['tag_name'], (release.get('published_at') or '')[:10] or None
+
+        tags = self._github_get(f"repos/{repo}/tags?per_page=1")
+        if isinstance(tags, list) and tags:
+            tag_name = tags[0].get('name')
+            if tag_name:
+                return tag_name, self._get_ref_date(repo, tag_name)
+
+        print(f"No releases or tags found for {repo}; consider tracking it by "
+              f"head in PACKAGE_TRACKING_MODE.")
+        return None, None
+
+    def _get_head_version(self, repo: str) -> tuple:
+        """Return (short_sha, date) of the default branch HEAD."""
+        commits = self._github_get(f"repos/{repo}/commits?per_page=1")
+        if isinstance(commits, list) and commits:
+            sha = commits[0].get('sha', '')
+            date = commits[0].get('commit', {}).get('committer', {}).get('date')
+            return sha[:12] if sha else None, date[:10] if date else None
+        return None, None
+
+    def _determine_head_tracked_status(self, repo: str, pin: str,
+                                       pin_date: Optional[str],
+                                       head_version: Optional[str]) -> tuple:
+        """Judge a pin that tracks HEAD rather than releases.
+
+        Being behind HEAD is the normal steady state for these packages, so
+        distance alone is not a signal. What matters is age: a pin only becomes
+        a problem once it is old enough that we are plausibly missing fixes.
+        """
+        if not head_version:
+            return None, None
+
+        if pin[:12] == head_version[:12]:
+            return "matches stable", None
+
+        comparison = self._github_get(f"repos/{repo}/compare/{head_version}...{pin}")
+        distance = None
+        if comparison:
+            behind_by = comparison.get('behind_by', 0)
+            if behind_by > 0:
+                distance = f"{behind_by} commits behind HEAD"
+            elif comparison.get('ahead_by', 0) > 0:
+                # Pinned to an unmerged or since-rewritten commit.
+                return "newer than stable", (
+                    f"{comparison['ahead_by']} commits ahead of HEAD")
+
+        age_days = self._days_since(pin_date)
+        if age_days is not None and age_days > HEAD_TRACKING_STALE_AFTER_DAYS:
+            age_note = f"pinned commit is {age_days} days old"
+            return "behind stable", (
+                f"{distance}, {age_note}" if distance else age_note)
+
+        # Recent enough to be deliberate: report the drift without alarming.
+        return "tracking head", distance
+
+    def _days_since(self, date: Optional[str]) -> Optional[int]:
+        """Whole days between an ISO date (YYYY-MM-DD) and today."""
+        if not date:
+            return None
+        try:
+            return (datetime.now() - datetime.strptime(date, "%Y-%m-%d")).days
+        except ValueError:
+            return None
+
+    def _get_package_source_url(self, repo: str, ref: str) -> Optional[str]:
+        """Build a browsable URL for a package ref."""
+        if not ref:
+            return None
+        if self._is_commit_sha(ref):
+            return f"https://github.com/{repo}/tree/{ref}"
+        return f"https://github.com/{repo}/releases/tag/{ref}"
+
+    def _determine_package_status(self, repo: str, pin: str, pin_date: Optional[str],
+                                  latest_version: Optional[str],
+                                  latest_version_date: Optional[str]) -> tuple:
+        """Determine whether a package pin is up to date, and how far it has drifted.
+
+        Returns (status, commit_distance) where commit_distance is a short
+        human-readable summary like "14 commits behind 1.0.0", or None.
+        """
+        if not latest_version:
+            return None, None
+
+        # A tag pin can be compared directly against the latest release tag.
+        if not self._is_commit_sha(pin) and not self._is_commit_sha(latest_version):
+            if pin.lstrip('v') == latest_version.lstrip('v'):
+                return "matches stable", None
+            return self._determine_status(
+                pin.lstrip('v'), latest_version.lstrip('v')), None
+
+        # A commit pin equal to the latest ref is up to date.
+        if pin[:12] == (latest_version or '')[:12]:
+            return "matches stable", None
+
+        # For a commit pin, ask GitHub where it sits relative to the latest
+        # release. Comparing raw dates would be wrong: a commit can be authored
+        # after a release was published while still being an ancestor of it.
+        comparison = self._github_get(f"repos/{repo}/compare/{latest_version}...{pin}")
+        if comparison:
+            behind_by = comparison.get('behind_by', 0)
+            ahead_by = comparison.get('ahead_by', 0)
+            if behind_by > 0:
+                return "behind stable", f"{behind_by} commits behind {latest_version}"
+            if ahead_by > 0:
+                return "newer than stable", f"{ahead_by} commits ahead of {latest_version}"
+            return "matches stable", None
+
+        # Fall back to dates only when the comparison is unavailable.
+        if pin_date and latest_version_date:
+            if pin_date > latest_version_date:
+                return "newer than stable", None
+            if pin_date < latest_version_date:
+                return "behind stable", None
+            return "matches stable", None
+
+        return None, None
 
     def save_matrix_json(self, matrix: Dict, output_path: Optional[Path] = None):
         """Save matrix as JSON file."""
@@ -731,6 +1057,7 @@ def main():
     summary = matrix['summary']
     print(f"\n=== Version Matrix Summary ===")
     print(f"Total Components: {summary['total_components']}")
+    print(f"Total Packages: {summary['total_packages']}")
     print(f"Total Test environments: {summary['environments']['total']}")
     print(f"Matrix generated at: {matrix['generated_at']}")
 

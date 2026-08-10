@@ -24,6 +24,14 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
                 "image": constants.DEFAULT_IMAGES.get("op_node_image"),
                 "extra_params": [
                     "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14 and greater
+                    # This devnet runs a fast L1 (default 2s slots), but op-node's L1 head HTTP poll
+                    # defaults to 12s (6x the block time). Each poll then sees a multi-block head jump,
+                    # which op-node misreads as a possible reorg and reacts by stalling L1/L2 finality
+                    # for minutes at a time instead of advancing it on its normal epoch cadence. That
+                    # starves the op-succinct proposer (it only proves *finalized* L2 blocks) and times
+                    # out FEP L2->L1 bridge claims ("the deposit seems to be stuck"). Polling the head
+                    # every 1s lets op-node track the fast L1 cleanly so finality advances steadily.
+                    "--l1.http-poll-interval=1s",
                 ]
                 + (
                     ["--log.format=json"]
@@ -101,7 +109,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@861d3dec5bf04f49a059fc8c291d1466b7bc29a0",  # main - 2026/03/05
+        "source": "github.com/agglayer/optimism-package/main.star",  # Version pinned in kurtosis.yml
         "predeployed_contracts": True,
     }
 )

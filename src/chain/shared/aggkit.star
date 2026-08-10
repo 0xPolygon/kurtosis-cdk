@@ -31,6 +31,9 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
                 | contract_setup_addresses
                 | {
                     "l2_rpc_url": l2_rpc_url,
+                    "aggkit_legacy_bridge_addr": not _aggkit_version_gte(
+                        args.get("aggkit_image"), 0, 8
+                    ),
                 },
             )
         },
@@ -459,20 +462,11 @@ def _build_config_data(args, deployment_context, extra_data=None):
             # `{{- if lt .aggkit_version "0.8" }}` there does a lexicographic STRING
             # comparison, and "0.11" < "0.8" is true digit-by-digit -- wrongly gating
             # the legacy/deprecated polygonBridgeAddr key on for aggkit 0.11.x.
-            #
-            # NOTE: this deliberately does NOT compare the `aggkit_version` float
-            # above (`aggkit_version < 0.8`) -- that has the exact same bug one
-            # level down. _extract_aggkit_version collapses "<major>.<minor>" into
-            # a single float, so "0.11" becomes 0.11, which is numerically LESS
-            # than 0.8 even though minor version 11 is ordinally newer than minor
-            # version 8. Verified empirically: for aggkit_image
-            # "...:0.11.0-rc4", `_extract_aggkit_version(...) < 0.8` is True, which
-            # would still (wrongly) render the deprecated field. Use
-            # _render_legacy_bridge_addr instead, which parses major/minor as
-            # integers and compares them as a tuple -- correct regardless of
-            # minor-version digit count. See config.toml / cdk-config.toml.
-            "render_legacy_bridge_addr": _render_legacy_bridge_addr(
-                args.get("aggkit_image")
+            # _aggkit_version_gte parses major/minor as integers and compares them
+            # as a tuple -- correct regardless of minor-version digit count. See
+            # config.toml / cdk-config.toml.
+            "aggkit_legacy_bridge_addr": not _aggkit_version_gte(
+                args.get("aggkit_image"), 0, 8
             ),
             "l2_rpc_url": deployment_context.l2_rpc_url,
             "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
@@ -718,11 +712,15 @@ def create_bridge_config_artifact(
 # version 11 is ordinally newer than minor version 3. Verified empirically:
 # for aggkit_image "...:0.11.0-rc4", the float comparison wrongly returns
 # "readrpc", which breaks certificate settlement against agglayer. Uses
-# _parse_aggkit_major_minor instead (see _render_legacy_bridge_addr), which
-# parses major/minor as integers and compares them as a tuple -- correct
-# regardless of minor-version digit count.
+# _aggkit_version_gte instead, which parses major/minor as integers and
+# compares them as a tuple -- correct regardless of minor-version digit count.
 def _get_agglayer_endpoint(aggkit_image):
-    if _parse_aggkit_major_minor(aggkit_image) >= (0, 3):
+    # If the aggkit image is a local build, we assume it uses grpc.
+    if "local" in aggkit_image:
+        return "grpc"
+
+    # Compare major.minor numerically so 0.10+ is not misread as 0.1 (< 0.3).
+    if _aggkit_version_gte(aggkit_image, 0, 3):
         return "grpc"
     else:
         return "readrpc"
@@ -787,52 +785,34 @@ def _is_simple_version(version):
     return True
 
 
-def _render_legacy_bridge_addr(aggkit_image):
-    """True iff aggkit_image's version is strictly older than 0.8, i.e. whether
-    the deprecated (aggkit >=0.8 hard-fails config load on it, non-WarnOnly)
-    polygonBridgeAddr key should be rendered into config.toml / cdk-config.toml.
+def _aggkit_version_gte(aggkit_image, major, minor):
+    """Return True if the aggkit image version is >= major.minor.
 
-    Uses _parse_aggkit_major_minor's integer tuple -- NOT _extract_aggkit_version's
-    float, which is only safely comparable against a fixed threshold like 0.8
-    for single-digit minors. A two-(or-more)-digit minor collapses into a
-    float that is numerically smaller: "0.11" parses to 0.11, and 0.11 < 0.8
-    even though minor version 11 is ordinally newer than minor version 8.
-    Tuple comparison, e.g. (0, 11) < (0, 8), orders correctly regardless of
-    digit count.
-    """
-    return _parse_aggkit_major_minor(aggkit_image) < (0, 8)
-
-
-def _parse_aggkit_major_minor(aggkit_image):
-    """Parse (major, minor) from an aggkit image tag as integers, so version
-    threshold comparisons (e.g. in _render_legacy_bridge_addr and
-    _get_agglayer_endpoint) order correctly regardless of minor-version digit
-    count -- unlike _extract_aggkit_version's float, under which "0.11"
-    collapses to 0.11 and is numerically LESS than "0.8"/"0.3" despite minor
-    version 11 being ordinally newer.
-
-    Local builds and non-numeric CI build tags (see _extract_aggkit_version)
-    are treated as the latest version and return (999, 9).
+    Compares major/minor as integers so double-digit minors order correctly
+    (0.10 > 0.9 > 0.8; 0.11 > 0.8 > 0.3). _extract_aggkit_version returns a
+    float where "0.10"/"0.11" collapse to 0.1/0.11 (< 0.8, < 0.3), which
+    silently breaks version-conditional config for aggkit >= 0.10; use this
+    for those gates instead. Non-numeric tags (local builds, CI build tags)
+    fall back to (0, 0) -- i.e. are treated as the oldest version -- since
+    this package only ever pins numeric release tags in practice, except for
+    the literal "local" tag which is treated as latest (see below).
     """
     if "local" in aggkit_image:
-        return (999, 9)  # local build == latest
+        return True
 
     tag = aggkit_image.split(":")[-1]
-    tag_without_suffix = tag.split("-")[0]
+    if tag == "local":
+        return True
 
-    version = tag_without_suffix
-    found_digit = False
+    # v0.10.0-rc7 -> 0.10.0 (strip suffix, then any leading "v").
+    tag_without_suffix = tag.split("-")[0]
+    ver = tag_without_suffix
     for i in range(len(tag_without_suffix)):
         if tag_without_suffix[i].isdigit():
-            version = tag_without_suffix[i:]
-            found_digit = True
+            ver = tag_without_suffix[i:]
             break
 
-    # Non-numeric / CI build tags (see _extract_aggkit_version): assume latest.
-    if not found_digit or not _is_simple_version(version):
-        return (999, 9)
-
-    parts = version.split(".")
-    major = int(parts[0])
-    minor = int(parts[1]) if len(parts) > 1 else 0
-    return (major, minor)
+    parts = ver.split(".")
+    v_major = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 0
+    v_minor = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+    return (v_major, v_minor) >= (major, minor)

@@ -13,6 +13,22 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/aggregator.keystore",
     )
+
+    # Artifacts mounted into /etc/agglayer: the rendered config plus keystore(s).
+    agglayer_files_artifacts = [agglayer_config_artifact, aggregator_keystore_artifact]
+
+    # Optional dual-wallet setup: mount a second (tx-settlement) signer keystore alongside the
+    # aggregator (pp-settlement) keystore. Reuses the already-funded sequencer account. The
+    # matching second entry in [auth.local] private-keys is rendered conditionally in the config
+    # template. Gated by the agglayer_use_second_signer arg (default false = single wallet).
+    if args["agglayer_use_second_signer"] == True:
+        second_signer_keystore_artifact = plan.store_service_files(
+            name="second-signer-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src=constants.KEYSTORES_DIR + "/sequencer.keystore",
+        )
+        agglayer_files_artifacts.append(second_signer_keystore_artifact)
+
     sp1_env_vars = {}
     sp1_env_vars["RUST_BACKTRACE"] = "1"
     if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
@@ -29,10 +45,7 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
             ports=ports,
             files={
                 "/etc/agglayer": Directory(
-                    artifact_names=[
-                        agglayer_config_artifact,
-                        aggregator_keystore_artifact,
-                    ]
+                    artifact_names=agglayer_files_artifacts,
                 ),
             },
             entrypoint=[
@@ -78,6 +91,7 @@ def create_agglayer_config_artifact(
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_fork_id": args["zkevm_fork_id"],
                     "l2_keystore_password": args["l2_keystore_password"],
+                    "agglayer_use_second_signer": args["agglayer_use_second_signer"],
                     "l2_sequencer_address": args["l2_sequencer_address"],
                     # ports
                     "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,

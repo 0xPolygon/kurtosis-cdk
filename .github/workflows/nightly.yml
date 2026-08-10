@@ -4,6 +4,15 @@ on:
   schedule:
     - cron: 0 6 * * * # Run this workflow every day at 6 AM Paris time (UTC+2).
   workflow_dispatch:
+    inputs:
+      num_chains:
+        description: "Number of L2 networks for the multi-L2 e2e job (2 = cdk-erigon + op-reth, 3 adds op-succinct)."
+        required: false
+        type: choice
+        default: "2"
+        options:
+          - "2"
+          - "3"
 
 permissions:
   contents: read
@@ -13,7 +22,9 @@ permissions:
 env:
   ENCLAVE_NAME: cdk
   DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
-  L1_EL_TYPE: geth
+  # reth is the default L1 execution client (geth breaks agglayer 0.6.0 settlement); this must
+  # match so the gas-token job's `el-1-${L1_EL_TYPE}-${L1_CL_TYPE}` service lookup resolves.
+  L1_EL_TYPE: reth
   L1_CL_TYPE: lighthouse
 
 jobs:
@@ -225,7 +236,9 @@ jobs:
 
   run-with-op-succinct:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # FEP settlement is slow/resource-bound; the L2->L1 bridge claim waits up to 60m (on top of the
+    # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -281,14 +294,22 @@ jobs:
           export BATS_LIB_PATH="$PWD/core/helpers/lib"
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          export CLAIM_WAIT_DURATION="20m"
+          # FEP settlement is slow on a contended runner; give the claim a generous wall-clock wait.
+          export CLAIM_WAIT_DURATION="60m"
 
           # Run op optimistic mode tests
           bats ./tests/op/optimistic-mode.bats || exit 1
 
-          # Run bridge tests
+          # Run bridge tests. Stop the spammer for the L1->L2 direction (its L1-bridge deposits would
+          # race the shared-L1-bridge depositCount() the test pre-reads), but KEEP it running for the
+          # L2->L1 direction. The FEP L2->L1 claim only settles while the L1 GlobalExitRoot keeps
+          # advancing (the op-succinct proposer's aggregation cap = L2 safe head at the latest
+          # finalized L1-info-tree leaf); with no PP rollups in this single-network job, the spammer's
+          # L1->L2 leg is the ONLY thing that advances it. Stopping it freezes the cap and the claim
+          # times out ("deposit stuck") — the same cap-freeze fixed in the multi-l2 job and test.yml.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
 
       - name: Post kurtosis run
@@ -475,16 +496,328 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: pre-deployed-gas-token
 
+  # Resource-intensive multi-L2 scenario: deploy 2-3 heterogeneous CDK networks that share a single
+  # L1 + agglayer, then exercise bridging in both directions and assert every rollup's certificate
+  # settles. This catches integration regressions that only surface with multiple rollups attached
+  # to the same agglayer (production-like), before testnet/prod. Coverage (full bridge mesh):
+  #   - L1<->L2 per rollup: the repo's canonical native-safe tests/agglayer/bridges.bats, run in each
+  #     rollup's in-enclave test-runner-00X (both directions, L1->L2 and L2->L1, for every rollup).
+  #   - L2<->L2 all pairs: for every ordered pair of attached rollups (1<->2, and with num_chains=3
+  #     also 1<->3 and 2<->3, both directions) bridge a message src->dst and claim it on dst
+  #     (.github/tests/multi-l2/l2-to-l2-all-pairs.bats, reusing the agglayer/e2e helpers).
+  # All rollups use native gas (gas_token_enabled: false), so we deliberately avoid the agglayer/e2e
+  # bridge-e2e-3-chains cases: those query the L2 WETHToken(), which is the zero address on a
+  # native-gas chain (no WETH wrapper is deployed), and so only apply to custom-gas-token rollups.
+  #
+  # Runs on the same standard ubuntu-latest runner as every other job in this repo — kurtosis-cdk
+  # has no larger-runner labels available (ubuntu-latest-8-cores / -16-cores never get picked up).
+  # This is by far the heaviest job (2-3 full CDK stacks + shared L1 + agglayer), so it leans on the
+  # kurtosis-pre-run free-disk-space step, mock-prover, and trimmed additional_services to fit; if it
+  # OOMs or times out, cut back to 2 networks or drop more services. Default is 2 networks
+  # (cdk-erigon + op-reth) for sequencer-type coverage; a manual run can set num_chains: 3 to also
+  # attach an op-succinct/FEP rollup.
+  run-with-multi-l2:
+    runs-on: ubuntu-latest
+    # Headroom for the full bridge mesh: with num_chains=3 the FEP rollup contributes both a slow
+    # L2->L1 claim (per-rollup step, up to ~60m) and slow L2->L1-settled L2->L2 claims (all-pairs
+    # step, up to ~90m for the 3->* pairs), each gated on aggchain-proof settlement that is slow and
+    # resource-bound on a contended runner. 240m covers deploy (~22m) + monitors + both slow FEP
+    # waits with margin. (num_chains=3 is a manual workflow_dispatch run; the nightly default is 2.)
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve number of chains
+        run: |
+          num_chains="${{ github.event.inputs.num_chains || '2' }}"
+          if [[ "${num_chains}" != "2" && "${num_chains}" != "3" ]]; then
+            echo "Invalid num_chains '${num_chains}' (must be 2 or 3)"
+            exit 1
+          fi
+          echo "NUM_CHAINS=${num_chains}" >> "$GITHUB_ENV"
+          echo "Multi-L2 e2e: deploying ${num_chains} L2 networks into enclave ${{ env.ENCLAVE_NAME }}"
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      # Network 1 is the FIRST run into the enclave: it deploys the L1, the agglayer stack, and
+      # rollup-001. Networks 2/3 attach to this same L1 + agglayer (deploy_l1/deploy_agglayer: false).
+      - name: Deploy network 1 (cdk-erigon, full stack)
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/multi-l2/network-1-cdk-erigon.yml .
+
+      - name: Deploy network 2 (cdk-op-reth, attached)
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/multi-l2/network-2-op-reth.yml .
+
+      - name: Deploy network 3 (op-succinct, attached)
+        if: env.NUM_CHAINS == '3'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/multi-l2/network-3-op-succinct.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      # monitor.sh drives each L2 forward and waits for batches/blocks. It takes a deployment_suffix
+      # (4th arg) so we can monitor each attached rollup, not just -001.
+      - name: Monitor network 1 (cdk-erigon)
+        run: ./.github/scripts/monitor.sh ${{ env.ENCLAVE_NAME }} cdk-erigon ecdsa-multisig -001
+
+      - name: Monitor network 2 (op-reth)
+        run: ./.github/scripts/monitor.sh ${{ env.ENCLAVE_NAME }} op-reth ecdsa-multisig -002
+
+      - name: Monitor network 3 (op-succinct)
+        if: env.NUM_CHAINS == '3'
+        run: ./.github/scripts/monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep -003
+
+      # L1<->L2 bridging for EACH rollup, using the repo's canonical native-safe bridge tests run in
+      # that rollup's in-enclave test-runner-00X (the same mechanism as ./.github/actions/bridge-tests,
+      # extended per rollup). These tests guard the WETH lookup behind a native-gas-token check, so
+      # they work on our native rollups.
+      - name: Run L1<->L2 bridge tests (per rollup)
+        run: |
+          set -eo pipefail
+          # Stop the bridge-spammer while running the bridge tests, exactly like the canonical
+          # ./.github/actions/bridge-tests action. These tests read depositCount() and then claim that
+          # exact --deposit-count, so a concurrent spammer deposit on the shared L1 bridge (L1->L2
+          # direction) or on rollup-001's L2 bridge (L2->L1 direction) can race the index.
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+
+          suffixes="001 002"
+          [[ "${NUM_CHAINS}" == "3" ]] && suffixes="001 002 003"
+          for s in ${suffixes}; do
+            echo "::group::L1<->L2 bridge tests for rollup ${s}"
+            kurtosis service exec ${{ env.ENCLAVE_NAME }} "test-runner-${s}" \
+              "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+
+            # The op-succinct/FEP rollup (003) is the exception for the L2->L1 direction: its claim only
+            # becomes ready once the certificate carrying the L2 exit settles, and that certificate's
+            # aggchain proof can only be produced while the L1 GlobalExitRoot keeps advancing. The
+            # op-succinct proposer aggregates range proofs only up to the L2 safe head derived from the
+            # latest *finalized* L1-info-tree leaf, and that leaf advances only when a new GER is added
+            # on L1. With no L1 GER activity the cap freezes at the last leaf: the proposer returns
+            # "Proposer service returned an error" for every aggchain-proof request past it and the
+            # claim times out ("the deposit seems to be stuck"). Once rollups 001/002 finish their
+            # tests they go quiet (empty certificates do not update the exit root, so they add no new
+            # L1-info-tree leaves), so nothing else keeps the GER moving. Restart the spammer for 003's
+            # L2->L1 wait: its L1->L2 leg adds a fresh L1-info-tree leaf roughly once a minute, keeping
+            # the cap advancing so the deposit's certificate can settle. This does NOT race the
+            # depositCount read — the L2->L1 test reads rollup-003's OWN L2 bridge count, while the
+            # spammer only touches rollup-001's L2 bridge and the shared L1 bridge. The PP rollups
+            # (001/002) don't need this: their pessimistic certificates settle from epoch progression
+            # alone, so they stay under the stopped-spammer window above.
+            #
+            # No `|| true` here (unlike the post-loop start): the spammer is definitely stopped at this
+            # point, so a failed start is a real problem and should fail the step loudly rather than let
+            # 003's L2->L1 run into a guaranteed cap-freeze timeout.
+            if [[ "${s}" == "003" ]]; then
+              kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+            fi
+            kurtosis service exec ${{ env.ENCLAVE_NAME }} "test-runner-${s}" \
+              "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+            echo "::endgroup::"
+          done
+
+          # Ensure the spammer is running for the subsequent L2<->L2 + certificate-settlement steps
+          # (already running when the FEP rollup was present; the guard makes this a no-op then).
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+
+      - name: Install bats
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
+
+      - name: Install polycli
+        run: |
+          polycli_version="v0.1.87"
+          pushd $(mktemp -d) || exit 1
+          curl -s -L "https://github.com/0xPolygon/polygon-cli/releases/download/${polycli_version}/polycli_${polycli_version}_linux_amd64.tar.gz" > polycli.tar.gz
+          tar xf polycli.tar.gz
+          mv polycli_* /usr/local/bin/polycli
+          polycli version
+
+      - name: Checkout agglayer-e2e
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          path: agglayer-e2e
+          # test/upgrade-agglayer-060 HEAD: the agglayer 0.6.0 multi-chain suite
+          # (tests/aggkit/bridge-e2e-{2,3}-chains.bats + the multi-setup helpers).
+          ref: c63f991dbd77003cd3c28cb7142d15f066f55f18
+
+      # NOTE: no agglayer-registration step here. The l2-to-l2-all-pairs.bats setup intentionally
+      # does not call the e2e add_network_to_agglayer helper: the attached rollups are already
+      # registered at deploy time, and our pessimistic/FEP aggsenders push certificates to agglayer
+      # over gRPC (no [full-node-rpcs] entry needed to settle). The helper would otherwise restart
+      # agglayer (kurtosis service stop/start) on the settlement critical path, which intermittently
+      # fails with a container-name conflict and aborts the test. See the note in the bats setup().
+      - name: Run L2<->L2 bridge tests (all pairs)
+        run: |
+          set -eo pipefail
+
+          # The op-succinct/FEP rollup (003) is the SOURCE of two pairs (3->1, 3->2); those claims
+          # only become ready once network-3's certificate carrying the L2 exit settles, and — exactly
+          # like the L1<->L2 FEP L2->L1 claim — that settlement only progresses while the L1
+          # GlobalExitRoot keeps advancing (the op-succinct proposer's aggregation cap tracks the L2
+          # safe head at the latest finalized L1-info-tree leaf; with no new leaf it freezes and the
+          # cert never settles). So make sure the bridge-spammer is running for this step: its L1->L2
+          # leg keeps adding L1-info-tree leaves. A clean stop-then-start avoids the "container name
+          # already in use" conflict a bare start on an already-running service can hit and reuses the
+          # state the preceding step left it in. No depositCount race here — the all-pairs claims look
+          # bridges up by tx hash, not a pre-read depositCount().
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          export CLAIM_WAIT_DURATION="20m"
+
+          # FEP source-certificate settlement is slow and resource-bound on the contended multi-stack
+          # runner (3 full stacks on one ubuntu-latest). Give _claim_l2_to_l2's per-step polling a
+          # generous wall-clock budget; fast PP-source pairs (1->*, 2->*) exit as soon as the
+          # index/proof is available, so this only extends the wait for the slow FEP-source (3->*)
+          # pairs. 90 min is well above the ~50 min that previously timed out; the job timeout-minutes
+          # below is sized to cover it.
+          export L2L2_CLAIM_TIMEOUT_MIN=90
+          export L2L2_CLAIM_POLL=20
+
+          # kurtosis-cdk deploys a separate contracts-00X service per rollup (each with its own
+          # combined.json), whereas the multi-setup helper looks for combined-00X.json inside
+          # contracts-001. All our networks use native gas (gas_token_enabled: false), so pin the
+          # per-rollup gas token to the zero address via env — the correct native value — to skip
+          # that download entirely.
+          export GAS_TOKEN_ADDRESS_ROLLUP_01=0x0000000000000000000000000000000000000000
+          export GAS_TOKEN_ADDRESS_ROLLUP_02=0x0000000000000000000000000000000000000000
+          export GAS_TOKEN_ADDRESS_ROLLUP_03=0x0000000000000000000000000000000000000000
+
+          # Full-mesh native-safe L2<->L2 coverage: for every ordered pair of attached rollups
+          # (1<->2, and with num_chains=3 also 1<->3 and 2<->3, both directions) bridge a message
+          # src -> dst and claim it on dst via injected-leaf polling. The test lives in kurtosis-cdk
+          # and reuses the agglayer/e2e helpers via PROJECT_ROOT. Message bridging is native-safe (no
+          # WETHToken() lookup, unlike the bridge-e2e-3-chains asset cases) and needs neither a custom
+          # gas token nor the aggsender-find-imported-bridge host binary that the asset case's
+          # wait_to_settle_certificate_containing_global_index requires.
+          NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/l2-to-l2-all-pairs.bats"
+
+      # Belt-and-suspenders: independently confirm every rollup has a SETTLED certificate on the
+      # shared agglayer (the user's core requirement), on top of the bats claim assertions.
+      - name: Assert certificate settlement per rollup
+        run: |
+          readrpc=$(kurtosis port print ${{ env.ENCLAVE_NAME }} agglayer aglr-readrpc)
+          echo "Agglayer readrpc: ${readrpc}"
+          network_ids="1 2"
+          [[ "${NUM_CHAINS}" == "3" ]] && network_ids="1 2 3"
+          for nid in ${network_ids}; do
+            echo "::group::Certificate settlement - network ${nid}"
+            settled=""
+            for attempt in $(seq 1 40); do
+              header=$(cast rpc --rpc-url "${readrpc}" interop_getLatestSettledCertificateHeader "${nid}" 2>/dev/null || echo "null")
+              if [[ -n "${header}" && "${header}" != "null" ]]; then
+                height=$(echo "${header}" | jq -r '.height // empty')
+                if [[ -n "${height}" ]]; then
+                  echo "✅ network ${nid} has a settled certificate (height=${height})"
+                  echo "${header}" | jq '.'
+                  settled=1
+                  break
+                fi
+              fi
+              echo "⏳ network ${nid}: no settled certificate yet (attempt ${attempt}/40)"
+              sleep 15
+            done
+            if [[ -z "${settled}" ]]; then
+              echo "❌ network ${nid}: no settled certificate after timeout"
+              exit 1
+            fi
+            echo "::endgroup::"
+          done
+
+      # Robustness coverage: shut the singleton agglayer node service down DURING live bridging (while
+      # certificates for the just-bridged exits are being generated/communicated), restart it, and prove
+      # the flow survives. Runs LAST so this deliberate disruption never jeopardizes the healthy-path
+      # coverage above. The PP source (rollup-1 -> rollup-2) runs on every nightly and does the full
+      # end-to-end claim; the FEP source (rollup-3) case (num_chains=3 only) does a cheap communication-
+      # recovery check (asserts its known cert height advances after the restart) instead of the full
+      # cross-network claim, whose deposit-count lookup is slow and flaky under runner contention — FEP
+      # end-to-end claimability is already covered by the "Run L2<->L2 bridge tests (all pairs)" step.
+      - name: Agglayer restart resilience (bridging during agglayer downtime)
+        run: |
+          set -eo pipefail
+
+          # Keep the bridge-spammer running: the FEP source needs the L1 GlobalExitRoot advancing during
+          # recovery (its aggchain-proof cap only moves with new L1-info-tree leaves — see
+          # network-3-op-succinct.yml), and the spammer's on-chain L1<->L2 bridging keeps adding them even
+          # while agglayer is down. Stop-then-start avoids the "container name already in use" flake.
+          kurtosis service stop  ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          # Same env as the "Run L2<->L2 bridge tests (all pairs)" step so the e2e helpers resolve identically.
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          export CLAIM_WAIT_DURATION="20m"
+          # Per-step claim budget. Only the PP source (1->2) does a full claim here and it settles
+          # fast, so a modest budget is plenty (the flaky slow FEP-source claim was dropped in favour
+          # of the cheap known-height communication-recovery check below).
+          export L2L2_CLAIM_TIMEOUT_MIN=30
+          export L2L2_CLAIM_POLL=20
+          # All networks use native gas (gas_token_enabled: false); pin the per-rollup gas token to the
+          # zero address to skip the combined-00X.json lookup, exactly like the all-pairs step.
+          export GAS_TOKEN_ADDRESS_ROLLUP_01=0x0000000000000000000000000000000000000000
+          export GAS_TOKEN_ADDRESS_ROLLUP_02=0x0000000000000000000000000000000000000000
+          export GAS_TOKEN_ADDRESS_ROLLUP_03=0x0000000000000000000000000000000000000000
+
+          # Resilience knobs: agglayer downtime window and number of bridges issued during it.
+          # 60s comfortably exceeds the ~30-40s gRPC dial timeout after which the aggsender's
+          # failure to communicate with the down agglayer surfaces in its log (the test holds the
+          # outage open until it catches that, to cover the certificate-communication phase).
+          export AGGLAYER_DOWNTIME_SEC=60
+          export AGGLAYER_OUTAGE_BRIDGES=3
+          # FEP comm-recovery check budget: after the restart, wait for the FEP aggsender to
+          # re-communicate a cert to agglayer (its known cert height to advance). FEP re-
+          # communication is slow and resource-bound on a contended runner (the op-succinct proposer
+          # must aggregate past the deposit's block, gated on L1 finalization + a live GER), so set
+          # this ABOVE the job's timeout-minutes (240): a genuinely-slow FEP source then waits for
+          # the job timeout rather than erroring out early at a fixed budget. It is a single cheap
+          # RPC poll that exits the instant the height moves, so this only extends the slow case.
+          export AGGLAYER_KNOWN_TIMEOUT_MIN=300
+          export AGGLAYER_KNOWN_POLL=30
+
+          NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/agglayer-restart-resilience.bats"
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: multi-l2
+
   workflow-summary:
     runs-on: ubuntu-latest
     if: ${{ always() && github.event_name == 'schedule' }}
-    needs: 
+    needs:
       - run-without-args
       - run-with-args
       - run-with-op-succinct
       - run-with-additional-services
       - run-with-external-l1
       - run-with-pre-deployed-gas-token
+      - run-with-multi-l2
     steps:
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:

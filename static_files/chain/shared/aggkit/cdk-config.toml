@@ -7,7 +7,7 @@ NetworkID = {{.l2_network_id}}
 SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
-{{- if .render_legacy_bridge_addr }}
+{{- if .aggkit_legacy_bridge_addr }}
 polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
