@@ -1,0 +1,236 @@
+# Builds the anvil-aggkit devnet snapshot (see snapshot/README.md and
+# docs/docs/advanced/snapshot.md) and publishes it for agglayer-dev-ui's
+# hermetic e2e CI to consume.
+#
+# Pipeline: checkout -> bring up a 2-run anvil+aggkit+dev-ui enclave ->
+# snapshot.sh --flavor anvil-aggkit (which seeds the dev-ui ERC20 fixture,
+# captures all three anvils live, and bakes every service into a
+# self-contained image) -> gate on state-metadata.json's settlement_free AND
+# per-chain historical_states (a bundle failing either can never settle a
+# certificate after restore -- see plans/dev-ui-ci-snapshot/s9b-evidence/) ->
+# snapshot/verify.sh (the full anvil-aggkit contract: sync-status, tracker,
+# CORS, a real L1->L2 and L2->L1 bridge round trip) -> publish the 11 derived
+# images to GHCR + upload docker-compose.yml/summary.json as a workflow
+# artifact for agglayer-dev-ui to vendor.
+#
+# ---------------------------------------------------------------------------
+# PUBLISH SAFETY: images are only actually pushed when this workflow is
+# dispatched manually with `publish: true`. Every other trigger (the
+# optional push-to-branch filter below, or a dispatch left at the `publish`
+# default) still runs build/gate/verify and *rehearses* the exact `docker
+# tag`/`docker push` commands via `publish-images.sh --dry-run` -- it tags
+# images locally (side-effect-free) but only ECHOES the push. This means an
+# exploratory dispatch can never accidentally publish a GHCR package.
+# ---------------------------------------------------------------------------
+#
+# ONE-TIME HUMAN STEP -- GHCR package visibility (do this after the FIRST
+# real `publish: true` run, once per image; there are 11):
+#   New packages pushed to ghcr.io under an org default to PRIVATE, even
+#   when the owning repository is public. agglayer-dev-ui's e2e CI runs in a
+#   different repo/org context and must pull these images with NO
+#   credentials (anonymous), so each of the 11
+#   `ghcr.io/0xpolygon/kurtosis-cdk-snapshot-<service>` packages must be
+#   switched to public exactly once:
+#     1. https://github.com/orgs/0xPolygon/packages -> find
+#        kurtosis-cdk-snapshot-<service> (one entry per service listed in the
+#        component/port map: anvil-001, l2-anvil-001, l2-anvil-002, agglayer,
+#        aggkit-001, aggkit-001-bridge, aggkit-002, aggkit-002-bridge,
+#        aggkit-proxy-001, agglayer-dev-ui-proxy-002, agglayer-dev-ui-002).
+#     2. Package settings -> "Change visibility" -> Public -> type the
+#        package name to confirm.
+#     3. (Optional, recommended) Package settings -> "Manage Actions access"
+#        -> connect the repository (0xPolygon/kurtosis-cdk) so future pushes
+#        from this workflow don't need repeating step 2.
+#   Equivalently, via the GitHub CLI/API per package:
+#     gh api -X PATCH /orgs/0xPolygon/packages/container/kurtosis-cdk-snapshot-<service> \
+#       -f visibility=public
+#   Verify anonymously (no docker login, no token) after the toggle:
+#     docker logout ghcr.io
+#     docker pull ghcr.io/0xpolygon/kurtosis-cdk-snapshot-anvil-001:snapshot-latest-devui
+#   Naming note: both the package name AND every tag deliberately contain
+#   the literal word "snapshot" (package: kurtosis-cdk-snapshot-<service>;
+#   tags: snapshot-<sha>, snapshot-latest-devui) so it is unambiguous in the
+#   org's package listing which artifacts these are.
+
+name: snapshot-devui
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to publish (default: short commit SHA)"
+        required: false
+        type: string
+      publish:
+        description: "Actually push images to GHCR (unchecked = dry-run tag/push commands only)"
+        required: false
+        type: boolean
+        default: false
+  # Optional push-to-branch filter (non-goal: a publishing cadence -- this is
+  # a manual-first workflow; the push trigger exists so the pipeline gets
+  # smoke-tested on every push to the working branch, but per the safety
+  # note above it NEVER auto-publishes -- only workflow_dispatch with
+  # `publish: true` can).
+  push:
+    branches:
+      - feat/aggkit-bridge-ui-backend
+    paths:
+      - "snapshot/**"
+      - "src/chain/anvil/**"
+      - "params-aggkit-anvil-l2l2-run*.yml"
+      - ".github/workflows/snapshot-devui.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  # The enclave name below is fixed ("cdk"), so two concurrent runs on the
+  # same ref would collide; not cancel-in-progress so a mid-push run is
+  # never torn down half-way through writing a GHCR manifest.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  ENCLAVE_NAME: cdk
+  # Matches test.yml / kurtosis-pre-run's documented pin (1.15.2 stalls the
+  # aggkit L2 bridge syncer on the agglayer sovereign/FEP stacks).
+  KURTOSIS_VERSION: 1.18.2
+  # Package + tag naming both deliberately contain "snapshot" (see the
+  # ONE-TIME HUMAN STEP note above).
+  GHCR_IMAGE_PREFIX: ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    # Budget (measured in S9b/S10, plans/dev-ui-ci-snapshot-plan.md S10
+    # outcome): enclave bring-up 246s + snapshot.sh (seed+capture+build+
+    # compose+summary) 67-80s + verify.sh full-success 177-214s (pad
+    # generously -- the L2->L1 certificate leg's transient-retry count
+    # varies run-to-run) + image push (~2.86GB compressed across 11 images)
+    # + artifact upload. 45 minutes leaves a large margin over the ~9-10
+    # minute measured happy path.
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          kurtosis_version: ${{ env.KURTOSIS_VERSION }}
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Resolve publish tag
+        id: tag
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.tag }}" ]; then
+            BASE_TAG="${{ inputs.tag }}"
+          else
+            BASE_TAG="${GITHUB_SHA:0:12}"
+          fi
+          # "snapshot-" prefix is mandatory naming (see header note): every
+          # published tag must contain the literal word "snapshot".
+          echo "base_tag=$BASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "tag=snapshot-$BASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "Resolved image build tag (local, passed to snapshot.sh --tag): $BASE_TAG"
+          echo "Resolved published GHCR tag: snapshot-$BASE_TAG"
+
+      - name: Disk usage (before bring-up)
+        run: df -h
+
+      - name: Kurtosis run 1/2 (L1 + agglayer + L2-001)
+        run: kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params-aggkit-anvil-l2l2-run1.yml .
+
+      - name: Kurtosis run 2/2 (L2-002)
+        run: kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params-aggkit-anvil-l2l2-run2.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
+
+      - name: Disk usage (after bring-up, before snapshot build)
+        run: df -h
+
+      - name: Snapshot (seed fixtures -> live capture -> self-contained image build -> compose -> summary)
+        run: |
+          set -euo pipefail
+          snapshot/snapshot.sh "${{ env.ENCLAVE_NAME }}" \
+            --flavor anvil-aggkit \
+            --tag "${{ steps.tag.outputs.base_tag }}"
+
+      - name: Locate snapshot output directory
+        id: snap
+        run: |
+          set -euo pipefail
+          # A fresh checkout each run means exactly one match is expected;
+          # `find` (not `ls`) so non-alphanumeric names can't break parsing.
+          mapfile -t dirs < <(find snapshots -maxdepth 1 -type d -name "${{ env.ENCLAVE_NAME }}-*")
+          if [ "${#dirs[@]}" -ne 1 ]; then
+            echo "::error::expected exactly one snapshot output directory under snapshots/${{ env.ENCLAVE_NAME }}-*, found ${#dirs[@]}" >&2
+            printf '%s\n' "${dirs[@]}" >&2
+            exit 1
+          fi
+          dir="${dirs[0]}"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "Snapshot output directory: $dir"
+
+      - name: Disk usage (after snapshot build, before gate/verify)
+        run: df -h
+
+      # Fails the workflow if the bundle cannot settle certificates after
+      # restore. See snapshot/scripts/gate-snapshot-soundness.sh for the two
+      # invariants and plans/dev-ui-ci-snapshot/s9b-evidence/ for why both
+      # are required (settlement_free alone is not sufficient).
+      - name: Gate on settlement_free + historical_states
+        run: snapshot/scripts/gate-snapshot-soundness.sh "${{ steps.snap.outputs.dir }}/state/state-metadata.json"
+
+      - name: Verify snapshot (full anvil-aggkit contract, incl. bridge round trip)
+        run: snapshot/verify.sh "${{ steps.snap.outputs.dir }}"
+
+      - name: Disk usage (after verify, before push)
+        run: df -h
+
+      # See the PUBLISH SAFETY note at the top of this file: `publish-images.sh`
+      # always performs the local `docker tag`, and only performs the actual
+      # `docker push` when this dispatch was explicitly run with
+      # `publish: true`. Every other trigger dry-runs the push (echoes the
+      # exact command) so the tag/push logic is exercised on every run
+      # without ever risking an unintended publish.
+      - name: Publish images to GHCR
+        run: |
+          set -euo pipefail
+          DRY_RUN_FLAG="--dry-run"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish }}" = "true" ]; then
+            DRY_RUN_FLAG=""
+          fi
+          # shellcheck disable=SC2086
+          snapshot/scripts/publish-images.sh $DRY_RUN_FLAG \
+            --registry-prefix "${{ env.GHCR_IMAGE_PREFIX }}" \
+            --tag "${{ steps.tag.outputs.tag }}" \
+            --tag snapshot-latest-devui \
+            "${{ steps.snap.outputs.dir }}/images/IMAGE_INFO.json"
+
+      - name: Disk usage (after push)
+        run: df -h
+
+      - name: Upload compose bundle + summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: devui-snapshot-${{ steps.tag.outputs.tag }}
+          path: |
+            ${{ steps.snap.outputs.dir }}/docker-compose.yml
+            ${{ steps.snap.outputs.dir }}/summary.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+      - name: Tear down enclave
+        if: always()
+        run: kurtosis enclave rm -f "${{ env.ENCLAVE_NAME }}" || true

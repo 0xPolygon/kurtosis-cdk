@@ -1,0 +1,71 @@
+{
+  "externalLinks": {
+    "privacyPolicy": "",
+    "termsOfUse": "",
+    "contactSupport": ""
+  },
+  "autoclaim": {
+    "l1_to_l2": {
+      "expectedAutoclaim": true,
+      "waitForAutoclaimMs": 120000
+    },
+    "l2_to_l1": {
+      "expectedAutoclaim": false
+    },
+    "l2_to_l2": {
+      "expectedAutoclaim": true,
+      "waitForAutoclaimMs": 300000
+    }
+  },
+  "chains": {
+    "DEVNET_L1": {
+      "id": {{.l1_chain_id}},
+      "name": "Devnet L1",
+      "rpcUrl": "{{.l1_rpc_url}}",
+      "explorerUrl": "https://explorer.private/",
+      "currency": {
+        "name": "Ether",
+        "symbol": "ETH",
+        "decimals": 18
+      },
+      "iconUrl": "https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/ethereum.svg",
+      "networkId": 0,
+      "isTestnet": true,
+      "eta": 1
+    }{{ range .l2_chains }},
+    "{{ .chain_key }}": {
+      "id": {{ .chain_id }},
+      "name": "Devnet L2{{ .path_suffix }}",
+      "rpcUrl": "{{ .rpc_url }}",
+      "explorerUrl": "https://explorer.private/",
+      "currency": {
+        "name": "Ether",
+        "symbol": "ETH",
+        "decimals": 18
+      },
+      "iconUrl": "https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/katana.svg",
+      "networkId": {{ .network_id }},
+      "isTestnet": true,
+      "eta": 1
+    }{{ end }}
+  },
+  "appModes": {
+    "default": "devnet",
+    "configs": {
+      "devnet": {
+        "label": "Devnet",
+        "bridgeAddress": "{{.l1_bridge_address}}",
+        "aggkitBridgeApis": {
+          {{- range $i, $e := .l2_chains }}{{ if $i }},{{ end }}
+          "{{ $e.network_id }}": "/aggkitapi"
+          {{- end }}
+        },
+        "chainKeys": [
+          "DEVNET_L1"{{ range .l2_chains }}, "{{ .chain_key }}"{{ end }}
+        ],
+        "defaultFromChainKey": "DEVNET_L1",
+        "defaultToChainKey": "{{ (index .l2_chains 0).chain_key }}"
+      }
+    }
+  }
+}

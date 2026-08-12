@@ -61,17 +61,29 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_reth="op-reth",
+    anvil="anvil",
 )
 
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
+    # Anvil runs a single node which is both the sequencer and the RPC.
+    SEQUENCER_TYPE.anvil: "l2-anvil",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
     SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
+    SEQUENCER_TYPE.anvil: "l2-anvil",
 }
+
+# Stacks whose L2 contracts are predeployed through the sovereign genesis
+# pipeline (create_sovereign_rollup_predeployed -> create_predeployed_op_genesis)
+# rather than deployed by an L1 rollup-creation script.
+SOVEREIGN_SEQUENCER_TYPES = [
+    SEQUENCER_TYPE.op_reth,
+    SEQUENCER_TYPE.anvil,
+]
 
 FORK_ID_TO_NAME = {
     9: "elderberry",
@@ -83,6 +95,11 @@ FORK_ID_TO_NAME = {
 TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
 )
+
+# Anvil's built-in development mnemonic. Used as the default for the anvil L2
+# (sequencer_type: anvil) because static_files/contracts/contracts.sh's
+# initialize_rollup derives its L2 funding key from exactly this mnemonic.
+ANVIL_DEFAULT_MNEMONIC = "test test test test test test test test test test test junk"
 
 L1_ENGINE = struct(
     ethereum_package="ethereum-package",
@@ -111,9 +128,43 @@ DEFAULT_IMAGES = {
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.1.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.5",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
+    # bridge_ui_backend "bridge_hub" mode only (src/additional_services/
+    # bridge_ui/ui.star run_server): mounts a rendered config.ts and expects
+    # a Next-dev-server-style container. Deliberately left unbumped -- see
+    # agglayer_dev_ui_aggkit_image below for why this key and that one are
+    # NOT the same image.
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
+    # S5 (dev-ui-ci-snapshot plan, D4): the published GHCR image built from
+    # agglayer/agglayer-dev-ui's feat/aggkit-backend branch (PR #24), which
+    # understands the aggkit bridge REST API and is configured at runtime via
+    # a mounted /etc/agglayer-dev-ui/config.json (contract: dev-ui
+    # docs/docker.md -- nginx:alpine runtime, no Node, no config.ts support).
+    # Consumed as a published tag only -- no source build here.
+    #
+    # Deliberately a SEPARATE constant from agglayer_dev_ui_image above, not
+    # a bump of it: that key is also read by run_server() (bridge_ui_backend
+    # "bridge_hub" mode), which mounts a rendered config.ts for a
+    # Next-dev-server-style container -- a different runtime contract that
+    # this GHCR image's nginx:alpine runtime cannot serve (no Node.js, no
+    # config.ts support, and it requires config.json at a different path).
+    # Point-bumping the shared key would silently break
+    # .github/tests/additional-services.yml's bridge_hub-mode bridge_ui
+    # deployment (wired into .github/workflows/test.yml and nightly.yml) --
+    # the exact regression this step's "no behavior change to existing"
+    # acceptance criterion forbids. See
+    # src/additional_services/bridge_ui/ui.star's new run_dev_ui(), used only
+    # by the opt-in aggkit-mode dev-ui deployment (aggkit_deploy_dev_ui).
+    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-dd070d7db256-31574163188",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
+    # foundry >= v1.5.0 is REQUIRED when the L1 is anvil: agglayer's settlement
+    # task probes nonce inclusion with `eth_getTransactionBySenderAndNonce`
+    # after sending the verify tx. anvil only gained that method in v1.5.0
+    # (v1.4.x answers -32601 "Method not found"), which agglayer treats as
+    # "assumed non-recoverable" and panics on
+    # (agglayer-settlement-service/src/settlement_task.rs:543), leaving every
+    # certificate stuck in `InError` even though the settlement tx itself
+    # landed on L1. See plans/dev-ui-ci-snapshot/s4b-evidence/.
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.5.1",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",

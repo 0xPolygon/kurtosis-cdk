@@ -99,7 +99,7 @@ def get_l2_oo_config(plan, args):
     )
 
 
-def fund_addresses(plan, args, contract_addresses, rpc_url):
+def fund_addresses(plan, args, contract_addresses, rpc_url, funder_mnemonic=None):
     # Provide L1 OP addresses to the sovereign setup script as an environment variable.
     contract_addresses_to_fund = ";".join(
         [contract_addresses[key] for key in contract_addresses]
@@ -110,6 +110,13 @@ def fund_addresses(plan, args, contract_addresses, rpc_url):
         "L2_FUNDING_AMOUNT": args.get("l2_funding_amount", "0.1ether"),
         "DEPLOYMENT_SUFFIX": args["deployment_suffix"],
     }
+
+    # An explicit funder mnemonic takes precedence over both the hard-coded
+    # optimism-package mnemonic and L1_PREALLOCATED_MNEMONIC. Used by the anvil
+    # L2, whose prefunded dev accounts derive from l2_anvil_mnemonic and whose
+    # RPC URL never matches the op-reth EXPECT_URL in contracts.sh.
+    if funder_mnemonic:
+        env_vars["FUNDER_MNEMONIC"] = funder_mnemonic
 
     # Only set L1_PREALLOCATED_MNEMONIC if provided and not using the default RPC
     if (

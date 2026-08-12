@@ -11,7 +11,7 @@ def run(
 ):
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args).http
 
-    if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+    if sequencer_type in constants.SOVEREIGN_SEQUENCER_TYPES:
         agglogger_config_template_file = "op-config.json"
     else:
         agglogger_config_template_file = "zkevm-config.json"

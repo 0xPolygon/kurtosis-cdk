@@ -12,21 +12,34 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context, api_url):
     )
 
     if bridge_ui_backend == constants.BRIDGE_UI_BACKEND.aggkit:
-        # aggkit-backed mode: no bridge-hub api and no prebuilt UI container,
-        # just the haproxy proxy with a CORS-safe route straight to the
-        # aggkit bridge REST API. If aggkit_proxy_url is set (S5: multi-L2
-        # enclaves point this at the standalone aggkit_proxy additional
-        # service), use that single multi-network backend instead of this
-        # run's own l2_context.aggkit_bridge_url (which only fronts one
-        # chain's bridge REST API).
+        # aggkit-backed mode: by default no bridge-hub api and no prebuilt UI
+        # container, just the haproxy proxy with a CORS-safe route straight
+        # to the aggkit bridge REST API. If aggkit_proxy_url is set (S5:
+        # multi-L2 enclaves point this at the standalone aggkit_proxy
+        # additional service), use that single multi-network backend instead
+        # of this run's own l2_context.aggkit_bridge_url (which only fronts
+        # one chain's bridge REST API).
         aggkit_bridge_url = args.get("aggkit_proxy_url") or l2_context.aggkit_bridge_url
+
+        # S5 (dev-ui-ci-snapshot plan): optionally also deploy the published
+        # agglayer-dev-ui container, configured at runtime with a rendered
+        # devnet config.json, and route it through this same haproxy proxy
+        # (as the default backend -- identical wiring to the bridge_hub
+        # backend's own agglayer_dev_ui_url below). Opt-in and False by
+        # default so existing aggkit-mode deployments are unchanged.
+        agglayer_dev_ui_url = None
+        if args.get("aggkit_deploy_dev_ui", False):
+            agglayer_dev_ui_url = run_dev_ui(
+                plan, args, contract_setup_addresses, l1_context, l2_context
+            )
+
         run_proxy(
             plan,
             args,
             l1_context.rpc_url,
             l2_context.rpc_url,
             bridge_hub_api_url=None,
-            agglayer_dev_ui_url=None,
+            agglayer_dev_ui_url=agglayer_dev_ui_url,
             aggkit_bridge_url=aggkit_bridge_url,
         )
         return
@@ -83,6 +96,95 @@ def run_server(plan, args, contract_setup_addresses):
     )
     server_url = result.ports[SERVER_PORT_ID].url
     return server_url
+
+
+def run_dev_ui(plan, args, contract_setup_addresses, l1_context, l2_context):
+    # S5 (dev-ui-ci-snapshot plan): aggkit-mode dev-ui deployment. Renders a
+    # devnet config.json for the published agglayer-dev-ui GHCR image
+    # (contract: dev-ui docs/docker.md -- mounted at
+    # /etc/agglayer-dev-ui/config.json) and returns this service's
+    # enclave-internal URL so run_proxy() can route it as haproxy's default
+    # backend, exactly like the bridge_hub backend's own agglayer_dev_ui_url
+    # wiring above.
+    #
+    # aggkitBridgeApis in the rendered config uses the relative path
+    # "/aggkitapi" (allowed only for that field -- see dev-ui docs/config.md
+    # "Relative aggkitBridgeApis URLs"): the dev-ui container is served
+    # through this same haproxy origin (backend_default), so the browser
+    # resolves it against the page's own origin with no CORS involved. Chain
+    # rpcUrl values, by contrast, must be absolute (wallets need a concrete
+    # URL) -- this function uses the enclave-internal DNS URLs
+    # (l1_context.rpc_url / l2_context.rpc_url / bridge_ui_l2_rpc_urls[].url)
+    # for those, which is everything Starlark has available at render time
+    # (the haproxy service's host-published port is assigned by the
+    # container runtime after this point, and is only discoverable
+    # afterwards via `kurtosis port print` -- see S6/S7). Consequently these
+    # rpcUrl values are schema-valid but not host-browser-reachable from a
+    # plain `kurtosis run`; making them so requires pinning haproxy to a
+    # static host port (src/package_io/ports.star's static_ports mechanism),
+    # which is out of scope for this opt-in flag and left to the snapshot
+    # flavor's fixed ${DEVNET_PROXY_PORT:-8555} (S7/S8).
+    l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
+
+    raw_l2_rpc_backends = args.get("bridge_ui_l2_rpc_urls", [])
+    l2_chains = [
+        {
+            "chain_key": "DEVNET_L2" + entry["path_suffix"].replace("-", "_"),
+            "chain_id": entry["chain_id"],
+            "network_id": entry["network_id"],
+            "rpc_url": entry["url"],
+            "path_suffix": entry["path_suffix"],
+        }
+        for entry in raw_l2_rpc_backends
+        if "chain_id" in entry and "network_id" in entry
+    ]
+    if not l2_chains:
+        # Single-L2 fallback: no bridge_ui_l2_rpc_urls chain metadata
+        # supplied, so catalog only this run's own L2 -- mirrors the
+        # existing bridge_ui_l2_rpc_urls-empty fallback used for the
+        # haproxy /l2rpc back-compat alias in run_proxy() below.
+        l2_chains = [
+            {
+                "chain_key": "DEVNET_L2",
+                "chain_id": args.get("l2_chain_id"),
+                "network_id": args.get("l2_network_id"),
+                "rpc_url": l2_context.rpc_url,
+                "path_suffix": "",
+            }
+        ]
+
+    config_artifact = plan.render_templates(
+        name="agglayer-dev-ui-aggkit-config{}".format(args.get("deployment_suffix")),
+        config={
+            "config.json": struct(
+                template=read_file(
+                    src="../../../static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl",
+                ),
+                data={
+                    "l1_chain_id": args.get("l1_chain_id"),
+                    "l1_rpc_url": l1_context.rpc_url,
+                    "l1_bridge_address": l1_bridge_address,
+                    "l2_chains": l2_chains,
+                },
+            ),
+        },
+    )
+
+    result = plan.add_service(
+        name="agglayer-dev-ui" + args.get("deployment_suffix"),
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("agglayer_dev_ui_aggkit_image"),
+            files={
+                "/etc/agglayer-dev-ui": Directory(artifact_names=[config_artifact]),
+            },
+            ports={
+                SERVER_PORT_ID: PortSpec(
+                    number=SERVER_PORT_NUMBER, application_protocol="http"
+                )
+            },
+        ),
+    )
+    return result.ports[SERVER_PORT_ID].url
 
 
 def run_proxy(

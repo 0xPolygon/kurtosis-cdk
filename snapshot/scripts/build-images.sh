@@ -3,14 +3,27 @@
 # Docker Image Builder Script
 # Builds Docker images with L1 state baked in
 #
-# Usage: build-images.sh <DISCOVERY_JSON> <OUTPUT_DIR> [TAG_SUFFIX]
+# Usage: build-images.sh [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR> [TAG_SUFFIX]
 #
 
 set -euo pipefail
 
+FLAVOR="default"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --flavor)
+            FLAVOR="$2"
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 # Check arguments
 if [ $# -lt 2 ]; then
-    echo "Usage: $0 <DISCOVERY_JSON> <OUTPUT_DIR> [TAG_SUFFIX]" >&2
+    echo "Usage: $0 [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR> [TAG_SUFFIX]" >&2
     exit 1
 fi
 
@@ -40,9 +53,6 @@ if [ ! -f "$DISCOVERY_JSON" ]; then
 fi
 
 ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")
-GETH_IMAGE=$(jq -r '.geth.image' "$DISCOVERY_JSON")
-BEACON_IMAGE=$(jq -r '.beacon.image' "$DISCOVERY_JSON")
-VALIDATOR_IMAGE=$(jq -r '.validator.image' "$DISCOVERY_JSON")
 
 # Generate tag
 TIMESTAMP=$(date -u +'%Y%m%d-%H%M%S')
@@ -53,6 +63,442 @@ else
 fi
 
 log "Image tag: $TAG"
+
+# ============================================================================
+# Flavor: anvil-aggkit
+#
+# Every service in this flavor becomes a *self-contained* derived image: the
+# original upstream image plus the captured state/config COPYed in, so the
+# distributed bundle is nothing but docker-compose.yml + summary.json. There
+# are deliberately NO bind mounts and NO volumes -- see snapshot/README.md.
+#
+# The default (geth/lighthouse) flavor continues below this block, untouched.
+# ============================================================================
+
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    STATE_METADATA="$OUTPUT_DIR/state/state-metadata.json"
+    if [ ! -f "$STATE_METADATA" ]; then
+        log "ERROR: state metadata not found: $STATE_METADATA"
+        log "       (run extract-state.sh --flavor anvil-aggkit first)"
+        exit 1
+    fi
+
+    # Healthchecks have to run inside images that ship no shell (aggkit is
+    # distroless) and no HTTP client (foundry, agglayer and haproxy all lack
+    # curl/wget). A single statically linked busybox is COPYed in from this
+    # pinned image and invoked explicitly as `/snapshot/busybox <applet>` --
+    # busybox is not installed with applet symlinks, so `sh` alone cannot
+    # find them.
+    BUSYBOX_IMAGE="${SNAPSHOT_BUSYBOX_IMAGE:-busybox:1.36-musl}"
+
+    IMAGE_PREFIX="snapshot-"
+    IMAGES_JSON="$OUTPUT_DIR/images/IMAGE_INFO.json"
+    mkdir -p "$OUTPUT_DIR/images"
+    echo '{}' > "$OUTPUT_DIR/images/.built.json"
+
+    # record_image <compose-service> <built-image-ref> <base-image>
+    record_image() {
+        local svc="$1" built="$2" base="$3" size
+        size=$(docker images --format '{{.Size}}' "$built" | head -1)
+        jq --arg svc "$svc" --arg name "$built" --arg base "$base" --arg size "$size" \
+            '. + {($svc): {name: $name, base_image: $base, size: $size}}' \
+            "$OUTPUT_DIR/images/.built.json" > "$OUTPUT_DIR/images/.built.tmp.json"
+        mv "$OUTPUT_DIR/images/.built.tmp.json" "$OUTPUT_DIR/images/.built.json"
+        log "  ✓ $built ($size)"
+    }
+
+    # ------------------------------------------------------------------
+    # derive_anvil_restore_cmd <original-cmd> <baked-state-path>
+    #
+    # The enclave's anvil command line is captured verbatim in
+    # state-metadata.json (block time, --slots-in-an-epoch, --chain-id, the
+    # mnemonic, ...). The restore command is that line with the three
+    # capture/bootstrap-only flags removed and --load-state appended:
+    #
+    #   --dump-state <path>   L1 only; the snapshot already holds the dump
+    #   --init <path>         L2 only; genesis is superseded by the dump, and
+    #                         it is what makes --dump-state impossible (S2/S4b)
+    #   --timestamp <value>   L2 only; `$(date +%s)` at enclave-launch time,
+    #                         meaningless once real blocks are loaded
+    #
+    # The result stays a single shell-parsed string (exactly how kurtosis ran
+    # it, entrypoint /bin/sh -c) so the quoted mnemonic survives intact.
+    # ------------------------------------------------------------------
+    derive_anvil_restore_cmd() {
+        local cmd="$1" state_path="$2" derived
+        derived=$(printf '%s' "$cmd" | sed -E \
+            -e 's/--dump-state[[:space:]]+[^[:space:]]+//g' \
+            -e 's/--init[[:space:]]+[^[:space:]]+//g' \
+            -e 's/--timestamp[[:space:]]+\$\([^)]*\)//g' \
+            -e 's/--timestamp[[:space:]]+[0-9]+//g' \
+            -e 's/[[:space:]]+/ /g' \
+            -e 's/[[:space:]]+$//')
+        derived="$derived --load-state $state_path"
+
+        # Fail loudly rather than bake a subtly wrong node. Every one of these
+        # has bitten this plan at least once.
+        case "$derived" in
+            anvil\ *) ;;
+            *) log "ERROR: derived anvil command does not start with 'anvil': $derived"; exit 1 ;;
+        esac
+        local flag
+        for flag in --dump-state --init --timestamp; do
+            if printf '%s' "$derived" | grep -q -- "$flag"; then
+                log "ERROR: derived anvil command still contains $flag: $derived"
+                exit 1
+            fi
+        done
+        for flag in --slots-in-an-epoch --chain-id --block-time --load-state --port; do
+            if ! printf '%s' "$derived" | grep -q -- "$flag"; then
+                log "ERROR: derived anvil command lost $flag: $derived"
+                exit 1
+            fi
+        done
+        printf '%s' "$derived"
+    }
+
+    # ------------------------------------------------------------------
+    # Anvil chains (L1 + every L2)
+    #
+    # The base image is read from the captured metadata, never hardcoded:
+    # foundry v1.4.3 lacks eth_getTransactionBySenderAndNonce, which makes
+    # agglayer panic and permanently mark certificates InError (S4b). Pinning
+    # a literal tag here would silently reintroduce that in the restored
+    # snapshot while the source enclave looked healthy.
+    # ------------------------------------------------------------------
+    log "Building anvil images (state baked in via --load-state)..."
+
+    while IFS=$'\t' read -r SVC BASE_IMAGE STATE_FILE; do
+        [ -n "$SVC" ] || continue
+        BUILD_DIR="$OUTPUT_DIR/images/$SVC"
+        mkdir -p "$BUILD_DIR"
+
+        if [ ! -f "$OUTPUT_DIR/$STATE_FILE" ]; then
+            log "ERROR: state file missing: $OUTPUT_DIR/$STATE_FILE"
+            exit 1
+        fi
+
+        # S9b: the dump MUST carry historical states. Without them a restored
+        # anvil serves blocks/txs/receipts/logs for the whole captured history
+        # but only ONE state (the tip), so every eth_call / eth_getCode /
+        # eth_getTransactionCount pinned to a pre-snapshot block returns
+        # BlockOutOfRangeError -- which killed aggkit at startup and made
+        # agglayer panic in settlement_task.rs on every certificate.
+        # extract-state.sh already refuses to write such a dump; this is the
+        # belt-and-braces check at bake time, because the failure mode it
+        # guards against is silent until settlement is attempted.
+        HIST_COUNT=$(jq -r '.historical_states | if . == null then 0 else length end' "$OUTPUT_DIR/$STATE_FILE")
+        if [ -z "$HIST_COUNT" ] || [ "$HIST_COUNT" = "null" ] || [ "$HIST_COUNT" -eq 0 ]; then
+            log "ERROR: $STATE_FILE has no historical_states -- it was captured with"
+            log "       anvil_dumpState() instead of anvil_dumpState(true). A bundle built"
+            log "       from it cannot settle certificates after restore (S9b). Re-capture."
+            exit 1
+        fi
+        log "  $SVC: $HIST_COUNT historical states, $(du -h "$OUTPUT_DIR/$STATE_FILE" | cut -f1) state file"
+
+        cp "$OUTPUT_DIR/$STATE_FILE" "$BUILD_DIR/state.json"
+
+        ORIG_CMD=$(jq -r --arg svc "$SVC" '.chains[] | select(.service == $svc) | .cmd[0]' "$STATE_METADATA")
+        RESTORE_CMD=$(derive_anvil_restore_cmd "$ORIG_CMD" "/snapshot/state.json")
+        log "  $SVC: $RESTORE_CMD"
+
+        {
+            echo '#!/bin/sh'
+            echo '# Generated by snapshot/scripts/build-images.sh (flavor anvil-aggkit).'
+            echo '# Derived from the enclave command line recorded in state-metadata.json.'
+            echo "exec $RESTORE_CMD"
+        } > "$BUILD_DIR/entrypoint.sh"
+
+        cat > "$BUILD_DIR/healthcheck.sh" << 'HC_EOF'
+#!/bin/sh
+# eth_blockNumber against the local node (cast ships in the foundry image).
+exec cast block-number --rpc-url http://127.0.0.1:8545
+HC_EOF
+
+        # The foundry image runs as a non-root user. /snapshot must therefore
+        # be created explicitly with a traversable mode BEFORE anything is
+        # COPYed into it: a `COPY --chmod=0444` that has to create its own
+        # parent directory gives the directory that same mode, and a 0444
+        # directory is not searchable -- the entrypoint then fails with
+        # "cannot open /snapshot/entrypoint.sh: Permission denied".
+        # The original USER is read back from the base image so nothing about
+        # it is hardcoded here.
+        ORIG_USER=$(docker image inspect --format '{{.Config.User}}' "$BASE_IMAGE")
+        {
+            echo "FROM $BASE_IMAGE"
+            echo ""
+            echo "# Snapshot state + generated entrypoint. Nothing is mounted at run time."
+            echo "USER root"
+            echo "RUN mkdir -m 0755 -p /snapshot"
+            echo "COPY --chmod=0444 state.json /snapshot/state.json"
+            echo "COPY --chmod=0555 entrypoint.sh /snapshot/entrypoint.sh"
+            echo "COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh"
+            [ -n "$ORIG_USER" ] && echo "USER $ORIG_USER"
+            echo ""
+            echo 'ENTRYPOINT ["/bin/sh", "/snapshot/entrypoint.sh"]'
+        } > "$BUILD_DIR/Dockerfile"
+
+        docker build -q -t "${IMAGE_PREFIX}${SVC}:$TAG" "$BUILD_DIR" > /dev/null
+        record_image "$SVC" "${IMAGE_PREFIX}${SVC}:$TAG" "$BASE_IMAGE"
+    done < <(jq -r '.chains[] | [.service, .image, .state_file] | @tsv' "$STATE_METADATA")
+
+    # ------------------------------------------------------------------
+    # agglayer: original image + config + keystore.
+    # /etc/agglayer/{storage,backups} are NOT captured (they are agglayer's
+    # own RocksDB, which must start empty on a settlement-free snapshot), but
+    # they must exist and be writable or agglayer refuses to boot.
+    # ------------------------------------------------------------------
+    AGGLAYER_SVC=$(jq -r '.agglayer.service_name' "$DISCOVERY_JSON")
+    AGGLAYER_IMAGE=$(jq -r '.agglayer.image' "$DISCOVERY_JSON")
+    AGGLAYER_METRICS_PORT_NUM=9092
+    log "Building agglayer image..."
+    BUILD_DIR="$OUTPUT_DIR/images/$AGGLAYER_SVC"
+    mkdir -p "$BUILD_DIR"
+    cp "$OUTPUT_DIR/config/agglayer/config.toml" "$BUILD_DIR/"
+    cp "$OUTPUT_DIR/config/agglayer/aggregator.keystore" "$BUILD_DIR/"
+
+    cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
+#!/bin/sh
+# agglayer's prometheus endpoint answers only once the node is serving.
+exec /snapshot/busybox wget -q -O /dev/null "http://127.0.0.1:${AGGLAYER_METRICS_PORT_NUM}/metrics"
+HC_EOF
+
+    cat > "$BUILD_DIR/Dockerfile" << DOCKER_EOF
+FROM $BUSYBOX_IMAGE AS busybox
+FROM $AGGLAYER_IMAGE
+
+# /etc/agglayer/{storage,backups} are not captured by design (they are
+# agglayer's own RocksDB, which must start empty on a settlement-free
+# snapshot) but must exist. /snapshot is created up front so its mode does
+# not inherit from a --chmod COPY.
+RUN mkdir -m 0755 -p /snapshot && mkdir -p /etc/agglayer/storage /etc/agglayer/backups
+
+COPY config.toml /etc/agglayer/config.toml
+COPY aggregator.keystore /etc/agglayer/aggregator.keystore
+COPY --from=busybox /bin/busybox /snapshot/busybox
+COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh
+
+ENTRYPOINT ["/usr/local/bin/agglayer"]
+DOCKER_EOF
+
+    docker build -q -t "${IMAGE_PREFIX}${AGGLAYER_SVC}:$TAG" "$BUILD_DIR" > /dev/null
+    record_image "$AGGLAYER_SVC" "${IMAGE_PREFIX}${AGGLAYER_SVC}:$TAG" "$AGGLAYER_IMAGE"
+
+    # ------------------------------------------------------------------
+    # NO RESTORE-TIME CONFIG ADAPTATION (S9b).
+    #
+    # Every captured config is baked in verbatim. S8 used to repoint aggkit's
+    # `rollupCreationBlockNumber` / `RollupCreationBlockL1` at the L1 snapshot
+    # block, because a restored `anvil --load-state` carried blocks, txs,
+    # receipts and logs for the whole captured history but only ONE state (the
+    # tip), so aggkit's `[Validator.LerQuerierConfig]` eth_call at the rollup's
+    # creation block died with `BlockOutOfRangeError`.
+    #
+    # That rewrite was a point-patch on one symptom of a general defect: the
+    # SAME limitation made agglayer panic in
+    # crates/agglayer-settlement-service/src/settlement_task.rs when it probed
+    # its settlement signer's nonce inclusion at the pre-snapshot block holding
+    # that wallet's earlier tx -- which no config rewrite could reach, and which
+    # meant L2->L1 exits could never settle on a restored bundle.
+    #
+    # extract-state.sh now captures with `anvil_dumpState(true)`, so the
+    # restored chain serves state reads at EVERY captured height. Both symptoms
+    # disappear at the source, the configs stay faithful to the enclave, and
+    # aggkit reads the rollup's genuine creation-time LER instead of an
+    # "equal only while settlement_free" substitute.
+    # ------------------------------------------------------------------
+
+    # ------------------------------------------------------------------
+    # aggkit x N (+ their -bridge siblings)
+    #
+    # aggkit-00X and aggkit-00X-bridge ship identical config.tomls and differ
+    # only in --components, but each gets its own image so the two stay
+    # independently pullable/pinnable (S7).
+    # ------------------------------------------------------------------
+    log "Building aggkit images..."
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        NETWORK_ID=$(jq -r --arg p "$prefix" '.chains[] | select(.prefix == $p) | .network_id' "$STATE_METADATA")
+
+        for role in aggkit aggkit_bridge; do
+            SVC=$(jq -r --arg p "$prefix" --arg r "$role" '.l2_chains[$p][$r].service_name' "$DISCOVERY_JSON")
+            BASE_IMAGE=$(jq -r --arg p "$prefix" --arg r "$role" '.l2_chains[$p][$r].image' "$DISCOVERY_JSON")
+            BUILD_DIR="$OUTPUT_DIR/images/$SVC"
+            mkdir -p "$BUILD_DIR"
+            cp "$OUTPUT_DIR/config/$SVC/config.toml" "$BUILD_DIR/"
+            cp "$OUTPUT_DIR/config/$SVC"/*.keystore "$BUILD_DIR/"
+            # Baked verbatim -- see the "NO RESTORE-TIME CONFIG ADAPTATION"
+            # note above (S9b).
+
+            if [ "$role" = "aggkit_bridge" ]; then
+                # The bar S9/dev-ui hold: is_synced AND is_active on BOTH
+                # l1_info and l2_info, hence the >= 2 occurrences.
+                cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
+#!/bin/sh
+BB=/snapshot/busybox
+n=\$(\$BB wget -q -O - "http://127.0.0.1:5577/bridge/v1/sync-status?network_id=${NETWORK_ID}" \\
+      | \$BB grep -o '"is_synced":true,"is_active":true' | \$BB wc -l)
+[ "\$n" -ge 2 ]
+HC_EOF
+            else
+                cat > "$BUILD_DIR/healthcheck.sh" << 'HC_EOF'
+#!/bin/sh
+# aggsender/aggoracle/autoclaim expose no REST surface; the pprof server
+# (ProfilingEnabled = true in the captured config) is the only HTTP endpoint
+# that proves the process finished booting.
+exec /snapshot/busybox wget -q -O /dev/null http://127.0.0.1:6060/debug/pprof/
+HC_EOF
+            fi
+
+            {
+                echo "FROM $BUSYBOX_IMAGE AS busybox"
+                echo "FROM $BASE_IMAGE"
+                echo ""
+                echo "COPY config.toml /etc/aggkit/config.toml"
+                for ks in "$BUILD_DIR"/*.keystore; do
+                    echo "COPY $(basename "$ks") /etc/aggkit/$(basename "$ks")"
+                done
+                echo "# aggkit ships no shell, so no RUN layer is possible here: /snapshot"
+                echo "# gets its 0755 mode from this first, plain (non---chmod) COPY."
+                echo "COPY --from=busybox /bin/busybox /snapshot/busybox"
+                echo "COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh"
+                echo ""
+                echo 'ENTRYPOINT ["/usr/local/bin/aggkit"]'
+            } > "$BUILD_DIR/Dockerfile"
+
+            docker build -q -t "${IMAGE_PREFIX}${SVC}:$TAG" "$BUILD_DIR" > /dev/null
+            record_image "$SVC" "${IMAGE_PREFIX}${SVC}:$TAG" "$BASE_IMAGE"
+        done
+    done
+
+    # ------------------------------------------------------------------
+    # aggkit-proxy (--components=proxy,tracker)
+    # ------------------------------------------------------------------
+    PROXY_SVC=$(jq -r '.aggkit_proxy.service_name' "$DISCOVERY_JSON")
+    PROXY_IMAGE=$(jq -r '.aggkit_proxy.image' "$DISCOVERY_JSON")
+    ALL_NETWORK_IDS=$(jq -r '[.chains[].network_id] | join(" ")' "$STATE_METADATA")
+    log "Building aggkit-proxy image (networks: $ALL_NETWORK_IDS)..."
+    BUILD_DIR="$OUTPUT_DIR/images/$PROXY_SVC"
+    mkdir -p "$BUILD_DIR"
+    cp "$OUTPUT_DIR/config/$PROXY_SVC/config.toml" "$BUILD_DIR/"
+
+    cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
+#!/bin/sh
+BB=/snapshot/busybox
+for nid in ${ALL_NETWORK_IDS}; do
+    n=\$(\$BB wget -q -O - "http://127.0.0.1:8080/bridge/v1/sync-status?network_id=\$nid" \\
+          | \$BB grep -o '"is_synced":true,"is_active":true' | \$BB wc -l) || exit 1
+    [ "\$n" -ge 2 ] || exit 1
+done
+exit 0
+HC_EOF
+
+    cat > "$BUILD_DIR/Dockerfile" << DOCKER_EOF
+FROM $BUSYBOX_IMAGE AS busybox
+FROM $PROXY_IMAGE
+
+COPY config.toml /etc/aggkit-proxy/config.toml
+COPY --from=busybox /bin/busybox /snapshot/busybox
+COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh
+
+ENTRYPOINT ["/usr/local/bin/aggkit-proxy"]
+DOCKER_EOF
+
+    docker build -q -t "${IMAGE_PREFIX}${PROXY_SVC}:$TAG" "$BUILD_DIR" > /dev/null
+    record_image "$PROXY_SVC" "${IMAGE_PREFIX}${PROXY_SVC}:$TAG" "$PROXY_IMAGE"
+
+    # ------------------------------------------------------------------
+    # haproxy (the single CORS origin dev-ui CI talks to)
+    # ------------------------------------------------------------------
+    HAPROXY_SVC=$(jq -r '.haproxy.service_name' "$DISCOVERY_JSON")
+    HAPROXY_IMAGE=$(jq -r '.haproxy.image' "$DISCOVERY_JSON")
+    FIRST_L2_NETWORK_ID=$(jq -r '[.chains[] | select(.role == "l2") | .network_id] | first' "$STATE_METADATA")
+    log "Building haproxy image..."
+    BUILD_DIR="$OUTPUT_DIR/images/$HAPROXY_SVC"
+    mkdir -p "$BUILD_DIR"
+    cp "$OUTPUT_DIR/config/$HAPROXY_SVC/haproxy.cfg" "$BUILD_DIR/"
+
+    cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
+#!/bin/sh
+# Two real routes must answer 200 through the proxy: the aggkit REST route
+# dev-ui's bridge suite uses, and the default backend (the dev-ui itself).
+# The JSON-RPC routes are POST-only and cannot be probed with busybox wget.
+BB=/snapshot/busybox
+\$BB wget -q -O /dev/null "http://127.0.0.1:80/aggkitapi/bridge/v1/sync-status?network_id=${FIRST_L2_NETWORK_ID}" || exit 1
+\$BB wget -q -O /dev/null "http://127.0.0.1:80/" || exit 1
+exit 0
+HC_EOF
+
+    cat > "$BUILD_DIR/Dockerfile" << DOCKER_EOF
+FROM $BUSYBOX_IMAGE AS busybox
+FROM $HAPROXY_IMAGE
+
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+COPY --from=busybox /bin/busybox /snapshot/busybox
+COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh
+DOCKER_EOF
+
+    docker build -q -t "${IMAGE_PREFIX}${HAPROXY_SVC}:$TAG" "$BUILD_DIR" > /dev/null
+    record_image "$HAPROXY_SVC" "${IMAGE_PREFIX}${HAPROXY_SVC}:$TAG" "$HAPROXY_IMAGE"
+
+    # ------------------------------------------------------------------
+    # dev-ui: the pinned published GHCR image + its runtime config.json
+    # (contract: dev-ui docs/docker.md -- /etc/agglayer-dev-ui/config.json).
+    # ------------------------------------------------------------------
+    DEVUI_SVC=$(jq -r '.dev_ui.service_name' "$DISCOVERY_JSON")
+    DEVUI_IMAGE=$(jq -r '.dev_ui.image' "$DISCOVERY_JSON")
+    log "Building dev-ui image..."
+    BUILD_DIR="$OUTPUT_DIR/images/$DEVUI_SVC"
+    mkdir -p "$BUILD_DIR"
+    cp "$OUTPUT_DIR/config/$DEVUI_SVC/config.json" "$BUILD_DIR/"
+
+    cat > "$BUILD_DIR/healthcheck.sh" << 'HC_EOF'
+#!/bin/sh
+exec wget -q -O /dev/null http://127.0.0.1:80/
+HC_EOF
+
+    cat > "$BUILD_DIR/Dockerfile" << DOCKER_EOF
+FROM $DEVUI_IMAGE
+
+RUN mkdir -m 0755 -p /snapshot
+COPY config.json /etc/agglayer-dev-ui/config.json
+COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh
+DOCKER_EOF
+
+    docker build -q -t "${IMAGE_PREFIX}${DEVUI_SVC}:$TAG" "$BUILD_DIR" > /dev/null
+    record_image "$DEVUI_SVC" "${IMAGE_PREFIX}${DEVUI_SVC}:$TAG" "$DEVUI_IMAGE"
+
+    # ------------------------------------------------------------------
+    # Image metadata
+    # ------------------------------------------------------------------
+    jq -n \
+        --arg flavor "$FLAVOR" \
+        --arg tag "$TAG" \
+        --arg prefix "$IMAGE_PREFIX" \
+        --arg busybox "$BUSYBOX_IMAGE" \
+        --arg ts "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --slurpfile images "$OUTPUT_DIR/images/.built.json" \
+        '{
+            flavor: $flavor,
+            tag: $tag,
+            image_prefix: $prefix,
+            busybox_image: $busybox,
+            timestamp: $ts,
+            self_contained: true,
+            images: $images[0]
+        }' > "$IMAGES_JSON"
+
+    rm -f "$OUTPUT_DIR/images/.built.json"
+    echo "$TAG" > "$OUTPUT_DIR/images/.tag"
+
+    log "Image metadata saved: $IMAGES_JSON"
+    log "Built $(jq -r '.images | length' "$IMAGES_JSON") self-contained images with tag: $TAG"
+
+    exit 0
+fi
+
+GETH_IMAGE=$(jq -r '.geth.image' "$DISCOVERY_JSON")
+BEACON_IMAGE=$(jq -r '.beacon.image' "$DISCOVERY_JSON")
+VALIDATOR_IMAGE=$(jq -r '.validator.image' "$DISCOVERY_JSON")
 
 # Create images directory
 mkdir -p "$OUTPUT_DIR/images"/{geth,beacon,validator}

@@ -89,6 +89,42 @@ if [ ! -f "$SNAPSHOT_DIR/docker-compose.yml" ]; then
     exit 1
 fi
 
+# ============================================================================
+# Flavor detection (S9).
+#
+# The anvil-aggkit flavor has no metadata/checkpoint.json at all (see
+# snapshot/scripts/extract-state.sh -- it captures anvil state over RPC, not
+# a stopped-container tarball) and needs a completely different verification
+# path: a scripted bridge round trip, sync-status polling, CORS preflight,
+# etc. instead of "start containers, watch a block number".
+#
+# Detection reads summary.json's "flavor" key. That key is written ONLY by
+# the anvil-aggkit branch of generate-summary.sh -- every default-flavor
+# summary.json (and any snapshot predating this field) has no such key, so
+# `// "default"` resolves it to "default" and every line below this block,
+# for such a snapshot, runs completely unchanged. This is a pure insertion:
+# nothing pre-existing was edited to make room for it.
+# ============================================================================
+SNAPSHOT_FLAVOR="default"
+if [ -f "$SNAPSHOT_DIR/summary.json" ]; then
+    SNAPSHOT_FLAVOR=$(jq -r '.flavor // "default"' "$SNAPSHOT_DIR/summary.json" 2>/dev/null || echo "default")
+fi
+
+if [ "$SNAPSHOT_FLAVOR" = "anvil-aggkit" ]; then
+    # SNAPSHOT_ID is computed inline (not reused from below) -- at this point
+    # in the file that variable does not exist yet, and this script runs
+    # under `set -u`.
+    ANVIL_SNAPSHOT_ID=$(basename "$SNAPSHOT_DIR")
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # shellcheck source=scripts/lib/verify-anvil-aggkit.sh
+    source "$SCRIPT_DIR/scripts/lib/verify-anvil-aggkit.sh"
+    run_anvil_aggkit_verification "$SNAPSHOT_DIR" "$ANVIL_SNAPSHOT_ID" "$SCRIPT_DIR"
+    exit $?
+fi
+
+# ---- default (geth/lighthouse) flavor continues below, byte-for-byte
+# unchanged from before S9. ----
+
 if [ ! -f "$SNAPSHOT_DIR/metadata/checkpoint.json" ]; then
     log_error "checkpoint.json not found in: $SNAPSHOT_DIR"
     exit 1

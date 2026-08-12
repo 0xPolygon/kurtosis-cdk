@@ -16,6 +16,12 @@ OUTPUT_BASE_DIR="snapshots"
 TAG_SUFFIX=""
 ENCLAVE_NAME=""
 SKIP_VERIFY=false
+# "default"      -> the original geth/lighthouse (+ op-reth L2) snapshot.
+# "anvil-aggkit" -> the anvil L1 + anvil L2s + aggkit + dev-ui stack.
+FLAVOR="default"
+KEEP_INTERMEDIATES=false
+SKIP_SEED=false
+ERC20_ADDRESS=""
 
 # Colors for output
 RED='\033[0;31m'
@@ -59,10 +65,17 @@ Arguments:
   ENCLAVE_NAME        Name of the Kurtosis enclave to snapshot
 
 Options:
-  --out <DIR>         Output directory (default: snapshots)
-  --tag <TAG>         Custom tag suffix for images
-  --skip-verify       Skip automated verification step
-  -h, --help          Show this help message
+  --out <DIR>            Output directory (default: snapshots)
+  --tag <TAG>            Custom tag suffix for images
+  --flavor <FLAVOR>      Snapshot flavor: default | anvil-aggkit
+                         (default: default -- geth/lighthouse L1)
+  --skip-verify          Skip automated verification step
+  --skip-seed            anvil-aggkit only: do not seed dev-ui fixtures
+  --erc20-address <ADDR> anvil-aggkit only: reuse this ERC20 instead of
+                         deploying a fresh one
+  --keep-intermediates   Keep artifacts/, datadirs/, images/, metadata/ and
+                         discovery.json instead of deleting them at the end
+  -h, --help             Show this help message
 
 Examples:
   # Basic snapshot
@@ -76,6 +89,20 @@ Examples:
 
   # Skip verification (faster)
   $0 snapshot-test --skip-verify
+
+  # anvil + aggkit + dev-ui stack (see params-aggkit-anvil-l2l2-run{1,2}.yml)
+  $0 cdk --flavor anvil-aggkit
+
+Flavors:
+  default        Stops geth/lighthouse, tars their datadirs, restarts them.
+  anvil-aggkit   Seeds the dev-ui ERC20 fixture, then captures all three
+                 anvils live over the anvil_dumpState RPC (nothing is ever
+                 stopped, so the "resume enclave" step does not apply) plus
+                 the configs/keystores of agglayer, aggkit x2 (+ -bridge),
+                 aggkit-proxy, haproxy and dev-ui. Every service is then baked
+                 into a self-contained image, so the resulting bundle is just
+                 docker-compose.yml + summary.json -- no bind mounts, no
+                 volumes, nothing else needed on disk.
 
 Description:
   Creates a complete, deterministic snapshot of an Ethereum L1 devnet:
@@ -128,6 +155,22 @@ while [[ $# -gt 0 ]]; do
             SKIP_VERIFY=true
             shift
             ;;
+        --flavor)
+            FLAVOR="$2"
+            shift 2
+            ;;
+        --keep-intermediates)
+            KEEP_INTERMEDIATES=true
+            shift
+            ;;
+        --skip-seed)
+            SKIP_SEED=true
+            shift
+            ;;
+        --erc20-address)
+            ERC20_ADDRESS="$2"
+            shift 2
+            ;;
         -*)
             log_error "Unknown option: $1"
             usage
@@ -150,6 +193,18 @@ if [ -z "$ENCLAVE_NAME" ]; then
     usage
 fi
 
+# Validate flavor
+case "$FLAVOR" in
+    default|anvil-aggkit) ;;
+    *)
+        # Deliberately exit non-zero (usage() exits 0), so a typo'd flavor in a
+        # CI workflow fails the job instead of silently doing nothing.
+        echo "ERROR: Unknown flavor: $FLAVOR (expected 'default' or 'anvil-aggkit')" >&2
+        echo "Run '$0 --help' for usage." >&2
+        exit 1
+        ;;
+esac
+
 # ============================================================================
 # Setup
 # ============================================================================
@@ -168,6 +223,7 @@ touch "$LOG_FILE"
 
 log_step "Ethereum L1 Snapshot Tool"
 log "Snapshot name: $SNAPSHOT_NAME"
+log "Flavor: $FLAVOR"
 log "Enclave: $ENCLAVE_NAME"
 log "Output directory: $OUTPUT_DIR"
 log "Timestamp: $TIMESTAMP"
@@ -219,12 +275,22 @@ SCRIPTS=(
     "$SCRIPT_DIR/scripts/verify-healthchecks.sh"
 )
 
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    SCRIPTS+=("$SCRIPT_DIR/scripts/seed-devui-fixtures.sh")
+fi
+
 for script in "${SCRIPTS[@]}"; do
     if [ ! -x "$script" ]; then
         log_error "Script not found or not executable: $script"
         exit 1
     fi
 done
+
+# Sourced libraries (not executable by design)
+if [ ! -f "$SCRIPT_DIR/scripts/lib/ports.sh" ]; then
+    log_error "Library not found: $SCRIPT_DIR/scripts/lib/ports.sh"
+    exit 1
+fi
 log "  ✓ All scripts present"
 
 log "Preflight checks passed"
@@ -239,13 +305,184 @@ DISCOVERY_JSON="$OUTPUT_DIR/discovery.json"
 
 log "Discovering L1 containers for enclave: $ENCLAVE_NAME"
 
-if ! "$SCRIPT_DIR/scripts/discover-containers.sh" "$ENCLAVE_NAME" "$DISCOVERY_JSON" >> "$LOG_FILE" 2>&1; then
+if ! "$SCRIPT_DIR/scripts/discover-containers.sh" --flavor "$FLAVOR" "$ENCLAVE_NAME" "$DISCOVERY_JSON" >> "$LOG_FILE" 2>&1; then
     log_error "Container discovery failed"
     log_error "See log file for details: $LOG_FILE"
     exit 1
 fi
 
 log "Discovery complete"
+
+# ============================================================================
+# Flavor: anvil-aggkit
+#
+# The anvil stack has no container to stop: the L2 anvils run with `--init`,
+# which anvil refuses to combine with `--dump-state`, so all three chains are
+# captured live over the anvil_dumpState RPC. That makes the default flow's
+# STEP 3 (stop + tar datadirs) and STEP 4 (resume the enclave) inapplicable --
+# they are replaced by a fixture-seeding step and a live capture, and the
+# enclave keeps producing blocks throughout.
+#
+# The default flavor continues below this block, unchanged.
+# ============================================================================
+
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    log "Components discovered:"
+    jq -r '.components[] | "  - " + .' "$DISCOVERY_JSON" | tee -a "$LOG_FILE"
+
+    # ------------------------------------------------------------------
+    # Step 2: dev-ui fixture seeding (BEFORE capture, so the fixtures end
+    # up inside the captured chain state)
+    # ------------------------------------------------------------------
+    log_step "STEP 2: dev-ui Fixture Seeding"
+
+    if [ "$SKIP_SEED" = true ]; then
+        log_warn "Fixture seeding skipped per --skip-seed flag"
+        log_warn "The snapshot will not contain the E2E ERC20 that dev-ui's bridge suite needs"
+    else
+        SEED_ARGS=("$DISCOVERY_JSON" "$OUTPUT_DIR")
+        if [ -n "$ERC20_ADDRESS" ]; then
+            SEED_ARGS=(--erc20-address "$ERC20_ADDRESS" "${SEED_ARGS[@]}")
+        fi
+
+        if ! "$SCRIPT_DIR/scripts/seed-devui-fixtures.sh" "${SEED_ARGS[@]}" >> "$LOG_FILE" 2>&1; then
+            log_error "Fixture seeding failed"
+            log_error "See log file for details: $LOG_FILE"
+            exit 1
+        fi
+
+        SEEDED_ERC20=$(jq -r '.erc20.address' "$OUTPUT_DIR/fixtures.json")
+        log "Fixtures seeded"
+        log "  E2E ERC20: $SEEDED_ERC20"
+    fi
+
+    # ------------------------------------------------------------------
+    # Step 3: live state capture (nothing is stopped)
+    # ------------------------------------------------------------------
+    log_step "STEP 3: State Capture (live -- no containers are stopped)"
+
+    if ! "$SCRIPT_DIR/scripts/extract-state.sh" --flavor "$FLAVOR" "$DISCOVERY_JSON" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+        log_error "State extraction failed"
+        log_error "See log file for details: $LOG_FILE"
+        exit 1
+    fi
+
+    log "State capture complete"
+
+    STATE_METADATA="$OUTPUT_DIR/state/state-metadata.json"
+    jq -r '.chains[] | "  \(.service): chain_id \(.chain_id), network_id \(.network_id // "?"), block \(.block_number)"' \
+        "$STATE_METADATA" | tee -a "$LOG_FILE"
+
+    # ------------------------------------------------------------------
+    # Step 4: resume -- not applicable
+    # ------------------------------------------------------------------
+    log_step "STEP 4: Resume Original Enclave (NOT APPLICABLE)"
+    log "Nothing was stopped: the capture ran against the live enclave over RPC."
+    log "Enclave '$ENCLAVE_NAME' has been producing blocks throughout."
+
+    # ------------------------------------------------------------------
+    # Snapshot soundness
+    # ------------------------------------------------------------------
+    if [ "$(jq -r '.settlement_free' "$STATE_METADATA")" = "false" ]; then
+        log_warn "=================================================================="
+        log_warn "THIS CAPTURE IS NOT SETTLEMENT-FREE."
+        log_warn "agglayer/aggkit internal databases are not part of the snapshot,"
+        log_warn "so a restore of chain state that already contains bridge activity"
+        log_warn "is unsound. Capture from a freshly created enclave that has not"
+        log_warn "bridged yet."
+        log_warn "Certificate state at capture time:"
+        jq -r '.agglayer_certificates[] | "  network \(.network_id): latest known certificate height \(.latest_known_certificate_height) (\(.status))"' \
+            "$STATE_METADATA" | tee -a "$LOG_FILE"
+        log_warn "=================================================================="
+    else
+        log "Capture is settlement-free (no certificates known to agglayer)"
+    fi
+
+    # ------------------------------------------------------------------
+    # Step 5: self-contained image build
+    #
+    # Unlike the default flavor, EVERY service becomes a derived image with
+    # its state/config baked in -- the distributed bundle is docker-compose.yml
+    # plus summary.json and nothing else.
+    # ------------------------------------------------------------------
+    log_step "STEP 5: Self-Contained Image Build"
+
+    BUILD_ARGS=(--flavor "$FLAVOR" "$DISCOVERY_JSON" "$OUTPUT_DIR")
+    if [ -n "$TAG_SUFFIX" ]; then
+        BUILD_ARGS+=("$TAG_SUFFIX")
+    fi
+
+    if ! "$SCRIPT_DIR/scripts/build-images.sh" "${BUILD_ARGS[@]}" >> "$LOG_FILE" 2>&1; then
+        log_error "Image build failed"
+        log_error "See log file for details: $LOG_FILE"
+        exit 1
+    fi
+
+    IMAGE_TAG=$(cat "$OUTPUT_DIR/images/.tag")
+    log "Images built with tag: $IMAGE_TAG"
+    jq -r '.images | to_entries[] | "  \(.value.name) (\(.value.size))"' \
+        "$OUTPUT_DIR/images/IMAGE_INFO.json" | tee -a "$LOG_FILE"
+
+    # ------------------------------------------------------------------
+    # Step 6: docker-compose generation
+    # ------------------------------------------------------------------
+    log_step "STEP 6: Docker Compose Generation"
+
+    if ! "$SCRIPT_DIR/scripts/generate-compose.sh" --flavor "$FLAVOR" "$DISCOVERY_JSON" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+        log_error "Compose generation failed"
+        log_error "See log file for details: $LOG_FILE"
+        exit 1
+    fi
+
+    log "Compose file: $OUTPUT_DIR/docker-compose.yml"
+
+    # ------------------------------------------------------------------
+    # Step 7: summary.json
+    # ------------------------------------------------------------------
+    log_step "STEP 7: Summary Generation"
+
+    if ! "$SCRIPT_DIR/scripts/generate-summary.sh" --flavor "$FLAVOR" "$DISCOVERY_JSON" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+        log_error "Summary generation failed"
+        log_error "See log file for details: $LOG_FILE"
+        exit 1
+    fi
+
+    log "Summary file: $OUTPUT_DIR/summary.json"
+    log "  ERC20 (pass to dev-ui as E2E_ERC20_ADDRESS): $(jq -r '.erc20_address' "$OUTPUT_DIR/summary.json")"
+    log "  haproxy origin: $(jq -r '.proxy.base_url' "$OUTPUT_DIR/summary.json")"
+
+    # ------------------------------------------------------------------
+    # Step 8: cleanup
+    #
+    # images/ is only a docker build context (it duplicates state/ and
+    # config/); the capture inputs themselves are kept because S9's verify and
+    # any re-build need them.
+    # ------------------------------------------------------------------
+    if [ "$KEEP_INTERMEDIATES" = true ]; then
+        log "Keeping the image build contexts per --keep-intermediates flag"
+    else
+        find "$OUTPUT_DIR/images" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
+        log "Removed image build contexts (images/IMAGE_INFO.json kept)"
+    fi
+
+    log_step "✓ SNAPSHOT COMPLETE (flavor: $FLAVOR)"
+    log "Output directory: $OUTPUT_DIR"
+    log "  docker-compose.yml      THE bundle -- needs no other file"
+    log "  summary.json            endpoints, chain/network ids, ERC20, accounts"
+    log "  discovery.json          component/container/port map"
+    log "  fixtures.json           seeded dev-ui fixtures (E2E ERC20)"
+    log "  state/                  anvil state dumps + capture metadata"
+    log "  config/                 per-service configs and keystores (as captured)"
+    log "  images/IMAGE_INFO.json  built image names, base images and sizes"
+    log ""
+    log "Quick start (in any directory holding just docker-compose.yml):"
+    log "  docker compose up -d --wait"
+    log ""
+    log "Verification for this flavor is not implemented yet (see plan step S9)."
+    log ""
+    log "Full log: $LOG_FILE"
+    exit 0
+fi
 
 # Read and display container info
 GETH_CONTAINER=$(jq -r '.geth.container_name' "$DISCOVERY_JSON")
@@ -575,25 +812,31 @@ fi
 
 log_step "STEP 10: Cleanup"
 
-log "Removing temporary and intermediate files..."
+if [ "$KEEP_INTERMEDIATES" = true ]; then
+    log "Keeping intermediate files per --keep-intermediates flag"
+    log "  (artifacts/, datadirs/, images/, metadata/, discovery.json, helper scripts)"
+else
 
-# Remove directories that are no longer needed
-rm -rf "$OUTPUT_DIR/artifacts" 2>/dev/null || true
-rm -rf "$OUTPUT_DIR/datadirs" 2>/dev/null || true
-rm -rf "$OUTPUT_DIR/images" 2>/dev/null || true
-rm -rf "$OUTPUT_DIR/metadata" 2>/dev/null || true
+    log "Removing temporary and intermediate files..."
 
-# Remove individual files that are no longer needed
-rm -f "$OUTPUT_DIR/discovery.json" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/pre-stop-state.json" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/query-state.sh" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/SNAPSHOT_INFO.txt" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/SNAPSHOT_SUMMARY.txt" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/start-snapshot.sh" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/stop-snapshot.sh" 2>/dev/null || true
-rm -f "$OUTPUT_DIR/USAGE.md" 2>/dev/null || true
+    # Remove directories that are no longer needed
+    rm -rf "$OUTPUT_DIR/artifacts" 2>/dev/null || true
+    rm -rf "$OUTPUT_DIR/datadirs" 2>/dev/null || true
+    rm -rf "$OUTPUT_DIR/images" 2>/dev/null || true
+    rm -rf "$OUTPUT_DIR/metadata" 2>/dev/null || true
 
-log "Cleanup complete - snapshot is ready for distribution"
+    # Remove individual files that are no longer needed
+    rm -f "$OUTPUT_DIR/discovery.json" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/pre-stop-state.json" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/query-state.sh" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/SNAPSHOT_INFO.txt" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/SNAPSHOT_SUMMARY.txt" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/start-snapshot.sh" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/stop-snapshot.sh" 2>/dev/null || true
+    rm -f "$OUTPUT_DIR/USAGE.md" 2>/dev/null || true
+
+    log "Cleanup complete - snapshot is ready for distribution"
+fi
 
 # ============================================================================
 # Success

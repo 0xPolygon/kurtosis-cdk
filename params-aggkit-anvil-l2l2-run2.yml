@@ -1,0 +1,133 @@
+# S5 (dev-ui-ci-snapshot plan): anvil-flavor equivalent of
+# params-aggkit-l2l2-run2.yml -- second `kurtosis run` into the SAME enclave
+# as params-aggkit-anvil-l2l2-run1.yml. Adds rollup 2 (network_id 2,
+# deployment_suffix -002, anvil L2, aggkit-002 + aggkit-002-bridge), settling
+# certificates through the agglayer instance run1 already deployed, and
+# stands up the aggkit-proxy + bridge_ui (aggkit backend) + dev-ui stack that
+# run1 deliberately skips.
+#
+# Must be run with `kurtosis run --enclave cdk --args-file params-aggkit-anvil-l2l2-run2.yml .`
+# AFTER run1 has completed in the same enclave. Do NOT `kurtosis enclave rm`
+# between run1 and run2 -- that would tear down L1/agglayer/rollup 1 too.
+
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+  # Same rationale as run1: nothing in the anvil path reads postgres-001/002.
+  deploy_databases: false
+
+args:
+  # Anvil on both layers, same as run1 -- this run's L1 (unused here since
+  # deploy_l1: false, but set for consistency/defense-in-depth against the
+  # set_l1_client_args clobber bug) AND its own L2.
+  l1_engine: anvil
+  l1_rpc_url: "http://anvil-001:8545"
+  l1_ws_url: "ws://anvil-001:8545"
+  l1_beacon_url: "http://anvil-001:8545"
+  sequencer_type: anvil
+  consensus_contract_type: ecdsa-multisig
+
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  # "autoclaim" added so this instance's own destination network (2) gets an
+  # AutoClaim claimer -- see aggkit_autoclaim_destinations below.
+  aggkit_components: "aggsender,aggoracle,autoclaim"
+
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # Deploy the standalone aggkit-proxy service (aggkit-proxy-001) here, on
+  # run2 -- it needs contract_setup_addresses (rollup_manager_address), which
+  # every run computes independently via its own contracts-00X service, and
+  # it needs to know about BOTH bridge services, which only exist once run2
+  # has completed anyway.
+  #
+  # Also deploy bridge_ui here, for the same reason -- it wires the haproxy
+  # proxy's /aggkitapi route to aggkit-proxy-001 (see aggkit_proxy_url
+  # below), which must already exist. bridge_ui in "aggkit" mode also
+  # optionally deploys the dev-ui container (aggkit_deploy_dev_ui below).
+  additional_services:
+    - aggkit_proxy
+    - bridge_ui
+
+  # Browser entrypoint. bridge_ui in "aggkit" mode skips the bridge-hub stack
+  # and renders just the haproxy proxy (+ the opt-in dev-ui container).
+  # aggkit_proxy_url points haproxy's single /aggkitapi backend at the
+  # standalone aggkit-proxy service (deployed above) instead of this run's
+  # own l2_context.aggkit_bridge_url (aggkit-002-bridge only) -- one haproxy
+  # backend then fronts networks 0/1/2 via the proxy's own network_id-based
+  # routing.
+  bridge_ui_backend: aggkit
+  aggkit_proxy_url: "http://aggkit-proxy-001:8080"
+  # S5: also deploy the published agglayer-dev-ui container (opt-in flag --
+  # see src/additional_services/bridge_ui/ui.star run_dev_ui()), configured
+  # at runtime with a devnet config.json listing L1 + both L2s and routed
+  # through this same haproxy proxy as its default backend. Left False on
+  # run1 -- deploying it once, alongside bridge_ui/aggkit_proxy on run2, is
+  # sufficient (there is only ever one dev-ui + one haproxy per enclave).
+  aggkit_deploy_dev_ui: true
+
+  # Per-chain L2 JSON-RPC routes: /l2rpc-001 -> rollup 1, /l2rpc-002 ->
+  # rollup 2. The bare /l2rpc route stays aliased to the "-001" entry here
+  # for back-compat. chain_id/network_id on each entry additionally feed the
+  # dev-ui config.json chain catalog (aggkit_deploy_dev_ui above) -- entries
+  # without those two keys are used for the haproxy route map only.
+  bridge_ui_l2_rpc_urls:
+    - path_suffix: "-001"
+      url: "http://l2-anvil-001:8545"
+      chain_id: 20201
+      network_id: 1
+    - path_suffix: "-002"
+      url: "http://l2-anvil-002:8545"
+      chain_id: 20202
+      network_id: 2
+
+  # Static overrides for the aggkit-proxy BridgeServiceFinder. Required for
+  # every network including 0 -- network 0 (L1) is never enumerated on-chain,
+  # and the on-chain URLs are enclave-internal hostnames not registered in
+  # this package anyway. Network 0 and network 1 both route to
+  # aggkit-001-bridge (every aggkit bridge instance syncs the L1 side);
+  # network 2 routes to aggkit-002-bridge.
+  aggkit_proxy_bridge_urls:
+    - network_id: 0
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 1
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002-bridge:5577"
+  # S5: network 0 -> the anvil L1 service directly (http://anvil-001:8545),
+  # NOT an op-reth/op-node service name -- anvil is both L1 sequencer and RPC.
+  aggkit_proxy_rpc_urls:
+    - network_id: 0
+      rpc_url: "http://anvil-001:8545"
+    - network_id: 1
+      rpc_url: "http://l2-anvil-001:8545"
+    - network_id: 2
+      rpc_url: "http://l2-anvil-002:8545"
+
+  deployment_suffix: "-002"
+  l2_chain_id: 20202
+  l2_network_id: 2
+
+  # Autoclaim on destination 2 only, NEVER 0 (L1). This run's own
+  # l2_network_id is 2, so this instance's claimer targets network 2
+  # (L1->L2-2 and L2-1->L2-2 deposits). Same static BridgeServiceFinder URL
+  # map as run1.
+  aggkit_autoclaim_destinations: [2]
+  aggkit_autoclaim_bridge_urls:
+    - network_id: 1
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002-bridge:5577"
+
+  # NOTE: do NOT override l2_admin_address / l2_sequencer_address / other
+  # l2_* role keys here -- see params-aggkit-anvil-l2l2-run1.yml and
+  # params-aggkit-l2l2-run2.yml for why (deterministic CREATE2 genesis
+  # addresses + L1 RollupManager admin-role grants are keyed off these roles
+  # at L1-deploy time; run1 already granted the default role addresses admin
+  # on the RollupManager).
+
+# NOTE: deliberately NO optimism_package: block -- sequencer_type: anvil
+# rejects one entirely (args_sanity_check rule V4).

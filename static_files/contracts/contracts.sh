@@ -511,8 +511,12 @@ create_agglayer_rollup() {
     sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
 
-    # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
-    if [[ "{{.sequencer_type}}" != "op-reth" ]]; then
+    # Do not create another rollup in the case of a sovereign (op-reth / anvil)
+    # rollup. This will be done in run-sovereign-setup.sh via
+    # create_sovereign_rollup_predeployed. Creating one here would register a
+    # second, non-sovereign rollup on L1, so chainIDToRollupID and
+    # rollupIDToRollupData would resolve to the wrong rollup.
+    if [[ "{{.sequencer_type}}" != "op-reth" ]] && [[ "{{.sequencer_type}}" != "anvil" ]]; then
         _echo_ts "Step 5: Creating Rollup/Validium/ECDSAMultisig"
         npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
         # Support for new output file format
@@ -977,8 +981,15 @@ fund_addresses() {
     # The op l2 's rpc url
     EXPECT_URL="http://op-el-1-op-reth-op-node$DEPLOYMENT_SUFFIX:8545"
 
-    # Set private key based on RPC_URL
-    if [[ "$RPC_URL" == "$EXPECT_URL" ]]; then
+    # Set private key based on RPC_URL.
+    # An explicit FUNDER_MNEMONIC always wins: the anvil L2 prefunds its dev
+    # accounts from l2_anvil_mnemonic and its RPC URL never matches EXPECT_URL.
+    if [[ -n "$FUNDER_MNEMONIC" ]]; then
+        if ! private_key=$(cast wallet private-key --mnemonic "$FUNDER_MNEMONIC" 2>/dev/null) || [[ -z "$private_key" ]]; then
+            echo "Error: Failed to derive private key from FUNDER_MNEMONIC."
+            exit 1
+        fi
+    elif [[ "$RPC_URL" == "$EXPECT_URL" ]]; then
         # Default optimism-package preallocated mnemonic
         if ! private_key=$(cast wallet private-key --mnemonic "test test test test test test test test test test test junk" 2>/dev/null) || [[ -z "$private_key" ]]; then
             echo "Error: Failed to derive private key from mnemonic."
@@ -1187,7 +1198,43 @@ l2_contract_setup() {
 
 }
 
-# This is called from main when optimism rollup to create the allocs that will be used by optimism-package
+# Called from main when the L2 is an anvil node. Wraps the sovereign
+# predeployed allocs into the geth-genesis envelope anvil's --init expects
+# (see docs/dev/generate_custom_genesis.md).
+#
+# Only the "alloc" key is actually consumed by anvil: chain id, gas limit and
+# timestamp all come from anvil flags and override anything set here. The rest
+# of the envelope is kept for readability and for reuse by other geth-family
+# clients.
+create_anvil_l2_genesis() {
+    _echo_ts "Executing function create_anvil_l2_genesis"
+
+    set -e
+
+    jq -n --slurpfile allocs "${output_dir}/predeployed_allocs.json" '{
+      config: { chainId: {{.l2_chain_id}}, homesteadBlock: 0, eip150Block: 0, eip155Block: 0, eip158Block: 0, byzantiumBlock: 0, constantinopleBlock: 0, petersburgBlock: 0, istanbulBlock: 0, berlinBlock: 0, londonBlock: 0, shanghaiTime: 0, cancunTime: 0 },
+      nonce: "0x0",
+      difficulty: "0x1",
+      gasLimit: "0x1c9c380",
+      timestamp: "0x0",
+      extraData: "0x",
+      mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      coinbase: "0x0000000000000000000000000000000000000000",
+      alloc: $allocs[0]
+    }' > "${output_dir}/l2-anvil-genesis.json"
+
+    # Fail loudly rather than booting an anvil with an empty alloc: anvil
+    # silently ignores an unrecognised top-level shape, so a broken envelope
+    # would produce a chain with no bridge contract at all.
+    alloc_count="$(jq '.alloc | length' "${output_dir}/l2-anvil-genesis.json")"
+    if [[ "$alloc_count" -lt 1 ]]; then
+        echo "ERROR: l2-anvil-genesis.json has an empty alloc"
+        exit 1
+    fi
+    _echo_ts "l2-anvil-genesis.json written with ${alloc_count} alloc entries"
+}
+
+# This is called from main when optimism rollup to create the allocs that will be used by optimism-package
 create_predeployed_op_genesis() {
     _echo_ts "Executing function create_predeployed_op_genesis"
 
@@ -1611,6 +1658,8 @@ elif [[ "$1" == "l2_contract_setup" ]]; then
     l2_contract_setup
 elif [[ "$1" == "create_predeployed_op_genesis" ]]; then
     create_predeployed_op_genesis
+elif [[ "$1" == "create_anvil_l2_genesis" ]]; then
+    create_anvil_l2_genesis
 elif [[ "$1" == "create_sovereign_rollup_predeployed" ]]; then
     create_sovereign_rollup_predeployed
 elif [[ "$1" == "create_sovereign_rollup" ]]; then

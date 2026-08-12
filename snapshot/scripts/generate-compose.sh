@@ -3,14 +3,33 @@
 # Docker Compose Generator Script
 # Generates docker-compose.yml for snapshot reproduction
 #
-# Usage: generate-compose.sh <DISCOVERY_JSON> <OUTPUT_DIR>
+# Usage: generate-compose.sh [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR>
 #
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Host-port numbering lives in exactly one place.
+# shellcheck source=lib/ports.sh
+source "$SCRIPT_DIR/lib/ports.sh"
+
+FLAVOR="default"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --flavor)
+            FLAVOR="$2"
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 # Check arguments
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
+    echo "Usage: $0 [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
     exit 1
 fi
 
@@ -40,6 +59,286 @@ if [ ! -f "$DISCOVERY_JSON" ]; then
 fi
 
 ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")
+
+# ============================================================================
+# Flavor: anvil-aggkit
+#
+# Emits a compose file that needs NOTHING else on disk: every service runs a
+# derived image with its state/config baked in (see build-images.sh), so there
+# are no bind mounts and no volumes. Compose service names are the kurtosis
+# service names, which is what makes the captured configs (haproxy backends,
+# agglayer full-node-rpcs, aggkit L1/L2 URLs, the aggkit-proxy BridgeURLs map)
+# resolve without a single rewrite.
+#
+# Host ports all come from snapshot/scripts/lib/ports.sh and are individually
+# env-overridable; the only one dev-ui CI actually uses is haproxy's
+# ${DEVNET_PROXY_PORT:-8555}.
+#
+# The default flavor continues below this block, untouched.
+# ============================================================================
+
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    STATE_METADATA="$OUTPUT_DIR/state/state-metadata.json"
+    IMAGE_INFO="$OUTPUT_DIR/images/IMAGE_INFO.json"
+    for f in "$STATE_METADATA" "$IMAGE_INFO"; do
+        if [ ! -f "$f" ]; then
+            log "ERROR: required input not found: $f"
+            exit 1
+        fi
+    done
+
+    IMAGE_TAG=$(jq -r '.tag' "$IMAGE_INFO")
+    IMAGE_PREFIX=$(jq -r '.image_prefix' "$IMAGE_INFO")
+    COMPOSE_FILE="$OUTPUT_DIR/docker-compose.yml"
+
+    # Image references are env-overridable too, so the very same compose file
+    # works against locally built images (the default) and against the GHCR
+    # copies S11 publishes: SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-devnet-
+    image_ref() {
+        printf '${SNAPSHOT_IMAGE_PREFIX:-%s}%s:${SNAPSHOT_IMAGE_TAG:-%s}' \
+            "$IMAGE_PREFIX" "$1" "$IMAGE_TAG"
+    }
+
+    L1_SVC=$(jq -r '.l1_anvil.service_name' "$DISCOVERY_JSON")
+    AGGLAYER_SVC=$(jq -r '.agglayer.service_name' "$DISCOVERY_JSON")
+    PROXY_SVC=$(jq -r '.aggkit_proxy.service_name' "$DISCOVERY_JSON")
+    HAPROXY_SVC=$(jq -r '.haproxy.service_name' "$DISCOVERY_JSON")
+    DEVUI_SVC=$(jq -r '.dev_ui.service_name' "$DISCOVERY_JSON")
+    PREFIXES=$(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON")
+
+    # jq -c '.cmd' gives a JSON array, which is already valid YAML flow syntax.
+    cmd_of() {
+        jq -c "$1 | .cmd" "$DISCOVERY_JSON"
+    }
+    entrypoint_of() {
+        jq -c "$1 | .entrypoint" "$DISCOVERY_JSON"
+    }
+
+    L1_PORT_EXPR=$(snapshot_fixed_port_expr l1_rpc)
+
+    log "Generating anvil-aggkit compose file: $COMPOSE_FILE"
+
+    cat > "$COMPOSE_FILE" << EOF
+# Self-contained devnet snapshot -- flavor: anvil-aggkit
+#
+# Enclave:   $ENCLAVE_NAME
+# Image tag: $IMAGE_TAG
+#
+# This file is the ENTIRE bundle: every service's state, config and keystores
+# are baked into its image, so \`docker compose up -d --wait\` works in an
+# otherwise empty directory. There are deliberately no bind mounts and no
+# volumes -- restarting from scratch always replays the captured state.
+#
+# The only endpoint dev-ui CI needs is the haproxy CORS origin on
+# \${DEVNET_PROXY_PORT:-$(snapshot_fixed_port devnet_proxy)}, serving /l1rpc, /l2rpc-00X and /aggkitapi.
+# Everything else is published for debugging and can be overridden or removed.
+#
+# Image source override (S11 publishes the same images to GHCR):
+#   SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-devnet-
+#   SNAPSHOT_IMAGE_TAG=<published-tag>
+
+services:
+  $L1_SVC:
+    image: $(image_ref "$L1_SVC")
+    hostname: $L1_SVC
+    ports:
+      - "$L1_PORT_EXPR:8545"   # L1 JSON-RPC (debug)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+EOF
+
+    # ------------------------------------------------------------------
+    # L2 anvils
+    # ------------------------------------------------------------------
+    L2_ANVIL_DEPENDS=""
+    for prefix in $PREFIXES; do
+        SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
+        PORT_EXPR=$(snapshot_l2_port_expr "$prefix" http)
+        CHAIN_ID=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.chain_id' "$DISCOVERY_JSON")
+        L2_ANVIL_DEPENDS="$L2_ANVIL_DEPENDS
+      $SVC:
+        condition: service_healthy"
+
+        cat >> "$COMPOSE_FILE" << EOF
+
+  $SVC:
+    image: $(image_ref "$SVC")
+    hostname: $SVC
+    ports:
+      - "$PORT_EXPR:8545"   # L2 chain $CHAIN_ID JSON-RPC (debug)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+EOF
+    done
+
+    # ------------------------------------------------------------------
+    # agglayer -- needs L1 and every L2 reachable (full-node-rpcs).
+    # ------------------------------------------------------------------
+    cat >> "$COMPOSE_FILE" << EOF
+
+  $AGGLAYER_SVC:
+    image: $(image_ref "$AGGLAYER_SVC")
+    hostname: $AGGLAYER_SVC
+    entrypoint: $(entrypoint_of '.agglayer')
+    command: $(cmd_of '.agglayer')
+    environment:
+      - RUST_BACKTRACE=1
+    ports:
+      - "$(snapshot_fixed_port_expr agglayer_grpc):4443"   # gRPC
+      - "$(snapshot_fixed_port_expr agglayer_readrpc):4444"   # read RPC
+      - "$(snapshot_fixed_port_expr agglayer_admin):4446"   # admin API
+      - "$(snapshot_fixed_port_expr agglayer_metrics):9092"   # prometheus
+    depends_on:
+      $L1_SVC:
+        condition: service_healthy$L2_ANVIL_DEPENDS
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 60
+      start_period: 10s
+EOF
+
+    # ------------------------------------------------------------------
+    # aggkit x N (+ -bridge siblings)
+    # ------------------------------------------------------------------
+    BRIDGE_DEPENDS=""
+    for prefix in $PREFIXES; do
+        L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
+        AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+        BRIDGE_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit_bridge.service_name' "$DISCOVERY_JSON")
+        BRIDGE_DEPENDS="$BRIDGE_DEPENDS
+      $BRIDGE_SVC:
+        condition: service_healthy"
+
+        cat >> "$COMPOSE_FILE" << EOF
+
+  $BRIDGE_SVC:
+    image: $(image_ref "$BRIDGE_SVC")
+    hostname: $BRIDGE_SVC
+    entrypoint: $(entrypoint_of ".l2_chains[\"$prefix\"].aggkit_bridge")
+    command: $(cmd_of ".l2_chains[\"$prefix\"].aggkit_bridge")
+    ports:
+      - "$(snapshot_l2_port_expr "$prefix" aggkit_bridge_rpc):5576"   # JSON-RPC (debug)
+      - "$(snapshot_l2_port_expr "$prefix" aggkit_rest):5577"   # bridge REST API
+    depends_on:
+      $L1_SVC:
+        condition: service_healthy
+      $L2_SVC:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/snapshot/busybox", "sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 60
+      start_period: 10s
+
+  $AGGKIT_SVC:
+    image: $(image_ref "$AGGKIT_SVC")
+    hostname: $AGGKIT_SVC
+    entrypoint: $(entrypoint_of ".l2_chains[\"$prefix\"].aggkit")
+    command: $(cmd_of ".l2_chains[\"$prefix\"].aggkit")
+    ports:
+      - "$(snapshot_l2_port_expr "$prefix" aggkit_rpc):5576"   # JSON-RPC (debug)
+    depends_on:
+      $L1_SVC:
+        condition: service_healthy
+      $L2_SVC:
+        condition: service_healthy
+      $AGGLAYER_SVC:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/snapshot/busybox", "sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 60
+      start_period: 10s
+EOF
+    done
+
+    # ------------------------------------------------------------------
+    # aggkit-proxy (proxy,tracker) -- fronts every chain's bridge REST API.
+    # ------------------------------------------------------------------
+    cat >> "$COMPOSE_FILE" << EOF
+
+  $PROXY_SVC:
+    image: $(image_ref "$PROXY_SVC")
+    hostname: $PROXY_SVC
+    entrypoint: $(entrypoint_of '.aggkit_proxy')
+    command: $(cmd_of '.aggkit_proxy')
+    ports:
+      - "$(snapshot_fixed_port_expr aggkit_proxy):8080"   # bridge + tracker REST
+    depends_on:
+      $AGGLAYER_SVC:
+        condition: service_healthy$BRIDGE_DEPENDS
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/snapshot/busybox", "sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 60
+      start_period: 10s
+
+  $DEVUI_SVC:
+    image: $(image_ref "$DEVUI_SVC")
+    hostname: $DEVUI_SVC
+    ports:
+      - "$(snapshot_fixed_port_expr dev_ui):80"   # dev-ui (manual use)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+
+  $HAPROXY_SVC:
+    image: $(image_ref "$HAPROXY_SVC")
+    hostname: $HAPROXY_SVC
+    ports:
+      - "$(snapshot_fixed_port_expr devnet_proxy):80"   # THE dev-ui CI origin
+    depends_on:
+      $PROXY_SVC:
+        condition: service_healthy
+      $DEVUI_SVC:
+        condition: service_healthy
+      $L1_SVC:
+        condition: service_healthy$L2_ANVIL_DEPENDS
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+
+# No volumes and no bind mounts: all state and config is baked into the images.
+EOF
+
+    log "Compose file generated: $COMPOSE_FILE"
+    log "  services: $(grep -cE '^  [a-z0-9-]+:$' "$COMPOSE_FILE")"
+    log "  bind mounts: $(grep -c 'volumes:' "$COMPOSE_FILE" || true) (must be 0)"
+
+    if grep -q 'volumes:' "$COMPOSE_FILE"; then
+        log "ERROR: generated compose file contains volumes/bind mounts"
+        exit 1
+    fi
+
+    exit 0
+fi
 
 # Check if agglayer was discovered
 AGGLAYER_FOUND=$(jq -r '.agglayer.found' "$DISCOVERY_JSON")
@@ -221,17 +520,15 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         OP_NODE_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.image" "$DISCOVERY_JSON")
         AGGKIT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggkit.image // empty" "$DISCOVERY_JSON")
 
-        # Calculate port offsets for this L2 network (prefix as number, e.g., 001 -> 1)
-        # Network 001: ports 10545, 10546, 10547, ...
-        # Network 002: ports 11545, 11546, 11547, ...
-        PREFIX_NUM=$((10#$prefix))
-        L2_HTTP_PORT=$((10000 + PREFIX_NUM * 1000 + 545))
-        L2_WS_PORT=$((10000 + PREFIX_NUM * 1000 + 546))
-        L2_ENGINE_PORT=$((10000 + PREFIX_NUM * 1000 + 551))
-        L2_NODE_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 547))
-        L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
-        L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
-        L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        # Port offsets for this L2 network -- see snapshot/scripts/lib/ports.sh
+        # (network 001 -> 11xxx, network 002 -> 12xxx).
+        L2_HTTP_PORT=$(snapshot_l2_port "$prefix" http)
+        L2_WS_PORT=$(snapshot_l2_port "$prefix" ws)
+        L2_ENGINE_PORT=$(snapshot_l2_port "$prefix" engine)
+        L2_NODE_RPC_PORT=$(snapshot_l2_port "$prefix" node_rpc)
+        L2_NODE_METRICS_PORT=$(snapshot_l2_port "$prefix" node_metrics)
+        L2_AGGKIT_RPC_PORT=$(snapshot_l2_port "$prefix" aggkit_rpc)
+        L2_AGGKIT_REST_PORT=$(snapshot_l2_port "$prefix" aggkit_rest)
 
         # ====================================================================
         # op-reth service (with runtime L2 genesis timestamp patching)
@@ -587,15 +884,14 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 EOF
 
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
-        # Calculate ports for documentation
-        PREFIX_NUM=$((10#$prefix))
-        L2_HTTP_PORT=$((10000 + PREFIX_NUM * 1000 + 545))
-        L2_WS_PORT=$((10000 + PREFIX_NUM * 1000 + 546))
-        L2_ENGINE_PORT=$((10000 + PREFIX_NUM * 1000 + 551))
-        L2_NODE_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 547))
-        L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
-        L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
-        L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        # Ports for documentation -- see snapshot/scripts/lib/ports.sh
+        L2_HTTP_PORT=$(snapshot_l2_port "$prefix" http)
+        L2_WS_PORT=$(snapshot_l2_port "$prefix" ws)
+        L2_ENGINE_PORT=$(snapshot_l2_port "$prefix" engine)
+        L2_NODE_RPC_PORT=$(snapshot_l2_port "$prefix" node_rpc)
+        L2_NODE_METRICS_PORT=$(snapshot_l2_port "$prefix" node_metrics)
+        L2_AGGKIT_RPC_PORT=$(snapshot_l2_port "$prefix" aggkit_rpc)
+        L2_AGGKIT_REST_PORT=$(snapshot_l2_port "$prefix" aggkit_rest)
 
         cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 

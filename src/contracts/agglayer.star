@@ -419,7 +419,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 def is_vanilla_client(args, deployment_stages):
     if (
         args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
-        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
+        and args["sequencer_type"] in constants.SOVEREIGN_SEQUENCER_TYPES
     ):
         return True
     else:
@@ -503,4 +503,32 @@ def create_sovereign_predeployed_genesis(plan, args):
         name=allocs_file,
         src=constants.OUTPUT_DIR + "/" + allocs_file,
         description="Storing {}".format(allocs_file),
+    )
+
+
+# Called from main when the L2 is an anvil node, after
+# create_sovereign_predeployed_genesis has produced predeployed_allocs.json.
+def create_anvil_l2_genesis(plan, args):
+    contracts_service_name = "contracts" + args["deployment_suffix"]
+
+    plan.exec(
+        description="Creating the anvil L2 geth genesis from the predeployed allocs",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/bash",
+                "-c",
+                "{}/contracts.sh create_anvil_l2_genesis".format(constants.SCRIPTS_DIR),
+            ]
+        ),
+    )
+
+    # Suffixed artifact name: a 2-L2 enclave runs this once per rollup and each
+    # rollup's allocs differ (rollupID is baked into the sovereign genesis
+    # storage), so the artifact must NOT share a name across runs.
+    return plan.store_service_files(
+        service_name=contracts_service_name,
+        name="l2-anvil-genesis" + args["deployment_suffix"],
+        src=constants.OUTPUT_DIR + "/l2-anvil-genesis.json",
+        description="Storing the anvil L2 genesis",
     )

@@ -6,8 +6,8 @@ mock-verifier = {{.mock_verifier}}
 {{end}}
 
 [full-node-rpcs]
-{{- if eq .sequencer_type "op-reth" }}
-# OP Stack RPC
+{{- if or (eq .sequencer_type "op-reth") (eq .sequencer_type "anvil") }}
+# OP Stack RPC (also used by the anvil L2, whose op_el_rpc_url is aliased to it)
 1 = "{{.op_el_rpc_url}}"
 {{- else }}
 # TODO switch this to permissionless

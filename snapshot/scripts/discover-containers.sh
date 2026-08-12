@@ -1,21 +1,58 @@
 #!/usr/bin/env bash
 #
 # Container Discovery Script
-# Locates geth, lighthouse beacon, and lighthouse validator containers for a Kurtosis enclave
 #
-# Usage: discover-containers.sh <ENCLAVE_NAME> <OUTPUT_FILE>
+# Default flavor ("default"): locates geth, lighthouse beacon, and lighthouse
+# validator containers (plus optional agglayer / op-reth L2s) for a Kurtosis
+# enclave.
+#
+# Flavor "anvil-aggkit": locates the anvil-based dev-ui stack instead --
+# anvil-001 (L1), l2-anvil-00X, agglayer, aggkit-00X (+ -bridge),
+# aggkit-proxy-001, the bridge-ui haproxy and the dev-ui container.
+#
+# Usage: discover-containers.sh [--flavor <default|anvil-aggkit>] <ENCLAVE_NAME> <OUTPUT_FILE>
 #
 
 set -euo pipefail
 
-# Check arguments
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <ENCLAVE_NAME> <OUTPUT_FILE>" >&2
+# Parse arguments (two positionals; --flavor is optional and defaults to the
+# pre-existing behaviour, so `discover-containers.sh <enclave> <out>` is
+# unchanged).
+FLAVOR="default"
+POSITIONAL=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --flavor)
+            FLAVOR="${2:-}"
+            shift 2
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            echo "Usage: $0 [--flavor <default|anvil-aggkit>] <ENCLAVE_NAME> <OUTPUT_FILE>" >&2
+            exit 1
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#POSITIONAL[@]} -ne 2 ]; then
+    echo "Usage: $0 [--flavor <default|anvil-aggkit>] <ENCLAVE_NAME> <OUTPUT_FILE>" >&2
     exit 1
 fi
 
-ENCLAVE_NAME="$1"
-OUTPUT_FILE="$2"
+case "$FLAVOR" in
+    default|anvil-aggkit) ;;
+    *)
+        echo "ERROR: Unknown flavor: $FLAVOR (expected 'default' or 'anvil-aggkit')" >&2
+        exit 1
+        ;;
+esac
+
+ENCLAVE_NAME="${POSITIONAL[0]}"
+OUTPUT_FILE="${POSITIONAL[1]}"
 
 # Log function
 log() {
@@ -51,6 +88,236 @@ if [ -z "$ENCLAVE_UUID" ]; then
     ENCLAVE_UUID="$ENCLAVE_UUID_SHORT"
 else
     log "Enclave UUID (full): $ENCLAVE_UUID"
+fi
+
+# ============================================================================
+# Flavor: anvil-aggkit
+#
+# Everything below this block is the original ("default") geth/lighthouse
+# discovery and is left untouched -- the anvil branch writes its own
+# discovery.json and exits before reaching it.
+# ============================================================================
+
+# All kurtosis container names carry a "--<hash>" suffix, e.g.
+# "aggkit-001--14eb470d2e0f48adb066955936950de5". Anchoring on that suffix is
+# what keeps "aggkit-proxy-001--<hash>" from matching a bare "^aggkit-" prefix
+# (the phantom-prefix bug this flavor must not repeat).
+KURTOSIS_SUFFIX_RE='--[0-9a-f]+$'
+
+# List enclave containers (running or stopped) whose name matches $1.
+find_containers() {
+    docker ps -a \
+        --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+        --format "{{.Names}}" | grep -E "$1" || true
+}
+
+# {"<container-port>": "<host-port>", ...} for every published port.
+container_ports_json() {
+    docker inspect --format '{{json .NetworkSettings.Ports}}' "$1" \
+        | jq -c '[to_entries[]
+                  | select(.value != null and (.value | length) > 0)
+                  | {key: (.key | sub("/(tcp|udp)$"; "")),
+                     value: (.value[0].HostPort)}]
+                 | from_entries'
+}
+
+# Full component record for a kurtosis container.
+component_json() {
+    local container="$1"
+    local service_name="${container%%--*}"
+    local id image state cmd entrypoint ports
+    id=$(docker inspect --format='{{.Id}}' "$container")
+    image=$(docker inspect --format='{{.Config.Image}}' "$container")
+    state=$(docker inspect --format='{{.State.Status}}' "$container")
+    cmd=$(docker inspect --format='{{json .Config.Cmd}}' "$container")
+    entrypoint=$(docker inspect --format='{{json .Config.Entrypoint}}' "$container")
+    ports=$(container_ports_json "$container")
+    jq -n \
+        --arg service_name "$service_name" \
+        --arg container_name "$container" \
+        --arg container_id "$id" \
+        --arg image "$image" \
+        --arg state "$state" \
+        --argjson cmd "$cmd" \
+        --argjson entrypoint "$entrypoint" \
+        --argjson ports "$ports" \
+        '{found: true, service_name: $service_name, container_name: $container_name,
+          container_id: $container_id, image: $image, state: $state,
+          entrypoint: $entrypoint, cmd: $cmd, ports: $ports}'
+}
+
+NOT_FOUND_JSON='{"found": false}'
+
+# eth_chainId (decimal) for an anvil container, or null if unreachable.
+anvil_chain_id() {
+    local container="$1"
+    local host_port hex
+    host_port=$(docker port "$container" 8545 2>/dev/null | head -1 | rev | cut -d: -f1 | rev)
+    if [ -z "$host_port" ]; then
+        echo "null"
+        return 0
+    fi
+    hex=$(curl -s --max-time 10 "http://127.0.0.1:$host_port" \
+        -X POST -H 'Content-Type: application/json' \
+        --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
+        2>/dev/null | jq -r '.result // empty')
+    if [ -z "$hex" ]; then
+        echo "null"
+    else
+        echo $((16#${hex#0x}))
+    fi
+}
+
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    log "Flavor: anvil-aggkit"
+
+    # ---- L1 anvil (mandatory) ----------------------------------------------
+    L1_ANVIL=$(find_containers "^anvil-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
+    if [ -z "$L1_ANVIL" ]; then
+        log "ERROR: L1 anvil container (anvil-00X) not found in enclave $ENCLAVE_NAME"
+        exit 1
+    fi
+    log "Found L1 anvil: $L1_ANVIL"
+    L1_JSON=$(component_json "$L1_ANVIL")
+    L1_CHAIN_ID=$(anvil_chain_id "$L1_ANVIL")
+    L1_JSON=$(echo "$L1_JSON" | jq --argjson chain_id "$L1_CHAIN_ID" '. + {chain_id: $chain_id}')
+    log "  L1 chain id: $L1_CHAIN_ID"
+
+    # ---- L2 anvils (mandatory, one or more) --------------------------------
+    # The L2 prefix set is derived from the l2-anvil containers ONLY. It is
+    # deliberately NOT derived from "^aggkit-" (which also matches
+    # aggkit-proxy-001--<hash> and would register a phantom L2).
+    L2_ANVIL_CONTAINERS=$(find_containers "^l2-anvil-[0-9]{3}$KURTOSIS_SUFFIX_RE" | sort)
+    if [ -z "$L2_ANVIL_CONTAINERS" ]; then
+        log "ERROR: no L2 anvil containers (l2-anvil-00X) found in enclave $ENCLAVE_NAME"
+        exit 1
+    fi
+
+    L2_CHAINS_JSON='{}'
+    L2_COUNT=0
+    for container in $L2_ANVIL_CONTAINERS; do
+        service_name="${container%%--*}"
+        prefix="${service_name##*-}"
+        log "  Discovering L2 network: $prefix"
+
+        l2_json=$(component_json "$container")
+        chain_id=$(anvil_chain_id "$container")
+        l2_json=$(echo "$l2_json" | jq --argjson chain_id "$chain_id" '. + {chain_id: $chain_id}')
+        log "    ✓ l2 anvil: $container (chain id $chain_id)"
+
+        # aggkit-<prefix>--<hash>, NOT aggkit-<prefix>-bridge--<hash> and NOT
+        # aggkit-proxy-<prefix>--<hash>: both are excluded by anchoring the
+        # kurtosis hash suffix directly after the numeric prefix.
+        aggkit=$(find_containers "^aggkit-$prefix$KURTOSIS_SUFFIX_RE" | head -1)
+        aggkit_bridge=$(find_containers "^aggkit-$prefix-bridge$KURTOSIS_SUFFIX_RE" | head -1)
+
+        if [ -z "$aggkit" ]; then
+            log "ERROR: aggkit-$prefix not found for L2 network $prefix"
+            exit 1
+        fi
+        log "    ✓ aggkit: $aggkit"
+        aggkit_json=$(component_json "$aggkit")
+
+        if [ -n "$aggkit_bridge" ]; then
+            log "    ✓ aggkit bridge: $aggkit_bridge"
+            aggkit_bridge_json=$(component_json "$aggkit_bridge")
+        else
+            log "    WARNING: aggkit-$prefix-bridge not found"
+            aggkit_bridge_json="$NOT_FOUND_JSON"
+        fi
+
+        L2_CHAINS_JSON=$(echo "$L2_CHAINS_JSON" | jq \
+            --arg prefix "$prefix" \
+            --argjson anvil "$l2_json" \
+            --argjson aggkit "$aggkit_json" \
+            --argjson aggkit_bridge "$aggkit_bridge_json" \
+            '.[$prefix] = {prefix: $prefix, anvil: $anvil, aggkit: $aggkit, aggkit_bridge: $aggkit_bridge}')
+        L2_COUNT=$((L2_COUNT + 1))
+    done
+    log "Found $L2_COUNT L2 network(s)"
+
+    # ---- agglayer (mandatory for this flavor) ------------------------------
+    AGGLAYER_CONTAINER=$(find_containers "^agglayer$KURTOSIS_SUFFIX_RE" | head -1)
+    if [ -z "$AGGLAYER_CONTAINER" ]; then
+        log "ERROR: agglayer not found in enclave $ENCLAVE_NAME"
+        exit 1
+    fi
+    log "Found agglayer: $AGGLAYER_CONTAINER"
+    AGGLAYER_JSON=$(component_json "$AGGLAYER_CONTAINER")
+
+    # ---- aggkit-proxy (proxy,tracker) --------------------------------------
+    AGGKIT_PROXY_CONTAINER=$(find_containers "^aggkit-proxy-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
+    if [ -n "$AGGKIT_PROXY_CONTAINER" ]; then
+        log "Found aggkit-proxy: $AGGKIT_PROXY_CONTAINER"
+        AGGKIT_PROXY_JSON=$(component_json "$AGGKIT_PROXY_CONTAINER")
+    else
+        log "WARNING: aggkit-proxy not found (dev-ui tracker routes will be unavailable)"
+        AGGKIT_PROXY_JSON="$NOT_FOUND_JSON"
+    fi
+
+    # ---- bridge-ui haproxy (the single CORS origin) ------------------------
+    HAPROXY_CONTAINER=$(find_containers "^agglayer-dev-ui-proxy-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
+    if [ -n "$HAPROXY_CONTAINER" ]; then
+        log "Found bridge-ui haproxy: $HAPROXY_CONTAINER"
+        HAPROXY_JSON=$(component_json "$HAPROXY_CONTAINER")
+    else
+        log "WARNING: bridge-ui haproxy not found (dev-ui has no CORS origin)"
+        HAPROXY_JSON="$NOT_FOUND_JSON"
+    fi
+
+    # ---- dev-ui ------------------------------------------------------------
+    # "^agglayer-dev-ui-[0-9]{3}--" cannot match the haproxy above, whose name
+    # is "agglayer-dev-ui-proxy-00X--<hash>".
+    DEV_UI_CONTAINER=$(find_containers "^agglayer-dev-ui-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
+    if [ -n "$DEV_UI_CONTAINER" ]; then
+        log "Found dev-ui: $DEV_UI_CONTAINER"
+        DEV_UI_JSON=$(component_json "$DEV_UI_CONTAINER")
+    else
+        log "WARNING: dev-ui container not found"
+        DEV_UI_JSON="$NOT_FOUND_JSON"
+    fi
+
+    NETWORK_NAME=$(docker inspect "$L1_ANVIL" --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+
+    jq -n \
+        --arg flavor "$FLAVOR" \
+        --arg enclave_name "$ENCLAVE_NAME" \
+        --arg enclave_uuid "$ENCLAVE_UUID" \
+        --arg network_name "$NETWORK_NAME" \
+        --argjson l1_anvil "$L1_JSON" \
+        --argjson l2_chains "$L2_CHAINS_JSON" \
+        --argjson agglayer "$AGGLAYER_JSON" \
+        --argjson aggkit_proxy "$AGGKIT_PROXY_JSON" \
+        --argjson haproxy "$HAPROXY_JSON" \
+        --argjson dev_ui "$DEV_UI_JSON" \
+        '{flavor: $flavor,
+          enclave_name: $enclave_name,
+          enclave_uuid: $enclave_uuid,
+          network_name: $network_name,
+          l1_anvil: $l1_anvil,
+          l2_chains: $l2_chains,
+          agglayer: $agglayer,
+          aggkit_proxy: $aggkit_proxy,
+          haproxy: $haproxy,
+          dev_ui: $dev_ui}
+         | . + {components: ([.l1_anvil, .agglayer, .aggkit_proxy, .haproxy, .dev_ui]
+                             + ([.l2_chains[] | .anvil, .aggkit, .aggkit_bridge])
+                             | map(select(.found == true) | .service_name))}' \
+        > "$OUTPUT_FILE"
+
+    log "Discovery complete. Results written to: $OUTPUT_FILE"
+    log "Components ($(jq -r '.components | length' "$OUTPUT_FILE")):"
+    jq -r '.components[] | "  - " + .' "$OUTPUT_FILE" >&2
+
+    # Guard against a component being listed twice (the phantom-prefix class of
+    # bug): every service name must appear exactly once.
+    DUPES=$(jq -r '.components | group_by(.) | map(select(length > 1) | .[0]) | join(", ")' "$OUTPUT_FILE")
+    if [ -n "$DUPES" ]; then
+        log "ERROR: duplicate components in discovery output: $DUPES"
+        exit 1
+    fi
+
+    exit 0
 fi
 
 # Discovery using Kurtosis labels (most reliable method)
@@ -161,6 +428,15 @@ OP_CL_CONTAINERS=$(docker ps -a \
 
 # Find all aggkit containers (including stopped)
 # Pattern: aggkit-{network_prefix}
+#
+# NOTE: "^aggkit-" also matches "aggkit-proxy-00X--<hash>", which then feeds a
+# phantom network prefix into L2_NETWORKS below. On this (default) flavor that
+# is inert -- a prefix with no op-el/op-cl sequencer is dropped by the
+# "Incomplete L2 network" guard, so discovery.json is unaffected and only a log
+# line is emitted. It is NOT inert on the anvil-aggkit flavor, where
+# aggkit-proxy-001 sits next to a real aggkit-001; that branch anchors the
+# kurtosis "--<hash>" suffix directly after the numeric prefix instead. Left
+# as-is here deliberately: changing it would alter default-flavor output.
 AGGKIT_CONTAINERS=$(docker ps -a \
     --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
     --format "{{.Names}}" | grep -E "^aggkit-" || true)

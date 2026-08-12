@@ -6,6 +6,7 @@ op_succinct_package = import_module("./src/chain/op-reth/op_succinct_proposer.st
 # Main service packages.
 additional_services_launcher = import_module("./src/additional_services/launcher.star")
 agglayer_package = "./src/agglayer.star"
+anvil_l2_package = import_module("./src/chain/anvil/anvil_l2.star")
 l1_launcher = import_module("./src/l1/launcher.star")
 chain_launcher = import_module("./src/chain/launcher.star")
 databases_package = "./src/chain/shared/databases.star"
@@ -77,7 +78,7 @@ def run(plan, args={}):
             plan, args, deployment_stages, op_stack_args
         )
 
-        if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+        if sequencer_type in constants.SOVEREIGN_SEQUENCER_TYPES:
             # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
@@ -91,32 +92,65 @@ def run(plan, args={}):
                 agglayer_contracts_package
             ).create_sovereign_predeployed_genesis(plan, args)
 
-            # Deploy OP Stack infrastructure
-            plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
-            optimism_package = op_stack_args["source"]
-            import_module(optimism_package).run(plan, op_stack_args)
+            if sequencer_type == constants.SEQUENCER_TYPE.anvil:
+                # The anvil L2 replaces the whole optimism-package: it is the
+                # sequencer, the RPC and the block producer. It must be started
+                # here -- after the sovereign allocs exist and before
+                # init_rollup, which funds accounts on the L2 and bytecode-checks
+                # the L2 contracts.
+                plan.print(
+                    "Starting the anvil L2 with the sovereign predeployed allocs"
+                )
+                l2_genesis_artifact = import_module(
+                    agglayer_contracts_package
+                ).create_anvil_l2_genesis(plan, args)
+                anvil_l2_package.run(plan, args, l2_genesis_artifact)
 
-            # Retrieve L1 OP contract addresses.
-            op_deployer_configs_artifact = plan.get_files_artifact(
-                name="op-deployer-configs",
-            )
+                # Skipped for anvil: the optimism-package launch, the
+                # op-deployer-configs artifact and the L1 funding of the OP
+                # proposer/batcher/sequencer/challenger/proxy-admin addresses.
+                # None of those addresses exist without op-deployer.
 
-            # Fund OP Addresses on L1
-            l1_op_contract_addresses = contracts_util.get_l1_op_contract_addresses(
-                plan, args, op_deployer_configs_artifact
-            )
+                # Fund Kurtosis addresses on the anvil L2. This is NOT skippable:
+                # it funds l2_admin_address, which the bridge UI e2e flow needs.
+                # contracts.sh's fund_addresses only auto-selects the anvil dev
+                # mnemonic for the op-reth service URL, so pass it explicitly.
+                sovereign_contracts_package.fund_addresses(
+                    plan,
+                    args,
+                    contracts_util.get_l2_addresses_to_fund(args),
+                    args["op_el_rpc_url"],
+                    funder_mnemonic=args["l2_anvil_mnemonic"],
+                )
+            else:
+                # Deploy OP Stack infrastructure
+                plan.print(
+                    "Deploying an OP Stack rollup with args: " + str(op_stack_args)
+                )
+                optimism_package = op_stack_args["source"]
+                import_module(optimism_package).run(plan, op_stack_args)
 
-            sovereign_contracts_package.fund_addresses(
-                plan, args, l1_op_contract_addresses, args["l1_rpc_url"]
-            )
+                # Retrieve L1 OP contract addresses.
+                op_deployer_configs_artifact = plan.get_files_artifact(
+                    name="op-deployer-configs",
+                )
 
-            # Fund Kurtosis addresses on OP L2
-            sovereign_contracts_package.fund_addresses(
-                plan,
-                args,
-                contracts_util.get_l2_addresses_to_fund(args),
-                args["op_el_rpc_url"],
-            )
+                # Fund OP Addresses on L1
+                l1_op_contract_addresses = contracts_util.get_l1_op_contract_addresses(
+                    plan, args, op_deployer_configs_artifact
+                )
+
+                sovereign_contracts_package.fund_addresses(
+                    plan, args, l1_op_contract_addresses, args["l1_rpc_url"]
+                )
+
+                # Fund Kurtosis addresses on OP L2
+                sovereign_contracts_package.fund_addresses(
+                    plan,
+                    args,
+                    contracts_util.get_l2_addresses_to_fund(args),
+                    args["op_el_rpc_url"],
+                )
 
             if deployment_stages.get("deploy_op_succinct", False):
                 # Extract genesis to feed into evm-sketch-genesis

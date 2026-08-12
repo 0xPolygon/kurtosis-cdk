@@ -96,6 +96,10 @@ def get_db_configs(suffix, sequencer_type):
         dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS
     elif sequencer_type == constants.SEQUENCER_TYPE.op_reth:
         dbs = CENTRAL_ENV_DBS | OP_SUCCINCT_PROPOSER_DBS
+    elif sequencer_type == constants.SEQUENCER_TYPE.anvil:
+        # PROVER_DB / CDK_ERIGON_DBS are erigon-only and op-succinct is not
+        # supported on the anvil stack, so only the central env dbs apply.
+        dbs = CENTRAL_ENV_DBS
     else:
         fail("Unsupported sequencer type: %s" % sequencer_type)
 

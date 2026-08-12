@@ -3,14 +3,33 @@
 # Generate Summary JSON Script
 # Creates summary.json with contract addresses, service URLs, and accounts
 #
-# Usage: generate-summary.sh <DISCOVERY_JSON> <OUTPUT_DIR>
+# Usage: generate-summary.sh [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR>
 #
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Host-port numbering lives in exactly one place.
+# shellcheck source=lib/ports.sh
+source "$SCRIPT_DIR/lib/ports.sh"
+
+FLAVOR="default"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --flavor)
+            FLAVOR="$2"
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 # Check arguments
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
+    echo "Usage: $0 [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
     exit 1
 fi
 
@@ -45,6 +64,467 @@ fi
 
 ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")
 SNAPSHOT_ID=$(basename "$OUTPUT_DIR")
+
+# ============================================================================
+# Flavor: anvil-aggkit
+#
+# This summary is a CONTRACT with dev-ui CI (S13): the workflow reads the
+# haproxy origin, the chain ids, the per-L2 network_id, the aggkit-proxy REST
+# base and -- critically -- erc20_address, which is nonce-dependent and never
+# matches dev-ui's hardcoded DEVNET_KNOWN_ERC20_CANDIDATE.
+#
+# The default flavor continues below this block, untouched.
+# ============================================================================
+
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    STATE_METADATA="$OUTPUT_DIR/state/state-metadata.json"
+    if [ ! -f "$STATE_METADATA" ]; then
+        log "ERROR: state metadata not found: $STATE_METADATA"
+        exit 1
+    fi
+    FIXTURES_JSON="$OUTPUT_DIR/fixtures.json"
+    IMAGE_INFO="$OUTPUT_DIR/images/IMAGE_INFO.json"
+
+    L1_SVC=$(jq -r '.l1_anvil.service_name' "$DISCOVERY_JSON")
+    AGGLAYER_SVC=$(jq -r '.agglayer.service_name' "$DISCOVERY_JSON")
+    PROXY_SVC=$(jq -r '.aggkit_proxy.service_name' "$DISCOVERY_JSON")
+    HAPROXY_SVC=$(jq -r '.haproxy.service_name' "$DISCOVERY_JSON")
+    DEVUI_SVC=$(jq -r '.dev_ui.service_name' "$DISCOVERY_JSON")
+
+    PROXY_PORT=$(snapshot_fixed_port devnet_proxy)
+    PROXY_BASE="http://127.0.0.1:${PROXY_PORT}"
+    AGGKIT_PROXY_PORT=$(snapshot_fixed_port aggkit_proxy)
+    L1_PORT=$(snapshot_fixed_port l1_rpc)
+    DEVUI_PORT=$(snapshot_fixed_port dev_ui)
+
+    # ---- toml_value <file> <key> [section] ------------------------------
+    # Reads an already-extracted config.toml rather than re-querying a live
+    # container. With a section, the search is limited to that section.
+    toml_value() {
+        local file="$1" key="$2" section="${3:-}"
+        [ -f "$file" ] || { echo ""; return; }
+        if [ -n "$section" ]; then
+            awk -v sect="[$section]" -v key="$key" '
+                $0 == sect { in_s = 1; next }
+                /^\[/ { in_s = 0 }
+                in_s && $0 ~ "^" key "[[:space:]]*=" { print; exit }
+            ' "$file" | sed 's/.*= *"\([^"]*\)".*/\1/'
+        else
+            awk -v key="$key" '
+                /^\[/ { past = 1 }
+                !past && $0 ~ "^" key "[[:space:]]*=" { print; exit }
+            ' "$file" | sed 's/.*= *"\([^"]*\)".*/\1/'
+        fi
+    }
+
+    FIRST_PREFIX=$(jq -r '.l2_chains | keys | first' "$DISCOVERY_JSON")
+    FIRST_AGGKIT_SVC=$(jq -r --arg p "$FIRST_PREFIX" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+    REF_AGGKIT_CONFIG="$OUTPUT_DIR/config/$FIRST_AGGKIT_SVC/config.toml"
+
+    L1_CONTRACTS=$(jq -n \
+        --arg bridge "$(toml_value "$REF_AGGKIT_CONFIG" BridgeAddr L1Config)" \
+        --arg ger "$(toml_value "$REF_AGGKIT_CONFIG" polygonZkEVMGlobalExitRootAddress L1Config)" \
+        --arg rm "$(toml_value "$REF_AGGKIT_CONFIG" polygonRollupManagerAddress L1Config)" \
+        --arg pol "$(toml_value "$REF_AGGKIT_CONFIG" polTokenAddress L1Config)" \
+        '{bridge: $bridge, global_exit_root_v2: $ger, rollup_manager: $rm, pol_token: $pol}
+         | with_entries(select(.value != ""))')
+
+    # ---- haproxy route table -------------------------------------------
+    # Built from the discovered topology, not from parsing haproxy.cfg, so the
+    # network_id/chain_id on each route comes from the authoritative source
+    # (state-metadata.json, which greps each aggkit config).
+    ROUTES=$(jq -n \
+        --arg base "$PROXY_BASE" \
+        --arg l1_svc "$L1_SVC" \
+        --arg proxy_svc "$PROXY_SVC" \
+        --arg devui_svc "$DEVUI_SVC" \
+        --slurpfile meta "$STATE_METADATA" \
+        '
+        ($meta[0].chains | map(select(.role == "l1")) | first) as $l1 |
+        ($meta[0].chains | map(select(.role == "l2"))) as $l2s |
+        [
+            {
+                path: "/l1rpc",
+                url: ($base + "/l1rpc"),
+                kind: "json-rpc",
+                upstream: ($l1_svc + ":8545"),
+                chain_id: $l1.chain_id,
+                network_id: $l1.network_id
+            }
+        ]
+        + ($l2s | map({
+                path: ("/l2rpc-" + .prefix),
+                url: ($base + "/l2rpc-" + .prefix),
+                kind: "json-rpc",
+                upstream: (.service + ":8545"),
+                chain_id: .chain_id,
+                network_id: .network_id
+          }))
+        + [
+            {
+                path: "/l2rpc",
+                url: ($base + "/l2rpc"),
+                kind: "json-rpc",
+                upstream: (($l2s | first).service + ":8545"),
+                chain_id: ($l2s | first).chain_id,
+                network_id: ($l2s | first).network_id,
+                note: "back-compat alias for the first L2"
+            },
+            {
+                path: "/aggkitapi",
+                url: ($base + "/aggkitapi"),
+                kind: "rest",
+                upstream: ($proxy_svc + ":8080"),
+                note: "aggkit-proxy bridge + tracker REST API (path prefix stripped upstream)"
+            },
+            {
+                path: "/",
+                url: ($base + "/"),
+                kind: "http",
+                upstream: ($devui_svc + ":80"),
+                note: "default backend: the dev-ui"
+            }
+        ]')
+
+    # ---- per-network detail ---------------------------------------------
+    L1_META=$(jq -c '.chains[] | select(.role == "l1")' "$STATE_METADATA")
+    L1_NET=$(jq -n \
+        --argjson meta "$L1_META" \
+        --slurpfile contracts <(echo "$L1_CONTRACTS") \
+        --arg svc "$L1_SVC" \
+        --arg base "$PROXY_BASE" \
+        --arg port "$L1_PORT" \
+        --arg env "$(snapshot_fixed_port_env l1_rpc)" \
+        '{
+            service: $svc,
+            chain_id: $meta.chain_id,
+            network_id: $meta.network_id,
+            block_number_at_capture: $meta.block_number,
+            rpc: {
+                internal: ("http://" + $svc + ":8545"),
+                external: ("http://127.0.0.1:" + $port),
+                via_proxy: ($base + "/l1rpc"),
+                host_port_env: $env
+            },
+            contracts: $contracts[0]
+        }')
+
+    L2_NETS="{}"
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
+        AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+        BRIDGE_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit_bridge.service_name' "$DISCOVERY_JSON")
+        AGGKIT_CONFIG="$OUTPUT_DIR/config/$AGGKIT_SVC/config.toml"
+        L2_META=$(jq -c --arg p "$prefix" '.chains[] | select(.prefix == $p)' "$STATE_METADATA")
+
+        L2_CONTRACTS=$(jq -n \
+            --arg bridge "$(toml_value "$AGGKIT_CONFIG" BridgeAddr L2Config)" \
+            --arg ger "$(toml_value "$AGGKIT_CONFIG" GlobalExitRootAddr L2Config)" \
+            --arg rollup "$(toml_value "$AGGKIT_CONFIG" polygonZkEVMAddress L1Config)" \
+            '{sovereign_bridge: $bridge, global_exit_root: $ger, sovereign_rollup_l1: $rollup}
+             | with_entries(select(.value != ""))')
+
+        L2_NET=$(jq -n \
+            --argjson meta "$L2_META" \
+            --slurpfile contracts <(echo "$L2_CONTRACTS") \
+            --arg prefix "$prefix" \
+            --arg svc "$L2_SVC" \
+            --arg aggkit "$AGGKIT_SVC" \
+            --arg bridge_svc "$BRIDGE_SVC" \
+            --arg base "$PROXY_BASE" \
+            --arg rpc_port "$(snapshot_l2_port "$prefix" http)" \
+            --arg rpc_env "$(snapshot_l2_port_env "$prefix" http)" \
+            --arg rest_port "$(snapshot_l2_port "$prefix" aggkit_rest)" \
+            --arg rest_env "$(snapshot_l2_port_env "$prefix" aggkit_rest)" \
+            --arg aggkit_rpc_port "$(snapshot_l2_port "$prefix" aggkit_rpc)" \
+            --arg bridge_rpc_port "$(snapshot_l2_port "$prefix" aggkit_bridge_rpc)" \
+            '{
+                prefix: $prefix,
+                service: $svc,
+                chain_id: $meta.chain_id,
+                network_id: $meta.network_id,
+                block_number_at_capture: $meta.block_number,
+                rpc: {
+                    internal: ("http://" + $svc + ":8545"),
+                    external: ("http://127.0.0.1:" + $rpc_port),
+                    via_proxy: ($base + "/l2rpc-" + $prefix),
+                    host_port_env: $rpc_env
+                },
+                aggkit: {
+                    service: $aggkit,
+                    components: "aggsender,aggoracle,autoclaim",
+                    rpc: {
+                        internal: ("http://" + $aggkit + ":5576"),
+                        external: ("http://127.0.0.1:" + $aggkit_rpc_port)
+                    }
+                },
+                aggkit_bridge: {
+                    service: $bridge_svc,
+                    components: "bridge",
+                    rest_api: {
+                        internal: ("http://" + $bridge_svc + ":5577"),
+                        external: ("http://127.0.0.1:" + $rest_port),
+                        host_port_env: $rest_env
+                    },
+                    rpc: {
+                        internal: ("http://" + $bridge_svc + ":5576"),
+                        external: ("http://127.0.0.1:" + $bridge_rpc_port)
+                    }
+                },
+                contracts: $contracts[0]
+            }')
+
+        L2_NETS=$(jq --arg p "$prefix" --argjson n "$L2_NET" '. + {($p): $n}' <<< "$L2_NETS")
+    done
+
+    # ---- accounts --------------------------------------------------------
+    # Balances come out of the captured anvil state (authoritative) rather than
+    # from a live RPC call, so the summary stays true for the bundle even if
+    # the source enclave has moved on or been torn down.
+    L1_MNEMONIC=$(jq -r '.chains[] | select(.role=="l1") | .cmd[0]' "$STATE_METADATA" \
+        | sed -n 's/.*--mnemonic "\([^"]*\)".*/\1/p')
+    L2_MNEMONIC=$(jq -r '.chains[] | select(.role=="l2") | .cmd[0]' "$STATE_METADATA" | head -1 \
+        | sed -n 's/.*--mnemonic "\([^"]*\)".*/\1/p')
+
+    FUNDED="[]"
+    if command -v cast &> /dev/null; then
+        # 10 accounts per mnemonic is what anvil's own startup banner prints and
+        # is plenty for the dev-ui suite; the mnemonics are exported too so a
+        # consumer can derive more.
+        for spec in "l1:$L1_MNEMONIC" "l2:$L2_MNEMONIC"; do
+            role="${spec%%:*}"
+            mnem="${spec#*:}"
+            [ -n "$mnem" ] || continue
+            for i in $(seq 0 9); do
+                addr=$(cast wallet address --mnemonic "$mnem" --mnemonic-index "$i" 2>/dev/null || echo "")
+                pk=$(cast wallet private-key --mnemonic "$mnem" --mnemonic-index "$i" 2>/dev/null || echo "")
+                [ -n "$addr" ] || continue
+                bal=$(jq -r --arg a "${addr,,}" \
+                    '.accounts // {} | to_entries | map(select(.key | ascii_downcase == $a)) | first | .value.balance // ""' \
+                    "$OUTPUT_DIR/state/$([ "$role" = l1 ] && echo "$L1_SVC" || echo "$(jq -r --arg p "$FIRST_PREFIX" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")").json" 2>/dev/null || echo "")
+                FUNDED=$(jq --arg addr "$addr" --arg pk "$pk" --arg role "$role" --arg idx "$i" --arg bal "$bal" \
+                    '. + [{address: $addr, private_key: $pk, mnemonic_index: ($idx|tonumber),
+                           funded_on: (if $role == "l1" then ["l1"] else ["l2-001","l2-002"] end),
+                           balance_at_capture: (if $bal == "" then null else $bal end)}]' <<< "$FUNDED")
+            done
+        done
+    else
+        log "  WARNING: cast not found -- funded-account list will be limited to the E2E wallet"
+    fi
+
+    # Operational signers. The kurtosis keystores carry no plaintext "address"
+    # field, so instead of guessing, the addresses come from the one place they
+    # are recorded in the clear: agglayer's [proof-signers] table (the per-network
+    # aggsender/certificate signer). The keystore locations *inside the images*
+    # are listed alongside so a consumer can decrypt them if it needs the keys.
+    AGGLAYER_CONFIG="$OUTPUT_DIR/config/agglayer/config.toml"
+    OPERATIONAL="[]"
+    if [ -f "$AGGLAYER_CONFIG" ]; then
+        while read -r nid addr; do
+            [ -n "$addr" ] || continue
+            OPERATIONAL=$(jq --argjson n "$nid" --arg a "$addr" \
+                '. + [{network_id: $n, address: $a, role: "certificate/proof signer (aggsender)",
+                       private_key: "(encrypted in keystore -- see keystores[])"}]' <<< "$OPERATIONAL")
+        done < <(awk '/^\[proof-signers\]/{f=1;next} /^\[/{f=0} f && /=/{gsub(/"/,"");print $1, $3}' "$AGGLAYER_CONFIG")
+    fi
+
+    KEYSTORES="[]"
+    add_keystore() {
+        local file="$1" svc="$2" path="$3" role="$4"
+        [ -f "$file" ] || return 0
+        KEYSTORES=$(jq --arg s "$svc" --arg p "$path" --arg r "$role" \
+            '. + [{service: $s, path_in_image: $p, role: $r}]' <<< "$KEYSTORES")
+    }
+    add_keystore "$OUTPUT_DIR/config/agglayer/aggregator.keystore" "$AGGLAYER_SVC" \
+        "/etc/agglayer/aggregator.keystore" "agglayer settlement signer"
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        for role in aggkit aggkit_bridge; do
+            SVC=$(jq -r --arg p "$prefix" --arg r "$role" '.l2_chains[$p][$r].service_name' "$DISCOVERY_JSON")
+            add_keystore "$OUTPUT_DIR/config/$SVC/sequencer.keystore" "$SVC" \
+                "/etc/aggkit/sequencer.keystore" "sequencer / aggsender signer"
+            add_keystore "$OUTPUT_DIR/config/$SVC/aggoracle.keystore" "$SVC" \
+                "/etc/aggkit/aggoracle.keystore" "aggoracle + autoclaim signer"
+            add_keystore "$OUTPUT_DIR/config/$SVC/sovereignadmin.keystore" "$SVC" \
+                "/etc/aggkit/sovereignadmin.keystore" "sovereign admin"
+        done
+    done
+
+    FIXTURES='null'
+    ERC20_ADDRESS=""
+    E2E_WALLET=""
+    E2E_KEY=""
+    if [ -f "$FIXTURES_JSON" ]; then
+        FIXTURES=$(cat "$FIXTURES_JSON")
+        ERC20_ADDRESS=$(jq -r '.erc20.address // ""' "$FIXTURES_JSON")
+        E2E_WALLET=$(jq -r '.e2e_wallet // ""' "$FIXTURES_JSON")
+        E2E_KEY=$(jq -r '.e2e_private_key // ""' "$FIXTURES_JSON")
+    else
+        log "  WARNING: fixtures.json not found -- erc20_address will be null"
+    fi
+
+    # Flatten IMAGE_INFO's nested {images: {...}} into {services: {...}} so
+    # consumers read summary.images.services, not summary.images.images.
+    IMAGES='null'
+    if [ -f "$IMAGE_INFO" ]; then
+        IMAGES=$(jq '{tag, image_prefix, busybox_image, self_contained, built_at: .timestamp, services: .images}' "$IMAGE_INFO")
+    fi
+
+    # ---- compose host-port table ----------------------------------------
+    PORT_TABLE=$(jq -n '{}')
+    add_port() {
+        PORT_TABLE=$(jq --arg svc "$1" --arg env "$2" --argjson host "$3" --argjson cont "$4" --arg desc "$5" \
+            '.[$svc] = ((.[$svc] // []) + [{env: $env, host_default: $host, container: $cont, description: $desc}])' \
+            <<< "$PORT_TABLE")
+    }
+    add_port "$L1_SVC" "$(snapshot_fixed_port_env l1_rpc)" "$L1_PORT" 8545 "L1 JSON-RPC (debug)"
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
+        AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+        BRIDGE_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit_bridge.service_name' "$DISCOVERY_JSON")
+        add_port "$L2_SVC" "$(snapshot_l2_port_env "$prefix" http)" "$(snapshot_l2_port "$prefix" http)" 8545 "L2 JSON-RPC (debug)"
+        add_port "$AGGKIT_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_rpc)" "$(snapshot_l2_port "$prefix" aggkit_rpc)" 5576 "aggkit JSON-RPC (debug)"
+        add_port "$BRIDGE_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_bridge_rpc)" "$(snapshot_l2_port "$prefix" aggkit_bridge_rpc)" 5576 "aggkit-bridge JSON-RPC (debug)"
+        add_port "$BRIDGE_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_rest)" "$(snapshot_l2_port "$prefix" aggkit_rest)" 5577 "aggkit-bridge REST API"
+    done
+    add_port "$AGGLAYER_SVC" "$(snapshot_fixed_port_env agglayer_grpc)" "$(snapshot_fixed_port agglayer_grpc)" 4443 "agglayer gRPC"
+    add_port "$AGGLAYER_SVC" "$(snapshot_fixed_port_env agglayer_readrpc)" "$(snapshot_fixed_port agglayer_readrpc)" 4444 "agglayer read RPC"
+    add_port "$AGGLAYER_SVC" "$(snapshot_fixed_port_env agglayer_admin)" "$(snapshot_fixed_port agglayer_admin)" 4446 "agglayer admin API"
+    add_port "$AGGLAYER_SVC" "$(snapshot_fixed_port_env agglayer_metrics)" "$(snapshot_fixed_port agglayer_metrics)" 9092 "agglayer prometheus"
+    add_port "$PROXY_SVC" "$(snapshot_fixed_port_env aggkit_proxy)" "$AGGKIT_PROXY_PORT" 8080 "aggkit-proxy bridge + tracker REST"
+    add_port "$DEVUI_SVC" "$(snapshot_fixed_port_env dev_ui)" "$DEVUI_PORT" 80 "dev-ui (manual use)"
+    add_port "$HAPROXY_SVC" "$(snapshot_fixed_port_env devnet_proxy)" "$PROXY_PORT" 80 "CORS origin used by dev-ui CI"
+
+    CHAIN_IDS=$(jq '[.chains[] | {key: (if .role == "l1" then "l1" else "l2_" + .prefix end), value: .chain_id}] | from_entries' "$STATE_METADATA")
+    NETWORK_IDS=$(jq '[.chains[] | {key: (if .role == "l1" then "l1" else "l2_" + .prefix end), value: .network_id}] | from_entries' "$STATE_METADATA")
+
+    SUMMARY_FILE="$OUTPUT_DIR/summary.json"
+    jq -n \
+        --arg snapshot_name "$SNAPSHOT_ID" \
+        --arg enclave "$ENCLAVE_NAME" \
+        --arg flavor "$FLAVOR" \
+        --arg created_at "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --arg erc20 "$ERC20_ADDRESS" \
+        --arg e2e_wallet "$E2E_WALLET" \
+        --arg e2e_key "$E2E_KEY" \
+        --arg l1_mnemonic "$L1_MNEMONIC" \
+        --arg l2_mnemonic "$L2_MNEMONIC" \
+        --arg proxy_svc "$PROXY_SVC" \
+        --arg haproxy_svc "$HAPROXY_SVC" \
+        --arg devui_svc "$DEVUI_SVC" \
+        --arg devui_image "$(jq -r '.dev_ui.image' "$DISCOVERY_JSON")" \
+        --arg agglayer_svc "$AGGLAYER_SVC" \
+        --arg proxy_base "$PROXY_BASE" \
+        --argjson proxy_port "$PROXY_PORT" \
+        --arg proxy_port_env "$(snapshot_fixed_port_env devnet_proxy)" \
+        --argjson aggkit_proxy_port "$AGGKIT_PROXY_PORT" \
+        --argjson devui_port "$DEVUI_PORT" \
+        --slurpfile state_meta "$STATE_METADATA" \
+        --argjson routes "$ROUTES" \
+        --argjson l1 "$L1_NET" \
+        --argjson l2 "$L2_NETS" \
+        --argjson chain_ids "$CHAIN_IDS" \
+        --argjson network_ids "$NETWORK_IDS" \
+        --argjson funded "$FUNDED" \
+        --argjson operational "$OPERATIONAL" \
+        --argjson keystores "$KEYSTORES" \
+        --argjson fixtures "$FIXTURES" \
+        --argjson images "$IMAGES" \
+        --argjson ports "$PORT_TABLE" \
+        '{
+            snapshot_name: $snapshot_name,
+            enclave: $enclave,
+            flavor: $flavor,
+            created_at: $created_at,
+            captured_at: $state_meta[0].captured_at,
+            settlement_free: $state_meta[0].settlement_free,
+            agglayer_certificates_at_capture: $state_meta[0].agglayer_certificates,
+
+            erc20_address: (if $erc20 == "" then null else $erc20 end),
+            chain_ids: $chain_ids,
+            network_ids: $network_ids,
+
+            proxy: {
+                service: $haproxy_svc,
+                host_port: $proxy_port,
+                host_port_env: $proxy_port_env,
+                base_url: $proxy_base,
+                cors: "Access-Control-Allow-Origin: * , OPTIONS answered 204 by haproxy itself",
+                routes: $routes
+            },
+            aggkit_proxy: {
+                service: $proxy_svc,
+                components: "proxy,tracker",
+                rest_url: ("http://127.0.0.1:" + ($aggkit_proxy_port|tostring)),
+                internal_rest_url: ($proxy_svc + ":8080" | "http://" + .),
+                rest_url_via_proxy: ($proxy_base + "/aggkitapi"),
+                bridge_api: ($proxy_base + "/aggkitapi/bridge/v1"),
+                tracker_api: ($proxy_base + "/aggkitapi/tracker/v1"),
+                sync_status_url: ($proxy_base + "/aggkitapi/bridge/v1/sync-status?network_id=")
+            },
+            agglayer: {
+                service: $agglayer_svc,
+                grpc: ("http://" + $agglayer_svc + ":4443"),
+                read_rpc: ("http://" + $agglayer_svc + ":4444"),
+                admin: ("http://" + $agglayer_svc + ":4446"),
+                metrics: ("http://" + $agglayer_svc + ":9092/metrics")
+            },
+            dev_ui: {
+                service: $devui_svc,
+                image: $devui_image,
+                url: ("http://127.0.0.1:" + ($devui_port|tostring)),
+                url_via_proxy: ($proxy_base + "/"),
+                config_path: "/etc/agglayer-dev-ui/config.json"
+            },
+
+            networks: { l1: $l1, l2: $l2 },
+
+            accounts: {
+                e2e_wallet: (if $e2e_wallet == "" then null else {
+                    address: $e2e_wallet,
+                    private_key: $e2e_key,
+                    description: "dev-ui e2e signer; funded natively on all chains and holder of erc20_address"
+                } end),
+                funded: $funded,
+                operational: $operational,
+                keystores: $keystores,
+                mnemonics: { l1: $l1_mnemonic, l2: $l2_mnemonic }
+            },
+
+            fixtures: $fixtures,
+            images: $images,
+            compose: {
+                file: "docker-compose.yml",
+                self_contained: true,
+                bind_mounts: 0,
+                volumes: 0,
+                image_prefix_env: "SNAPSHOT_IMAGE_PREFIX",
+                image_tag_env: "SNAPSHOT_IMAGE_TAG",
+                host_ports: $ports
+            },
+
+            notes: {
+                erc20: "erc20_address is nonce-dependent and does NOT match dev-ui DEVNET_KNOWN_ERC20_CANDIDATE. Pass it as E2E_ERC20_ADDRESS so globalSetup skips its own deploy.",
+                self_contained: "State, config and keystores are baked into the images. The compose file is the only file needed.",
+                settlement_free: "A bundle with settlement_free == false must not be published: agglayer/aggkit internal databases are not captured, so restoring chain state that already contains bridge activity is unsound.",
+                restore_adaptation: "aggkit rollupCreationBlockNumber / RollupCreationBlockL1 are repointed at the L1 snapshot block when the images are built: a restored anvil serves state only at the snapshot block and later. See snapshot/scripts/build-images.sh.",
+                keys: "All keys here are public kurtosis devnet keys. Nothing sensitive is published."
+            }
+        }' > "$SUMMARY_FILE"
+
+    if ! jq -e . "$SUMMARY_FILE" > /dev/null; then
+        log "ERROR: generated summary.json is not valid JSON"
+        exit 1
+    fi
+
+    log "✓ Summary generated: $SUMMARY_FILE"
+    log "  flavor:          $(jq -r '.flavor' "$SUMMARY_FILE")"
+    log "  chain ids:       $(jq -rc '.chain_ids' "$SUMMARY_FILE")"
+    log "  network ids:     $(jq -rc '.network_ids' "$SUMMARY_FILE")"
+    log "  erc20_address:   $(jq -r '.erc20_address' "$SUMMARY_FILE")"
+    log "  proxy routes:    $(jq -r '.proxy.routes | length' "$SUMMARY_FILE")"
+    log "  funded accounts: $(jq -r '.accounts.funded | length' "$SUMMARY_FILE")"
+    exit 0
+fi
 
 # Get checkpoint info
 CHECKPOINT_FILE="$OUTPUT_DIR/metadata/checkpoint.json"
@@ -401,15 +881,14 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         log "  Processing L2 network: $prefix"
 
-        # Calculate port offsets
-        PREFIX_NUM=$((10#$prefix))
-        L2_HTTP_PORT=$((10000 + PREFIX_NUM * 1000 + 545))
-        L2_WS_PORT=$((10000 + PREFIX_NUM * 1000 + 546))
-        L2_ENGINE_PORT=$((10000 + PREFIX_NUM * 1000 + 551))
-        L2_NODE_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 547))
-        L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
-        L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
-        L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        # Port offsets -- see snapshot/scripts/lib/ports.sh
+        L2_HTTP_PORT=$(snapshot_l2_port "$prefix" http)
+        L2_WS_PORT=$(snapshot_l2_port "$prefix" ws)
+        L2_ENGINE_PORT=$(snapshot_l2_port "$prefix" engine)
+        L2_NODE_RPC_PORT=$(snapshot_l2_port "$prefix" node_rpc)
+        L2_NODE_METRICS_PORT=$(snapshot_l2_port "$prefix" node_metrics)
+        L2_AGGKIT_RPC_PORT=$(snapshot_l2_port "$prefix" aggkit_rpc)
+        L2_AGGKIT_REST_PORT=$(snapshot_l2_port "$prefix" aggkit_rest)
 
         # Get L2 chain ID
         ROLLUP_FILE="$OUTPUT_DIR/config/$prefix/rollup.json"

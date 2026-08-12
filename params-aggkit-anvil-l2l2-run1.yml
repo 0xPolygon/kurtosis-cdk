@@ -1,0 +1,101 @@
+# S5 (dev-ui-ci-snapshot plan): anvil-flavor equivalent of
+# params-aggkit-l2l2-run1.yml -- first `kurtosis run` of a 2-L2 anvil
+# enclave. Deploys L1 (anvil) + agglayer + rollup 1 (network_id 1, anvil L2,
+# aggkit-001 + aggkit-001-bridge). A second `kurtosis run` with
+# params-aggkit-anvil-l2l2-run2.yml (SAME enclave) adds rollup 2 and the
+# aggkit-proxy / bridge_ui / dev-ui stack.
+#
+# Modeled on params-aggkit-l2l2-run1.yml, with the whole optimism_package:
+# block dropped (sequencer_type: anvil rejects one -- input_parser's
+# args_sanity_check rule V4) and l1_engine: anvil added. See
+# plans/dev-ui-ci-snapshot/anvil-l2-design.md and s3-evidence/s4-evidence for
+# the anvil-L2 launcher path this exercises.
+
+deployment_stages:
+  deploy_op_succinct: false
+  # Legacy zkevm-bridge-service is not needed; aggkit-001-bridge (a second
+  # aggkit instance with --components=bridge) is deployed unconditionally.
+  deploy_cdk_bridge_infra: false
+  # S5: postgres-001 is otherwise deployed by default and is absent from the
+  # plan's §2 compose map -- S3 confirmed nothing in the anvil path needs it
+  # (databases.star returns CENTRAL_ENV_DBS for anvil, which nothing reads
+  # when deploy_cdk_bridge_infra is false and sequencer_type is anvil).
+  deploy_databases: false
+
+args:
+  # Anvil on both layers -- this run's L1 AND its own L2.
+  l1_engine: anvil
+  # MANDATORY (S3 finding, pre-existing repo bug worked around here, not
+  # fixed -- see S3's outcome / S17): input_parser.parse_args calls
+  # set_anvil_args() (which points these at anvil-001) and then
+  # set_l1_client_args(), which unconditionally clobbers them back to the
+  # ethereum-package service names whenever the user did not set them
+  # explicitly. Setting them here makes both functions no-ops.
+  l1_rpc_url: "http://anvil-001:8545"
+  l1_ws_url: "ws://anvil-001:8545"
+  l1_beacon_url: "http://anvil-001:8545"
+  sequencer_type: anvil
+  # Mandatory for sequencer_type: anvil.
+  consensus_contract_type: ecdsa-multisig
+
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  # "autoclaim" added so this instance's own destination network (1) gets an
+  # AutoClaim claimer -- see aggkit_autoclaim_destinations below.
+  aggkit_components: "aggsender,aggoracle,autoclaim"
+
+  # aggsender multisig committee: 1 validator, threshold 1.
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # No bridge_ui/aggkit_proxy on run1 -- those are deployed by run2, once
+  # both rollups and both aggkit bridge services exist. bridge_spammer off
+  # for determinism while stabilizing the 2-chain topology (same choice as
+  # the op-reth pair).
+  additional_services: []
+
+  l2_chain_id: 20201
+  l2_network_id: 1
+
+  # Rollup 2 is deployed by a SECOND `kurtosis run`
+  # (params-aggkit-anvil-l2l2-run2.yml) into this same enclave with
+  # deploy_agglayer: false -- it reuses the agglayer deployed by THIS run.
+  # Since deploy_agglayer only runs once, this run's agglayer/config.toml
+  # render is the only chance to register rollup 2 in [full-node-rpcs] /
+  # [proof-signers] (otherwise hardcoded to rollup 1 only).
+  #
+  # op_el_rpc_url is aliased automatically for THIS run's own L2 (see
+  # args_sanity_check's sequencer_type == anvil branch), but
+  # agglayer_extra_rollups entries are user-supplied and NEVER rewritten by
+  # that aliasing (S2 finding) -- the anvil L2-002 service name must be
+  # spelled out explicitly here.
+  #
+  # sequencer_address is the DEFAULT l2_sequencer_address
+  # (0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed) -- run2 must NOT override
+  # l2_sequencer_address (or any other l2_* role key), for the same reasons
+  # documented in params-aggkit-l2l2-run1.yml (deterministic CREATE2 genesis
+  # addresses + L1 RollupManager admin-role grants are keyed off these roles
+  # at L1-deploy time).
+  agglayer_extra_rollups:
+    - network_id: 2
+      op_el_rpc_url: "http://l2-anvil-002:8545"
+      sequencer_address: "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
+
+  # Autoclaim on destination 1 only, NEVER 0 (L1) -- L2->L1 deposits must
+  # stay manual-claim-only for the bridge UI (manual-claim.spec.ts asserts
+  # "Ready to claim" persists). This run's own l2_network_id is 1, so this
+  # instance's claimer targets network 1 (L1->L2-1 and L2-2->L2-1 deposits).
+  # BridgeServiceFinder needs every participating network's bridge service
+  # URL listed statically (no on-chain BRIDGE_SERVICE_URL metadata
+  # registration in this package).
+  aggkit_autoclaim_destinations: [1]
+  aggkit_autoclaim_bridge_urls:
+    - network_id: 1
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002-bridge:5577"
+
+# NOTE: deliberately NO optimism_package: block -- sequencer_type: anvil
+# rejects one entirely (args_sanity_check rule V4: "sequencer_type 'anvil'
+# does not use the optimism-package; remove the optimism_package block from
+# your args file").
