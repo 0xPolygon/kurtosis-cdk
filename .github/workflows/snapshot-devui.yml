@@ -83,6 +83,12 @@ on:
 permissions:
   contents: read
   packages: write
+  # kurtosis-pre-run's GCR pre-pull step authenticates via
+  # google-github-actions/auth (Workload Identity Federation), which needs
+  # an OIDC token -- id-token: write. actions: write matches test.yml/
+  # nightly.yml's existing usage of this same composite action.
+  actions: write
+  id-token: write
 
 concurrency:
   # The enclave name below is fixed ("cdk"), so two concurrent runs on the
