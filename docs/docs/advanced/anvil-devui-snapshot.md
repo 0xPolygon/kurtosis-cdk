@@ -164,12 +164,27 @@ For this flavor, `--flavor anvil-aggkit` changes every stage of the pipeline:
 4. **Build** (`build-images.sh`) bakes state/config into thin derived images (`FROM`
    the original image, `COPY` the captured state/config/keystores).
 5. **Compose + summary** (`generate-compose.sh`, `generate-summary.sh`) emit a
-   self-contained `docker-compose.yml` (no bind mounts, no volumes) and `summary.json`.
-6. **Verify** runs automatically unless `--skip-verify` is passed.
+   self-contained `docker-compose.yml` (no bind mounts, no volumes) and `summary.json`,
+   and `snapshot.sh` exits.
 
-A full end-to-end run (seed → capture → build → compose → summary → verify) took
-51–80 seconds in measurement; bring-up of the source enclave (both `kurtosis run`
-calls) took 224–254 seconds.
+**Unlike the default flavor, `--flavor anvil-aggkit` does not auto-run `verify.sh`** —
+`snapshot.sh` exits right after generating the summary (the printed line
+"Verification for this flavor is not implemented yet" is stale wording left over from
+before `verify.sh` gained its anvil-aggkit path; a fix belongs to a future cleanup
+pass). Run verification as its own step, exactly as `.github/workflows/snapshot-devui.yml`
+does:
+
+```bash
+./snapshot/snapshot.sh cdk --flavor anvil-aggkit
+./snapshot/verify.sh snapshots/cdk-<timestamp>/
+```
+
+A full `snapshot.sh --flavor anvil-aggkit` run (seed → capture → build → compose →
+summary, **not including verify**) took 51–80 seconds in measurement (68 seconds on a
+fresh 2-L2 anvil enclave while writing this doc); bring-up of the source enclave (both
+`kurtosis run` calls) took 224–254 seconds. `verify.sh`'s own full-success runtime for
+this flavor is 177–214 seconds — size any automation around ~215 seconds plus margin,
+not the snapshot step's own faster number.
 
 ### Host `cast`/`forge` are commonly unusable for scripting this flavor
 
