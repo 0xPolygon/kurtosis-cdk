@@ -19,8 +19,8 @@
 #
 # Example (what the snapshot-devui.yml workflow runs):
 #   publish-images.sh \
-#     --registry-prefix ghcr.io/0xpolygon/kurtosis-cdk-devnet- \
-#     --tag "$GIT_SHA_SHORT" --tag latest-devui \
+#     --registry-prefix ghcr.io/0xpolygon/kurtosis-cdk-snapshot- \
+#     --tag "snapshot-$GIT_SHA_SHORT" --tag snapshot-latest-devui \
 #     snapshot/snapshots/cdk-<ts>/images/IMAGE_INFO.json
 #
 # --dry-run: `docker tag` is executed for real (it is local-only, creates no

@@ -93,7 +93,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
 
     # Image references are env-overridable too, so the very same compose file
     # works against locally built images (the default) and against the GHCR
-    # copies S11 publishes: SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-devnet-
+    # copies S11 publishes: SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
     image_ref() {
         printf '${SNAPSHOT_IMAGE_PREFIX:-%s}%s:${SNAPSHOT_IMAGE_TAG:-%s}' \
             "$IMAGE_PREFIX" "$1" "$IMAGE_TAG"
@@ -134,7 +134,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
 # Everything else is published for debugging and can be overridden or removed.
 #
 # Image source override (S11 publishes the same images to GHCR):
-#   SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-devnet-
+#   SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
 #   SNAPSHOT_IMAGE_TAG=<published-tag>
 
 services:
