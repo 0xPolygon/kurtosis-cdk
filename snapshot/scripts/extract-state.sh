@@ -129,10 +129,12 @@ decode_dump_state() {
     fi
 }
 
+# shellcheck disable=SC2317 # invoked indirectly via "$decoder" in decode_dump_state
 xxd_decode() {
     xxd -r -p "$1"
 }
 
+# shellcheck disable=SC2317 # invoked indirectly via "$decoder" in decode_dump_state
 python_decode() {
     python3 -c 'import sys
 with open(sys.argv[1]) as f:

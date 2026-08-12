@@ -27,6 +27,7 @@
 # Idempotent source guard (this file is sourced by several scripts that may in
 # turn source each other).
 if [ -n "${_SNAPSHOT_LIB_PORTS_SOURCED:-}" ]; then
+    # shellcheck disable=SC2317 # the `exit 0` fallback only runs when this file is executed directly, not sourced
     return 0 2>/dev/null || exit 0
 fi
 _SNAPSHOT_LIB_PORTS_SOURCED=1
@@ -113,6 +114,7 @@ snapshot_l2_port_expr() {
     local prefix="$1" key="$2" name port
     name=$(snapshot_l2_port_env "$prefix" "$key") || return 1
     port=$(snapshot_l2_port "$prefix" "$key") || return 1
+    # shellcheck disable=SC2016 # literal ${VAR:-default} compose-interpolation syntax, not shell expansion
     printf '${%s:-%s}' "$name" "$port"
 }
 
@@ -144,5 +146,6 @@ snapshot_fixed_port_expr() {
     local key="$1" name port
     name=$(snapshot_fixed_port_env "$key") || return 1
     port=$(snapshot_fixed_port "$key") || return 1
+    # shellcheck disable=SC2016 # literal ${VAR:-default} compose-interpolation syntax, not shell expansion
     printf '${%s:-%s}' "$name" "$port"
 }

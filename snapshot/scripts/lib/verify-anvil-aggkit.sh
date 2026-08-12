@@ -44,6 +44,7 @@
 
 # Idempotent source guard.
 if [ -n "${_SNAPSHOT_LIB_VERIFY_ANVIL_AGGKIT_SOURCED:-}" ]; then
+    # shellcheck disable=SC2317 # the `exit 0` fallback only runs when this file is executed directly, not sourced
     return 0 2>/dev/null || exit 0
 fi
 _SNAPSHOT_LIB_VERIFY_ANVIL_AGGKIT_SOURCED=1

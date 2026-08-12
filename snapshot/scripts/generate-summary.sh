@@ -11,7 +11,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Host-port numbering lives in exactly one place.
-# shellcheck source=lib/ports.sh
+# shellcheck disable=SC1091 # SCRIPT_DIR is resolved at runtime relative to this file
 source "$SCRIPT_DIR/lib/ports.sh"
 
 FLAVOR="default"
@@ -301,7 +301,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 [ -n "$addr" ] || continue
                 bal=$(jq -r --arg a "${addr,,}" \
                     '.accounts // {} | to_entries | map(select(.key | ascii_downcase == $a)) | first | .value.balance // ""' \
-                    "$OUTPUT_DIR/state/$([ "$role" = l1 ] && echo "$L1_SVC" || echo "$(jq -r --arg p "$FIRST_PREFIX" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")").json" 2>/dev/null || echo "")
+                    "$OUTPUT_DIR/state/$([ "$role" = l1 ] && echo "$L1_SVC" || jq -r --arg p "$FIRST_PREFIX" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON").json" 2>/dev/null || echo "")
                 FUNDED=$(jq --arg addr "$addr" --arg pk "$pk" --arg role "$role" --arg idx "$i" --arg bal "$bal" \
                     '. + [{address: $addr, private_key: $pk, mnemonic_index: ($idx|tonumber),
                            funded_on: (if $role == "l1" then ["l1"] else ["l2-001","l2-002"] end),

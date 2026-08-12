@@ -120,6 +120,17 @@ jobs:
       - name: Run unit tests
         run: kurtosis-test .
 
+      - name: Run ports.sh shell unit tests
+        run: ./snapshot/scripts/lib/ports_test.sh
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: scripts/anvil-template-check/go.mod
+
+      - name: Check anvil-L2 template rendering (regression net for silent template fallbacks)
+        run: ./scripts/anvil-template-check/check.sh
+
   run-without-args:
     needs: [lint, unit]
     runs-on: ubuntu-latest
@@ -424,3 +435,72 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
+
+  # S15 (dev-ui-ci-snapshot plan): single-chain sequencer_type: anvil bring-up
+  # (S3/S4/S4b/S5). Deliberately its OWN job rather than a row in list-ymls'
+  # matrix: that matrix's "Run bridge tests" step (./.github/actions/bridge-tests)
+  # needs a live zkevm-bridge-service (BRIDGE_SERVICE_URL), which the anvil
+  # params file intentionally does not deploy (deploy_cdk_bridge_infra: false --
+  # aggkit's own --components=bridge instance covers it instead, see S4's
+  # outcome). Verifies the two things S3/S4 identified as this stack's load-bearing
+  # invariants: the sovereign bridge/GER bytecode landed at the deterministic
+  # addresses, and aggkit's bridge REST reports both L1 and L2 sides synced+active.
+  run-with-anvil-l2:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/other/anvil/anvil-l2-rollup.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup progress
+        working-directory: .github/scripts
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} anvil ecdsa-multisig
+
+      - name: Verify sovereign bridge/GER bytecode at the deterministic addresses
+        run: |
+          l2_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} l2-anvil-001 rpc)
+          bridge_code=$(cast code 0xC8cbEBf950B9Df44d987c8619f092beA980fF038 --rpc-url "${l2_rpc_url}")
+          ger_code=$(cast code 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa --rpc-url "${l2_rpc_url}")
+          if [ "${bridge_code}" = "0x" ]; then
+            echo "❌ sovereign bridge has no bytecode at 0xC8cbEBf950B9Df44d987c8619f092beA980fF038"
+            exit 1
+          fi
+          if [ "${ger_code}" = "0x" ]; then
+            echo "❌ sovereign GER manager has no bytecode at 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+            exit 1
+          fi
+          echo "✅ sovereign bridge (${#bridge_code} hex chars) and GER manager (${#ger_code} hex chars) bytecode present"
+
+      - name: Verify aggkit bridge sync-status (L1 and L2 both synced+active)
+        run: |
+          bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001-bridge rest)
+          sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1")
+          echo "sync-status: ${sync_status}"
+          l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}")
+          l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}")
+          l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}")
+          l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}")
+          if [ "${l1_synced}" != "true" ] || [ "${l1_active}" != "true" ] || [ "${l2_synced}" != "true" ] || [ "${l2_active}" != "true" ]; then
+            echo "❌ aggkit bridge sync-status is not fully synced+active on both sides"
+            exit 1
+          fi
+          echo "✅ aggkit bridge sync-status: L1 and L2 both synced+active"
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: anvil-l2-rollup

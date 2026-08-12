@@ -11,7 +11,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Host-port numbering lives in exactly one place.
-# shellcheck source=lib/ports.sh
+# shellcheck disable=SC1091 # SCRIPT_DIR is resolved at runtime relative to this file
 source "$SCRIPT_DIR/lib/ports.sh"
 
 FLAVOR="default"
@@ -95,6 +95,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # works against locally built images (the default) and against the GHCR
     # copies S11 publishes: SNAPSHOT_IMAGE_PREFIX=ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
     image_ref() {
+        # shellcheck disable=SC2016 # literal ${VAR:-default} compose-interpolation syntax, not shell expansion
         printf '${SNAPSHOT_IMAGE_PREFIX:-%s}%s:${SNAPSHOT_IMAGE_TAG:-%s}' \
             "$IMAGE_PREFIX" "$1" "$IMAGE_TAG"
     }

@@ -130,7 +130,7 @@ rpc_call() {
 # 0x-prefixed 32-byte left-padded address, for eth_call calldata.
 pad_address() {
     local addr="${1#0x}"
-    printf '%064s' "$(echo "$addr" | tr 'A-Z' 'a-z')" | tr ' ' '0'
+    printf '%064s' "$(echo "$addr" | tr '[:upper:]' '[:lower:]')" | tr ' ' '0'
 }
 
 # balanceOf(address) -> decimal, or "" on failure.
@@ -263,6 +263,7 @@ SOLIDITY
     FORGE_STATUS=$?
     set -e
 
+    # shellcheck disable=SC2001 # prefixing every line of multi-line output; ${var//pattern/repl} can't do this
     echo "$FORGE_OUTPUT" | sed 's/^/    /'
 
     if [ $FORGE_STATUS -ne 0 ]; then

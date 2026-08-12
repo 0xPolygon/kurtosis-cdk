@@ -15,9 +15,10 @@ def run(plan, args, genesis_artifact):
     must be live before initialize_rollup funds accounts and bytecode-checks
     the L2 contracts (static_files/contracts/contracts.sh:808-810, 942).
     """
-    service_name = constants.L2_RPC_MAPPING[constants.SEQUENCER_TYPE.anvil] + args[
-        "deployment_suffix"
-    ]
+    service_name = (
+        constants.L2_RPC_MAPPING[constants.SEQUENCER_TYPE.anvil]
+        + args["deployment_suffix"]
+    )
 
     # NOTE: --dump-state is intentionally absent. anvil rejects `--init`
     # together with `--dump-state` ("the argument '--init <PATH>' cannot be

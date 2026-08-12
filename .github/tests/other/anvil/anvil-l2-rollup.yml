@@ -1,0 +1,68 @@
+# S15 (dev-ui-ci-snapshot plan): single-chain anvil-L2 CI fixture. Exercises
+# sequencer_type: anvil end to end -- the new anvil L2 launcher path added in
+# S3, extended by S4 (template branches), S4b (anvil_image v1.5.1 bump for
+# certificate settlement) and S5. Wired into test.yml's run-with-anvil-l2 job
+# so kurtosis-cdk's own CI covers the anvil-L2 bring-up on every PR, not just
+# this plan's snapshot workflow.
+#
+# Modeled on params-aggkit-anvil-l2l2-run1.yml, minus agglayer_extra_rollups
+# (single chain, no rollup 2) -- that pair is for the 2-L2 snapshot topology,
+# this file is a standalone single `kurtosis run`.
+
+deployment_stages:
+  deploy_op_succinct: false
+  # Legacy zkevm-bridge-service is not needed; aggkit-001-bridge (a second
+  # aggkit instance with --components=bridge) is deployed unconditionally.
+  # See params-aggkit-anvil-l2l2-run1.yml for the same choice, and S15's
+  # evidence (04-agglayer-config-data.json / 05-zkevmbridge-config-data.json)
+  # for confirmation that the legacy bridge-service template ALSO renders
+  # cleanly for anvil now (S4 fixed it), in case a future step wants it on.
+  deploy_cdk_bridge_infra: false
+  # postgres-001 is otherwise deployed by default and unused by the anvil
+  # path (databases.star returns CENTRAL_ENV_DBS for anvil, which nothing
+  # reads when deploy_cdk_bridge_infra is false and sequencer_type is anvil).
+  deploy_databases: false
+
+args:
+  # Anvil on both layers -- L1 AND its own L2.
+  l1_engine: anvil
+  # MANDATORY workaround for a pre-existing bug (S3's outcome / S17 should fix
+  # at source): input_parser.parse_args calls set_anvil_args() (which points
+  # these at anvil-001) and then set_l1_client_args(), which unconditionally
+  # clobbers them back to the ethereum-package service names whenever the
+  # user did not set them explicitly. Setting them here makes both functions
+  # no-ops.
+  l1_rpc_url: "http://anvil-001:8545"
+  l1_ws_url: "ws://anvil-001:8545"
+  l1_beacon_url: "http://anvil-001:8545"
+  sequencer_type: anvil
+  # Mandatory for sequencer_type: anvil (args_sanity_check rule V1).
+  consensus_contract_type: ecdsa-multisig
+
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  # "autoclaim" so destination network 1 gets an AutoClaim claimer -- see
+  # aggkit_autoclaim_destinations below.
+  aggkit_components: "aggsender,aggoracle,autoclaim"
+
+  # aggsender multisig committee: 1 validator, threshold 1.
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # Off for determinism, same choice as the 2-L2 anvil params (no dedicated
+  # test-runner/bridge-spammer wiring for the anvil bridge topology yet --
+  # this job verifies bridge/GER bytecode and aggkit sync-status directly).
+  additional_services: []
+
+  l2_chain_id: 20201
+  l2_network_id: 1
+
+  aggkit_autoclaim_destinations: [1]
+  aggkit_autoclaim_bridge_urls:
+    - network_id: 1
+      bridge_url: "http://aggkit-001-bridge:5577"
+
+# NOTE: deliberately NO optimism_package: block -- sequencer_type: anvil
+# rejects one entirely (args_sanity_check rule V4: "sequencer_type 'anvil'
+# does not use the optimism-package; remove the optimism_package block from
+# your args file").
