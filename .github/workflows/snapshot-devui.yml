@@ -23,28 +23,33 @@
 # exploratory dispatch can never accidentally publish a GHCR package.
 # ---------------------------------------------------------------------------
 #
-# ONE-TIME HUMAN STEP -- GHCR package visibility (do this after the FIRST
-# real `publish: true` run, once per image; there are 11):
-#   New packages pushed to ghcr.io under an org default to PRIVATE, even
-#   when the owning repository is public. agglayer-dev-ui's e2e CI runs in a
-#   different repo/org context and must pull these images with NO
-#   credentials (anonymous), so each of the 11
-#   `ghcr.io/0xpolygon/kurtosis-cdk-snapshot-<service>` packages must be
-#   switched to public exactly once:
+# GHCR PACKAGE VISIBILITY -- checked empirically, action only needed if this
+# regresses:
+#   New packages pushed to ghcr.io under an org CAN default to PRIVATE even
+#   when the owning repository is public, which would break agglayer-dev-ui's
+#   e2e CI (different repo/org context, must pull with NO credentials). On
+#   THIS org (0xPolygon) all 11 `kurtosis-cdk-snapshot-<service>` packages
+#   came back PUBLIC by default on their first-ever publish (2026-08-12, run
+#   https://github.com/0xPolygon/kurtosis-cdk/actions/runs/31616965584,
+#   verified by `docker logout ghcr.io && docker pull` for all 11 services x
+#   both tags -- see plans/dev-ui-ci-snapshot/s11-evidence/14-anonymous-pull-verification.log).
+#   No manual toggle was required. If a future org policy change makes a new
+#   package private, fix it once per image (services: anvil-001,
+#   l2-anvil-001, l2-anvil-002, agglayer, aggkit-001, aggkit-001-bridge,
+#   aggkit-002, aggkit-002-bridge, aggkit-proxy-001,
+#   agglayer-dev-ui-proxy-002, agglayer-dev-ui-002):
 #     1. https://github.com/orgs/0xPolygon/packages -> find
-#        kurtosis-cdk-snapshot-<service> (one entry per service listed in the
-#        component/port map: anvil-001, l2-anvil-001, l2-anvil-002, agglayer,
-#        aggkit-001, aggkit-001-bridge, aggkit-002, aggkit-002-bridge,
-#        aggkit-proxy-001, agglayer-dev-ui-proxy-002, agglayer-dev-ui-002).
-#     2. Package settings -> "Change visibility" -> Public -> type the
-#        package name to confirm.
-#     3. (Optional, recommended) Package settings -> "Manage Actions access"
-#        -> connect the repository (0xPolygon/kurtosis-cdk) so future pushes
-#        from this workflow don't need repeating step 2.
-#   Equivalently, via the GitHub CLI/API per package:
+#        kurtosis-cdk-snapshot-<service> -> Package settings ->
+#        "Change visibility" -> Public -> type the package name to confirm.
+#     2. (Optional, recommended) Package settings -> "Manage Actions access"
+#        -> connect the repository (0xPolygon/kurtosis-cdk).
+#   Equivalently, via the GitHub CLI/API per package (requires a token with
+#   the write:packages scope -- the default `gh auth login` scopes do NOT
+#   include it; run `gh auth refresh -s write:packages` first, which needs
+#   an interactive browser confirmation):
 #     gh api -X PATCH /orgs/0xPolygon/packages/container/kurtosis-cdk-snapshot-<service> \
 #       -f visibility=public
-#   Verify anonymously (no docker login, no token) after the toggle:
+#   Verify anonymously (no docker login, no token) after any toggle:
 #     docker logout ghcr.io
 #     docker pull ghcr.io/0xpolygon/kurtosis-cdk-snapshot-anvil-001:snapshot-latest-devui
 #   Naming note: both the package name AND every tag deliberately contain
