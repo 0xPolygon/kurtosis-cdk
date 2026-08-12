@@ -9,20 +9,17 @@ input_parser = import_module("./input_parser.star")
 # they exercise exactly what a real params YAML would trigger, and so they
 # stay correct if parse_args's internal wiring changes.
 #
-# _MINIMAL_ANVIL_USER_ARGS is intentionally the smallest valid anvil args
-# block: l1_engine/sequencer_type/consensus_contract_type plus the three L1
-# URL overrides required by the pre-existing set_l1_client_args clobber bug
-# (see S3's outcome / params-aggkit-anvil-l2l2-run1.yml) -- without them
-# parse_args would succeed here (this test module never calls set_l1_client_args's
-# real service names) but every real deployment needs them, so the fixture
-# mirrors production usage.
+# _MINIMAL_ANVIL_USER_ARGS is the smallest valid anvil args block:
+# l1_engine/sequencer_type/consensus_contract_type and nothing else. It
+# deliberately does NOT spell out l1_rpc_url/l1_ws_url/l1_beacon_url -- S17
+# fixed set_l1_client_args to skip an anvil L1 rather than clobbering those
+# URLs back to the ethereum-package service names, and
+# test_parse_args_anvil_l1_urls_not_clobbered below is the regression net for
+# that fix.
 def _minimal_anvil_user_args():
     return {
         "args": {
             "l1_engine": "anvil",
-            "l1_rpc_url": "http://anvil-001:8545",
-            "l1_ws_url": "ws://anvil-001:8545",
-            "l1_beacon_url": "http://anvil-001:8545",
             "sequencer_type": constants.SEQUENCER_TYPE.anvil,
             "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
         },
@@ -467,3 +464,77 @@ def test_get_fork_id(plan):
             )
             expect.eq(fork_id, expected_fork_id)
             expect.eq(fork_name, expected_fork_name)
+
+
+# S17 (adversarial review): three regression nets for fixes made during the
+# review pass.
+
+
+def test_parse_args_anvil_l1_urls_not_clobbered(plan):
+    # set_anvil_args() points the three L1 URLs at the anvil service, and
+    # set_l1_client_args() used to run straight afterwards and overwrite all
+    # three with `http://el-1-<el>-<cl>:8545`-style names that an anvil L1
+    # never creates -- so every consumer retried forever against a nonexistent
+    # host. Every anvil params file carried an explicit three-line workaround
+    # for this. Assert the derived values survive.
+    (deployment_stages, args, op_args) = input_parser.parse_args(
+        plan, _minimal_anvil_user_args()
+    )
+    expect.eq(args["l1_rpc_url"], "http://anvil-001:8545")
+    expect.eq(args["l1_ws_url"], "ws://anvil-001:8545")
+    expect.eq(args["l1_beacon_url"], "http://anvil-001:8545")
+
+
+def test_parse_args_l1_client_args_still_apply_without_anvil(plan):
+    # The other half of the same fix: for a NON-anvil L1, set_l1_client_args
+    # must keep deriving the ethereum-package service names exactly as before.
+    (deployment_stages, args, op_args) = input_parser.parse_args(
+        plan,
+        {
+            "args": {
+                "sequencer_type": constants.SEQUENCER_TYPE.cdk_erigon,
+                "l1_el_type": "geth",
+                "l1_cl_type": "lighthouse",
+            },
+        },
+    )
+    expect.eq(args["l1_rpc_url"], "http://el-1-geth-lighthouse:8545")
+    expect.eq(args["l1_ws_url"], "ws://el-1-geth-lighthouse:8546")
+    expect.eq(args["l1_beacon_url"], "http://cl-1-lighthouse-geth:4000")
+
+
+def test_parse_args_anvil_l1_rejects_op_reth(plan):
+    # An anvil L1 cannot host an op-reth L2: the optimism-package's op-node
+    # launcher requires an `el_cl_genesis_data` artifact that only the
+    # ethereum-package L1 produces, so the run dies at Starlark validation time
+    # with an error that names the artifact and nothing else. Fail with a
+    # message that names the real cause instead.
+    expect.fails(
+        lambda: input_parser.parse_args(
+            plan,
+            {
+                "args": {
+                    "l1_engine": "anvil",
+                    "sequencer_type": constants.SEQUENCER_TYPE.op_reth,
+                },
+            },
+        ),
+        "cannot be combined with sequencer_type 'op-reth'",
+    )
+
+
+def test_parse_args_anvil_rejects_custom_mnemonic(plan):
+    # V7: contracts.sh's initialize_rollup hard-codes the default anvil dev
+    # mnemonic when funding sovereignadmin/aggoracle/claimsponsor on the L2, so
+    # a custom l2_anvil_mnemonic leaves that funder with a zero balance and the
+    # three `cast send` calls fail deep inside the contracts service.
+    user_args = _with_args(
+        _minimal_anvil_user_args(),
+        {
+            "l2_anvil_mnemonic": "custom custom custom custom custom custom custom custom custom custom custom custom"
+        },
+    )
+    expect.fails(
+        lambda: input_parser.parse_args(plan, user_args),
+        "must currently stay at the default anvil dev mnemonic",
+    )

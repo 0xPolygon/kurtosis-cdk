@@ -19,10 +19,14 @@ deployment_stages:
   deploy_databases: false
 
 args:
-  # Anvil on both layers, same as run1 -- this run's L1 (unused here since
-  # deploy_l1: false, but set for consistency/defense-in-depth against the
-  # set_l1_client_args clobber bug) AND its own L2.
+  # Anvil on both layers, same as run1 -- this run's L1 AND its own L2.
   l1_engine: anvil
+  # These three MUST stay explicit here, and are NOT the set_l1_client_args
+  # workaround run1 used to carry (that bug is fixed at source now). This run
+  # has deployment_suffix -002, so set_anvil_args() would derive
+  # http://anvil-002:8545 -- but the L1 lives in run1's enclave under the name
+  # anvil-001 (deploy_l1: false here). Pointing at anvil-001 is a real
+  # cross-run reference, not a workaround.
   l1_rpc_url: "http://anvil-001:8545"
   l1_ws_url: "ws://anvil-001:8545"
   l1_beacon_url: "http://anvil-001:8545"

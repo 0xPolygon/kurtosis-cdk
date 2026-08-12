@@ -94,7 +94,15 @@ snapshot_l2_port() {
         echo "ports.sh: unknown L2 port key '$key'" >&2
         return 1
     fi
-    echo $((SNAPSHOT_L2_PORT_BASE + 10#$prefix * SNAPSHOT_L2_PORT_STRIDE + offset))
+    local port=$((SNAPSHOT_L2_PORT_BASE + 10#$prefix * SNAPSHOT_L2_PORT_STRIDE + offset))
+    # The formula runs out of TCP port space at prefix 055 (65545). Fail loudly
+    # rather than emit an invalid port that only surfaces as a confusing
+    # `docker compose up` error.
+    if [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
+        echo "ports.sh: computed host port $port for L2 prefix '$prefix' key '$key' is outside 1-65535" >&2
+        return 1
+    fi
+    echo "$port"
 }
 
 # snapshot_l2_port_env <prefix> <key>

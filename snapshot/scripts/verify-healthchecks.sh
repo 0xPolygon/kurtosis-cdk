@@ -23,7 +23,11 @@ FLAVOR="default"
 while [ $# -gt 0 ]; do
     case "$1" in
         --flavor)
-            FLAVOR="${2:-}"
+            if [ $# -lt 2 ]; then
+                echo "ERROR: --flavor requires a value" >&2
+                exit 1
+            fi
+            FLAVOR="$2"
             shift 2
             ;;
         -*)
@@ -42,6 +46,16 @@ if [ $# -ne 1 ]; then
     echo "Usage: $0 [--flavor default|anvil-aggkit] <SNAPSHOT_DIR>" >&2
     exit 1
 fi
+
+# An unrecognised flavor must fail rather than silently select the default
+# path, whose checks are a strict subset of the anvil-aggkit ones.
+case "$FLAVOR" in
+    default | anvil-aggkit) ;;
+    *)
+        echo "ERROR: unknown flavor: '$FLAVOR' (expected 'default' or 'anvil-aggkit')" >&2
+        exit 1
+        ;;
+esac
 
 SNAPSHOT_DIR="$1"
 COMPOSE_FILE="$SNAPSHOT_DIR/docker-compose.yml"

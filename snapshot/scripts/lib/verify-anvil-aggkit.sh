@@ -56,9 +56,28 @@ _SNAPSHOT_LIB_VERIFY_ANVIL_AGGKIT_SOURCED=1
 # throwaway container instead, exactly as documented in
 # plans/dev-ui-ci-snapshot/s4b-evidence/21-manual-claim-recipe.txt.
 # ============================================================================
+# The foundry tag is read from the bundle whenever possible, never pinned to a
+# floating `:latest`: the anvil nodes in the snapshot are a specific foundry
+# version (v1.5.1 -- older builds lack eth_getTransactionBySenderAndNonce and
+# make agglayer panic, S4b), and verifying them with a different, drifting
+# `cast` is exactly the kind of mismatch this tooling exists to prevent.
+# _verify_cast_image is resolved once by _resolve_verify_cast_image below.
+VERIFY_CAST_IMAGE="${VERIFY_CAST_IMAGE:-ghcr.io/foundry-rs/foundry:latest}"
+
+_resolve_verify_cast_image() {
+    # $1 = snapshot dir. Prefer the exact image the captured chains ran.
+    local meta="$1/state/state-metadata.json" img=""
+    if [ -f "$meta" ]; then
+        img=$(jq -r 'first(.chains[]?.image // empty) // empty' "$meta" 2>/dev/null || true)
+    fi
+    if [ -n "$img" ] && [ "$img" != "null" ]; then
+        VERIFY_CAST_IMAGE="$img"
+    fi
+}
+
 _verify_cast() {
     docker run --rm --network host --entrypoint=/usr/local/bin/cast \
-        ghcr.io/foundry-rs/foundry:latest "$@"
+        "$VERIFY_CAST_IMAGE" "$@"
 }
 
 # ============================================================================
@@ -180,13 +199,15 @@ run_anvil_aggkit_verification() {
     # the round trip (TEST 12) does not have first-pull progress noise mixed
     # into a `2>&1` capture that a later `tail -1 | jq` parses as the
     # transaction receipt.
-    docker pull -q ghcr.io/foundry-rs/foundry:latest > /dev/null 2>&1
+    _resolve_verify_cast_image "$SNAPSHOT_DIR"
+    log_info "  cast image: $VERIFY_CAST_IMAGE"
+    docker pull -q "$VERIFY_CAST_IMAGE" > /dev/null 2>&1 || true
 
     # ------------------------------------------------------------------
     # TEST 1: referenced images exist locally
     # ------------------------------------------------------------------
     log_step "TEST 1: Docker Images"
-    local MISSING_IMAGES=0 IMG
+    local MISSING_IMAGES=0 IMG SEEN_IMAGES=0
     while IFS= read -r IMG; do
         [ -n "$IMG" ] || continue
         if docker image inspect "$IMG" > /dev/null 2>&1; then
@@ -195,7 +216,15 @@ run_anvil_aggkit_verification() {
             log_error "  Missing: $IMG"
             MISSING_IMAGES=$((MISSING_IMAGES + 1))
         fi
+        SEEN_IMAGES=$((SEEN_IMAGES + 1))
     done < <(docker compose -f "$SNAPSHOT_DIR/docker-compose.yml" config --images 2>/dev/null)
+    # A failing `docker compose config` yields an empty stream, zero loop
+    # iterations and MISSING_IMAGES=0 -- i.e. a vacuous PASS. Require that the
+    # compose file actually named some images.
+    if [ "$SEEN_IMAGES" -eq 0 ]; then
+        log_error "  docker compose config --images produced no output"
+        MISSING_IMAGES=$((MISSING_IMAGES + 1))
+    fi
     anvil_test_result "All referenced images exist locally" "$([ "$MISSING_IMAGES" -eq 0 ] && echo pass || echo fail)"
 
     # ------------------------------------------------------------------
@@ -234,17 +263,26 @@ run_anvil_aggkit_verification() {
     # check with what the containers actually report right now)
     # ------------------------------------------------------------------
     log_step "TEST 4: Live Container Health"
-    local UNHEALTHY=0 NAME STATE HEALTH
+    local UNHEALTHY=0 NAME STATE HEALTH SEEN_CONTAINERS=0 EXPECTED_SERVICES=0
+    # `ps` WITHOUT --all hides a container that crashed and exited, and an
+    # errored `ps`/`jq` yields an empty stream -> zero iterations -> vacuous
+    # PASS. Use --all and cross-check the row count against `config --services`.
     while IFS=$'\t' read -r NAME STATE HEALTH; do
         [ -n "$NAME" ] || continue
+        SEEN_CONTAINERS=$((SEEN_CONTAINERS + 1))
         if [ "$HEALTH" = "healthy" ] || { [ -z "$HEALTH" ] && [ "$STATE" = "running" ]; }; then
             log_info "  $NAME: $STATE${HEALTH:+ ($HEALTH)}"
         else
             log_error "  $NAME: $STATE${HEALTH:+ ($HEALTH)}"
             UNHEALTHY=$((UNHEALTHY + 1))
         fi
-    done < <(cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml ps --format json 2>/dev/null \
+    done < <(cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml ps --all --format json 2>/dev/null \
         | jq -r '[.Name, .State, .Health] | @tsv')
+    EXPECTED_SERVICES=$( (cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml config --services 2>/dev/null) | grep -c . || true)
+    if [ "$SEEN_CONTAINERS" -eq 0 ] || [ "$SEEN_CONTAINERS" -ne "${EXPECTED_SERVICES:-0}" ]; then
+        log_error "  saw $SEEN_CONTAINERS container(s) for ${EXPECTED_SERVICES:-0} compose service(s)"
+        UNHEALTHY=$((UNHEALTHY + 1))
+    fi
     anvil_test_result "All containers healthy" "$([ "$UNHEALTHY" -eq 0 ] && echo pass || echo fail)"
 
     # ------------------------------------------------------------------
@@ -356,7 +394,10 @@ run_anvil_aggkit_verification() {
         SYNC_DEADLINE=$(( $(date +%s) + 60 ))
         while [ "$(date +%s)" -lt "$SYNC_DEADLINE" ]; do
             SYNC_JSON=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/sync-status?network_id=${NID}")
-            if echo "$SYNC_JSON" | jq -e '
+            # `[ -n ... ]` is load-bearing: on EMPTY input `jq -e` exits 0 under
+            # jq 1.6 (only jq >= 1.7 exits 4), so a dead endpoint would satisfy
+            # this condition and the check would pass vacuously.
+            if [ -n "$SYNC_JSON" ] && echo "$SYNC_JSON" | jq -e '
                 (.l1_info.is_synced == true) and (.l1_info.is_active == true) and
                 (.l2_info.is_synced == true) and (.l2_info.is_active == true)
                 ' > /dev/null 2>&1; then
@@ -378,7 +419,7 @@ run_anvil_aggkit_verification() {
     TRACKER_HEALTH=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/tracker/v1/health")
     log_info "  $TRACKER_HEALTH"
     anvil_test_result "tracker/v1/health returns status:ok" \
-        "$(echo "$TRACKER_HEALTH" | jq -e '.status == "ok"' > /dev/null 2>&1 && echo pass || echo fail)"
+        "$([ -n "$TRACKER_HEALTH" ] && echo "$TRACKER_HEALTH" | jq -e '.status == "ok"' > /dev/null 2>&1 && echo pass || echo fail)"
 
     # ------------------------------------------------------------------
     # TEST 9: aggkit-proxy RetentionPeriod >= 30m (static, from the captured
@@ -460,9 +501,15 @@ run_anvil_aggkit_verification() {
         # on GH runners for THIS step -- S12/S13 own that wiring). Falls back
         # to a portable structural check so this script has no hard external
         # dependency.
+        # NOTE: which branch runs is environment-dependent, which is exactly how
+        # the schema bug S11 hit stayed hidden -- so the fallback below is
+        # written to be as strong as the mjs check, not as a token stand-in.
+        # Candidate list is deliberately relative-only (plus the explicit
+        # DEVUI_REPO_PATH override): a developer's absolute home directory has
+        # no business deciding which assertion a CI-facing verifier runs.
         local DEVUI_REPO="${DEVUI_REPO_PATH:-}"
         if [ -z "$DEVUI_REPO" ]; then
-            for _cand in "/home/brolygon/repos/agglayer/agglayer-dev-ui" "../agglayer-dev-ui" "../../agglayer/agglayer-dev-ui"; do
+            for _cand in "../agglayer-dev-ui" "../../agglayer-dev-ui" "../../agglayer/agglayer-dev-ui" "../../../agglayer/agglayer-dev-ui"; do
                 if [ -f "$_cand/scripts/validateConfig.mjs" ]; then DEVUI_REPO="$_cand"; break; fi
             done
         fi
@@ -642,10 +689,14 @@ _anvil_aggkit_bridge_roundtrip() {
     # 0 must stay manual -- manual-claim.spec.ts:110-114's 60s assertion).
     sleep 15
     local STILL_WAITING
+    # Assert POSITIVELY. `[ "$STILL_WAITING" != "done" ]` alone can never fail:
+    # a curl failure, a tracker error object, or the step simply not existing
+    # all yield "" -- which is != "done" and therefore read as PASS.
     STILL_WAITING=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/tracker/v1/network/${NETWORK_ID}/tx/${TX2}" \
-        | jq -r '.all_steps[] | select(.step_name=="WaitingClaim") | .status')
+        | jq -r '[.all_steps[]? | select(.step_name=="WaitingClaim") | .status] | last // ""')
+    log_info "  WaitingClaim step status after 15s: '${STILL_WAITING}'"
     anvil_test_result "Bridge round trip: L2->L1 does NOT autoclaim (still WaitingClaim after 15s)" \
-        "$([ "$STILL_WAITING" != "done" ] && echo pass || echo fail)"
+        "$([ -n "$STILL_WAITING" ] && [ "$STILL_WAITING" != "done" ] && echo pass || echo fail)"
 
     # ---- Manual claim via cast, sourced entirely from the bridges REST
     # listing + claim-proof, per the F1 comment and the S4b recipe. ----
@@ -690,12 +741,12 @@ _anvil_aggkit_bridge_roundtrip() {
     local CLAIM_PROOF CP_DEADLINE=$(( $(date +%s) + 120 ))
     while [ "$(date +%s)" -lt "$CP_DEADLINE" ]; do
         CLAIM_PROOF=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/claim-proof?network_id=${NETWORK_ID}&leaf_index=${LEAF_INDEX}&deposit_count=${DEPOSIT_COUNT}")
-        if echo "$CLAIM_PROOF" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
+        if [ -n "$CLAIM_PROOF" ] && echo "$CLAIM_PROOF" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
             break
         fi
         sleep 5
     done
-    if ! echo "$CLAIM_PROOF" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
+    if [ -z "$CLAIM_PROOF" ] || ! echo "$CLAIM_PROOF" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
         log_error "  claim-proof never became available: $CLAIM_PROOF"
         anvil_test_result "Bridge round trip: L2->L1 manual claim via cast" "fail"
         return
@@ -751,7 +802,12 @@ _poll_tracker() {
         if [ "$status" = "error" ]; then
             local err_type
             err_type=$(echo "$resp" | jq -r '[.all_steps[]? | select(.status=="error") | .error.error_type_string] | last // "?"')
-            log_info "  [$label] tracking_status=error step_error_type=$err_type (tolerating unless non-transient)"
+            # >&2 is REQUIRED: this function's stdout is captured by the
+            # caller (STATE=$(_poll_tracker ...)) and parsed as JSON. Logging
+            # to stdout here prepends this line to the payload and makes the
+            # subsequent `jq` fail -- on the transient-error path the module's
+            # own header documents as NORMAL.
+            log_info "  [$label] tracking_status=error step_error_type=$err_type (tolerating unless non-transient)" >&2
             if [ "$err_type" != "transient" ] && [ "$err_type" != "?" ]; then
                 echo "$resp"
                 return 1

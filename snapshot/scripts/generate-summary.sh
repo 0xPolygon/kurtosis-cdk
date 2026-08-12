@@ -11,21 +11,37 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Host-port numbering lives in exactly one place.
-# shellcheck disable=SC1091 # SCRIPT_DIR is resolved at runtime relative to this file
+# shellcheck disable=SC1090,SC1091 # SCRIPT_DIR is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
 source "$SCRIPT_DIR/lib/ports.sh"
 
 FLAVOR="default"
 while [ $# -gt 0 ]; do
     case "$1" in
         --flavor)
-            FLAVOR="$2"
+            FLAVOR="${2:-}"
             shift 2
+            ;;
+        -*)
+            # Do not let an unknown option fall through to `break` and get
+            # consumed as a positional -- that silently ran the default flavor.
+            echo "ERROR: unknown option: $1" >&2
+            exit 1
             ;;
         *)
             break
             ;;
     esac
 done
+
+# An unrecognised flavor must fail rather than silently select the default
+# (geth/lighthouse) code path against an anvil enclave's discovery.
+case "$FLAVOR" in
+    default | anvil-aggkit) ;;
+    *)
+        echo "ERROR: unknown flavor: '$FLAVOR' (expected 'default' or 'anvil-aggkit')" >&2
+        exit 1
+        ;;
+esac
 
 # Check arguments
 if [ $# -ne 2 ]; then

@@ -25,15 +25,11 @@ deployment_stages:
 args:
   # Anvil on both layers -- this run's L1 AND its own L2.
   l1_engine: anvil
-  # MANDATORY (S3 finding, pre-existing repo bug worked around here, not
-  # fixed -- see S3's outcome / S17): input_parser.parse_args calls
-  # set_anvil_args() (which points these at anvil-001) and then
-  # set_l1_client_args(), which unconditionally clobbers them back to the
-  # ethereum-package service names whenever the user did not set them
-  # explicitly. Setting them here makes both functions no-ops.
-  l1_rpc_url: "http://anvil-001:8545"
-  l1_ws_url: "ws://anvil-001:8545"
-  l1_beacon_url: "http://anvil-001:8545"
+  # No explicit l1_rpc_url/l1_ws_url/l1_beacon_url needed: set_anvil_args()
+  # derives all three from this run's deployment_suffix (-> anvil-001), and
+  # set_l1_client_args() now returns early for an anvil L1 instead of
+  # clobbering them back to the ethereum-package service names. (run2 still
+  # sets them explicitly, for a different reason -- see that file.)
   sequencer_type: anvil
   # Mandatory for sequencer_type: anvil.
   consensus_contract_type: ecdsa-multisig

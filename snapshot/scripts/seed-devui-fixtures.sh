@@ -65,6 +65,23 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# Validate every value that later lands inside a hand-built JSON-RPC body or
+# inside the single `/bin/sh -c` string handed to the foundry container. Without
+# this, a crafted --erc20-address re-parses as a different `method` (last
+# duplicate key wins in most JSON parsers) and a crafted --private-key is shell
+# metacharacters executing inside a --network host container whose output is
+# then baked into a published image.
+_require_hex() {
+    local name="$1" value="$2" nibbles="$3"
+    if ! [[ "$value" =~ ^0x[0-9a-fA-F]{$nibbles}$ ]]; then
+        echo "ERROR: $name must be a 0x-prefixed ${nibbles}-nibble hex string (got: '$value')" >&2
+        exit 1
+    fi
+}
+[ -n "$ERC20_ADDRESS" ] && _require_hex "--erc20-address" "$ERC20_ADDRESS" 40
+_require_hex "--wallet" "$E2E_WALLET" 40
+_require_hex "--private-key" "$E2E_PRIVATE_KEY" 64
+
 if [ ${#POSITIONAL[@]} -ne 2 ]; then
     echo "Usage: $0 <DISCOVERY_JSON> <OUTPUT_DIR> [--erc20-address <addr>] [--foundry-image <image>]" >&2
     exit 1
@@ -248,6 +265,13 @@ SOLIDITY
     #
     # No --skip-simulation: foundry >= 1.7 dropped the flag and its variadic
     # --constructor-args then swallows the stray token.
+    # $L1_PORT comes from discovery.json and is interpolated into a shell
+    # string executed by the container's /bin/sh -c entrypoint; the key/supply
+    # are validated at parse time above.
+    if ! [[ "$L1_PORT" =~ ^[0-9]{1,5}$ ]]; then
+        echo "ERROR: L1 host port from discovery.json is not numeric: '$L1_PORT'" >&2
+        exit 1
+    fi
     FORGE_CMD="cd /workspace && forge create src/E2EToken.sol:E2EToken \
 --rpc-url http://127.0.0.1:$L1_PORT \
 --private-key $E2E_PRIVATE_KEY \

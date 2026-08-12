@@ -82,13 +82,24 @@ else
 fi
 
 # --- Gate 2: historical_states > 0 for every chain ----------------------
-CHAIN_COUNT=$(jq -r '.chains | length' "$STATE_METADATA" 2>/dev/null || echo 0)
+# `.chains | length` is NOT sufficient on its own: jq's `length` returns a
+# number's absolute value and a string's character count, so `"chains": 5` and
+# `"chains": "abc"` both yield a positive count -- and then `.chains[]` errors,
+# the loop below runs zero times, FAIL stays 0 and the gate PASSES vacuously.
+# That defeats the whole point of re-deriving the verdict from a possibly
+# hand-edited or foreign bundle. Require an actual array.
+CHAIN_COUNT=$(jq -r 'if (.chains | type) == "array" then (.chains | length) else -1 end' "$STATE_METADATA" 2>/dev/null || echo -1)
 
-if [ "$CHAIN_COUNT" -eq 0 ] 2>/dev/null; then
-    echo "[FAIL] .chains is empty or missing -- nothing to gate on" >&2
+if ! [[ "$CHAIN_COUNT" =~ ^-?[0-9]+$ ]] || [ "$CHAIN_COUNT" -lt 0 ]; then
+    echo "[FAIL] .chains is missing or is not an array -- nothing to gate on" >&2
+    FAIL=1
+elif [ "$CHAIN_COUNT" -eq 0 ]; then
+    echo "[FAIL] .chains is an empty array -- nothing to gate on" >&2
     FAIL=1
 else
+    SEEN_CHAINS=0
     while IFS=$'\t' read -r service historical; do
+        SEEN_CHAINS=$((SEEN_CHAINS + 1))
         # jq prints `null` (a literal 4-char string) for a missing key, which
         # would otherwise pass a naive numeric `-gt 0` test after coercion.
         if [ -z "$historical" ] || [ "$historical" = "null" ] || ! [[ "$historical" =~ ^-?[0-9]+$ ]]; then
@@ -101,6 +112,13 @@ else
             echo "[PASS] $service: historical_states == $historical"
         fi
     done < <(jq -r '.chains[] | [.service, (.historical_states // "null")] | @tsv' "$STATE_METADATA")
+
+    # The loop is fed by process substitution, so a jq error mid-stream would
+    # silently truncate it rather than fail the script.
+    if [ "$SEEN_CHAINS" -ne "$CHAIN_COUNT" ]; then
+        echo "[FAIL] only $SEEN_CHAINS of $CHAIN_COUNT chains could be read from .chains[]" >&2
+        FAIL=1
+    fi
 fi
 
 echo "=================================================================="

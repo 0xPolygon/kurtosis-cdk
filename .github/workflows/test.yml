@@ -120,6 +120,18 @@ jobs:
       - name: Run unit tests
         run: kurtosis-test .
 
+  # Deliberately NOT part of `unit`, and deliberately gated on nothing: every
+  # integration job below is `needs: [lint, unit]`, so a failure (or a Go
+  # toolchain download blip) in either of these two checks would SKIP the whole
+  # matrix rather than fail it -- and GitHub reports a skipped required check as
+  # satisfied. Keeping them in their own ungated job means they can go red on
+  # their own without silently disabling integration coverage.
+  snapshot-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Run ports.sh shell unit tests
         run: ./snapshot/scripts/lib/ports_test.sh
 
@@ -490,12 +502,20 @@ jobs:
           # not the other way round -- poll instead of a single shot (matches monitor.sh's
           # own retry style).
           for attempt in $(seq 1 24); do
-            sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1")
+            # `run:` blocks execute under `bash -e`, and a bare
+            # `var=$(cmd)` assignment is NOT a tested command -- so an
+            # unguarded `curl -sf` here would abort the whole step on the
+            # FIRST transient failure (exit 7 connection refused, 22 on
+            # 4xx/5xx) and the retry loop could never do its job. The
+            # early attempts are exactly when the endpoint is expected to
+            # be unavailable, so every probe below tolerates failure and
+            # falls through to the sleep.
+            sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1" || true)
             echo "attempt ${attempt}/24 sync-status: ${sync_status}"
-            l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}")
-            l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}")
-            l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}")
-            l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}")
+            l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}" 2>/dev/null || true)
+            l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}" 2>/dev/null || true)
+            l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}" 2>/dev/null || true)
+            l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}" 2>/dev/null || true)
             if [ "${l1_synced}" = "true" ] && [ "${l1_active}" = "true" ] && [ "${l2_synced}" = "true" ] && [ "${l2_active}" = "true" ]; then
               echo "✅ aggkit bridge sync-status: L1 and L2 both synced+active"
               exit 0

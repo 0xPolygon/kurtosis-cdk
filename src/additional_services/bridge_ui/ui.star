@@ -138,6 +138,16 @@ def run_dev_ui(plan, args, contract_setup_addresses, l1_context, l2_context):
         for entry in raw_l2_rpc_backends
         if "chain_id" in entry and "network_id" in entry
     ]
+    # The filter above is a silent drop: an entry without chain_id/network_id
+    # simply vanishes from the dev-ui chain catalog. In a multi-L2 enclave where
+    # only some entries carry the metadata that means a missing chain in the UI
+    # with no error anywhere, so say so out loud.
+    if len(l2_chains) != len(raw_l2_rpc_backends):
+        plan.print(
+            "WARNING: {} of {} bridge_ui_l2_rpc_urls entries lack chain_id/network_id and are omitted from the dev-ui chain catalog".format(
+                len(raw_l2_rpc_backends) - len(l2_chains), len(raw_l2_rpc_backends)
+            )
+        )
     if not l2_chains:
         # Single-L2 fallback: no bridge_ui_l2_rpc_urls chain metadata
         # supplied, so catalog only this run's own L2 -- mirrors the

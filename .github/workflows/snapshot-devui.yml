@@ -82,24 +82,35 @@ on:
     paths:
       - "snapshot/**"
       - "src/chain/anvil/**"
+      # The rendered aggkit/agglayer/bridge configs and the contracts script are
+      # baked into the published images, and input_parser/constants decide what
+      # the enclave looks like -- a change to any of them changes the bundle, so
+      # the smoke test has to rerun.
+      - "static_files/**"
+      - "src/package_io/**"
       - "params-aggkit-anvil-l2l2-run*.yml"
       - ".github/workflows/snapshot-devui.yml"
 
 permissions:
   contents: read
+  # Only what this workflow actually needs: packages: write to push the 11
+  # derived images, and id-token: write because kurtosis-pre-run's GCR pre-pull
+  # step authenticates via google-github-actions/auth (Workload Identity
+  # Federation). Deliberately WITHOUT the `actions: write` that test.yml/
+  # nightly.yml grant -- nothing here calls the Actions API, and this job pulls
+  # and executes a dozen third-party container images.
   packages: write
-  # kurtosis-pre-run's GCR pre-pull step authenticates via
-  # google-github-actions/auth (Workload Identity Federation), which needs
-  # an OIDC token -- id-token: write. actions: write matches test.yml/
-  # nightly.yml's existing usage of this same composite action.
-  actions: write
   id-token: write
 
 concurrency:
-  # The enclave name below is fixed ("cdk"), so two concurrent runs on the
-  # same ref would collide; not cancel-in-progress so a mid-push run is
-  # never torn down half-way through writing a GHCR manifest.
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Deliberately ref-INDEPENDENT. Two runs on different refs would otherwise sit
+  # in different groups and race, and both move the same mutable
+  # `snapshot-latest-devui` tag across 11 packages one image at a time -- a
+  # consumer pulling mid-push would get a mixed bundle. The enclave name is also
+  # fixed ("cdk"), so concurrent runs on one runner pool would collide anyway.
+  # Not cancel-in-progress: a run must never be torn down half-way through
+  # writing GHCR manifests.
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 env:
@@ -135,10 +146,20 @@ jobs:
 
       - name: Resolve publish tag
         id: tag
+        # The dispatch input goes through `env:`, never through `${{ }}` inside
+        # the script: a free-text workflow_dispatch input interpolated straight
+        # into a `run:` block is executed as shell, in a job holding
+        # packages: write and a GCP WIF identity.
+        env:
+          TAG_INPUT: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          if [ -n "${{ inputs.tag }}" ]; then
-            BASE_TAG="${{ inputs.tag }}"
+          if [ -n "${TAG_INPUT:-}" ]; then
+            if ! [[ "$TAG_INPUT" =~ ^[A-Za-z0-9._-]+$ ]]; then
+              echo "::error::tag input must match ^[A-Za-z0-9._-]+$ (got: $TAG_INPUT)"
+              exit 1
+            fi
+            BASE_TAG="$TAG_INPUT"
           else
             BASE_TAG="${GITHUB_SHA:0:12}"
           fi
@@ -210,18 +231,31 @@ jobs:
       # exact command) so the tag/push logic is exercised on every run
       # without ever risking an unintended publish.
       - name: Publish images to GHCR
+        env:
+          # Two explicit, fully-quoted invocations rather than an unquoted
+          # $DRY_RUN_FLAG whose word-splitting decides whether a real push
+          # happens. Safety must not hinge on a token surviving expansion.
+          DO_PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
+          REGISTRY_PREFIX: ${{ env.GHCR_IMAGE_PREFIX }}
+          PUBLISH_TAG: ${{ steps.tag.outputs.tag }}
+          IMAGE_INFO: ${{ steps.snap.outputs.dir }}/images/IMAGE_INFO.json
         run: |
           set -euo pipefail
-          DRY_RUN_FLAG="--dry-run"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish }}" = "true" ]; then
-            DRY_RUN_FLAG=""
+          if [ "$DO_PUBLISH" = "true" ]; then
+            echo "Publishing for real (workflow_dispatch with publish=true)."
+            snapshot/scripts/publish-images.sh \
+              --registry-prefix "$REGISTRY_PREFIX" \
+              --tag "$PUBLISH_TAG" \
+              --tag snapshot-latest-devui \
+              "$IMAGE_INFO"
+          else
+            echo "Dry run (event=${GITHUB_EVENT_NAME}); rehearsing tag/push commands only."
+            snapshot/scripts/publish-images.sh --dry-run \
+              --registry-prefix "$REGISTRY_PREFIX" \
+              --tag "$PUBLISH_TAG" \
+              --tag snapshot-latest-devui \
+              "$IMAGE_INFO"
           fi
-          # shellcheck disable=SC2086
-          snapshot/scripts/publish-images.sh $DRY_RUN_FLAG \
-            --registry-prefix "${{ env.GHCR_IMAGE_PREFIX }}" \
-            --tag "${{ steps.tag.outputs.tag }}" \
-            --tag snapshot-latest-devui \
-            "${{ steps.snap.outputs.dir }}/images/IMAGE_INFO.json"
 
       - name: Disk usage (after push)
         run: df -h

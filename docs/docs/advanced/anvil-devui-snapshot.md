@@ -85,11 +85,12 @@ kurtosis run --enclave=cdk --args-file=params-aggkit-anvil-l2l2-run1.yml .
 kurtosis run --enclave=cdk --args-file=params-aggkit-anvil-l2l2-run2.yml .
 ```
 
-Both files must spell out `l1_rpc_url`/`l1_ws_url`/`l1_beacon_url` pointing at
-`http://anvil-001:8545` explicitly — a pre-existing bug in
-`input_parser.set_l1_client_args` (unrelated to this work, tracked for a future fix)
-clobbers those URLs back to the ethereum-package's reth service names whenever they
-are not set explicitly for an anvil L1.
+`run1` does **not** need to spell out `l1_rpc_url`/`l1_ws_url`/`l1_beacon_url`:
+`input_parser.set_anvil_args` derives all three from the deployment suffix, and
+`set_l1_client_args` returns early for an anvil L1 rather than clobbering them back
+to the ethereum-package's reth service names. `run2` **does** set them explicitly,
+for an unrelated reason: its own suffix is `-002`, but the L1 it must talk to is
+run1's `anvil-001`.
 
 ### The two dev-ui image constants
 

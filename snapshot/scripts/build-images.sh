@@ -12,8 +12,20 @@ FLAVOR="default"
 while [ $# -gt 0 ]; do
     case "$1" in
         --flavor)
-            FLAVOR="$2"
+            FLAVOR="${2:-}"
             shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            # Anything else starting with `-` is a typo, not a positional.
+            # Falling through to `break` here used to consume it as
+            # DISCOVERY_JSON and silently run the default flavor.
+            echo "ERROR: unknown option: $1" >&2
+            echo "Usage: $0 [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR> [TAG_SUFFIX]" >&2
+            exit 1
             ;;
         *)
             break
@@ -21,11 +33,23 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# Check arguments
-if [ $# -lt 2 ]; then
+# Check arguments. `-lt 2` (not `-ne`) because TAG_SUFFIX is optional; the
+# `-*` arm above is what stops a misplaced `--flavor` from being swallowed as
+# a positional.
+if [ $# -lt 2 ] || [ $# -gt 3 ]; then
     echo "Usage: $0 [--flavor default|anvil-aggkit] <DISCOVERY_JSON> <OUTPUT_DIR> [TAG_SUFFIX]" >&2
     exit 1
 fi
+
+# An unrecognised flavor must not silently fall through to the default path:
+# it would build a geth/lighthouse bundle from an anvil enclave's discovery.
+case "$FLAVOR" in
+    default | anvil-aggkit) ;;
+    *)
+        echo "ERROR: unknown flavor: '$FLAVOR' (expected 'default' or 'anvil-aggkit')" >&2
+        exit 1
+        ;;
+esac
 
 DISCOVERY_JSON="$1"
 OUTPUT_DIR="$2"
@@ -137,20 +161,25 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
 
         # Fail loudly rather than bake a subtly wrong node. Every one of these
         # has bitten this plan at least once.
+        # NOTE: this function's stdout is captured by the caller
+        # (RESTORE_CMD=$(derive_anvil_restore_cmd ...)), so every diagnostic
+        # below MUST go to stderr -- `log` writes to stdout, and an error
+        # message written there is swallowed into the discarded assignment,
+        # turning "fail loudly" into a silent `set -e` death with no output.
         case "$derived" in
             anvil\ *) ;;
-            *) log "ERROR: derived anvil command does not start with 'anvil': $derived"; exit 1 ;;
+            *) log "ERROR: derived anvil command does not start with 'anvil': $derived" >&2; exit 1 ;;
         esac
         local flag
         for flag in --dump-state --init --timestamp; do
             if printf '%s' "$derived" | grep -q -- "$flag"; then
-                log "ERROR: derived anvil command still contains $flag: $derived"
+                log "ERROR: derived anvil command still contains $flag: $derived" >&2
                 exit 1
             fi
         done
         for flag in --slots-in-an-epoch --chain-id --block-time --load-state --port; do
             if ! printf '%s' "$derived" | grep -q -- "$flag"; then
-                log "ERROR: derived anvil command lost $flag: $derived"
+                log "ERROR: derived anvil command lost $flag: $derived" >&2
                 exit 1
             fi
         done
@@ -167,6 +196,17 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # snapshot while the source enclave looked healthy.
     # ------------------------------------------------------------------
     log "Building anvil images (state baked in via --load-state)..."
+
+    # The loop below is fed by process substitution, so a jq failure or a
+    # missing/empty `.chains` would give ZERO iterations and still exit 0 --
+    # "Built N images" with no anvil image in the bundle at all. Assert the
+    # input up front and the iteration count afterwards.
+    EXPECTED_CHAINS=$(jq -r 'if (.chains | type) == "array" then (.chains | length) else 0 end' "$STATE_METADATA")
+    if [ -z "$EXPECTED_CHAINS" ] || [ "$EXPECTED_CHAINS" -lt 1 ]; then
+        log "ERROR: $STATE_METADATA has no .chains array -- nothing to bake"
+        exit 1
+    fi
+    BUILT_CHAINS=0
 
     while IFS=$'\t' read -r SVC BASE_IMAGE STATE_FILE; do
         [ -n "$SVC" ] || continue
@@ -187,7 +227,11 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         # extract-state.sh already refuses to write such a dump; this is the
         # belt-and-braces check at bake time, because the failure mode it
         # guards against is silent until settlement is attempted.
-        HIST_COUNT=$(jq -r '.historical_states | if . == null then 0 else length end' "$OUTPUT_DIR/$STATE_FILE")
+        # `length` is deliberately guarded by a type check: jq's `length` on a
+        # NUMBER returns its absolute value and on a STRING its character
+        # count, so a malformed `"historical_states": 1` or `"x"` would sail
+        # through a bare `length > 0`.
+        HIST_COUNT=$(jq -r 'if (.historical_states | type) as $t | ($t == "object" or $t == "array") then (.historical_states | length) else 0 end' "$OUTPUT_DIR/$STATE_FILE")
         if [ -z "$HIST_COUNT" ] || [ "$HIST_COUNT" = "null" ] || [ "$HIST_COUNT" -eq 0 ]; then
             log "ERROR: $STATE_FILE has no historical_states -- it was captured with"
             log "       anvil_dumpState() instead of anvil_dumpState(true). A bundle built"
@@ -240,7 +284,13 @@ HC_EOF
 
         docker build -q -t "${IMAGE_PREFIX}${SVC}:$TAG" "$BUILD_DIR" > /dev/null
         record_image "$SVC" "${IMAGE_PREFIX}${SVC}:$TAG" "$BASE_IMAGE"
+        BUILT_CHAINS=$((BUILT_CHAINS + 1))
     done < <(jq -r '.chains[] | [.service, .image, .state_file] | @tsv' "$STATE_METADATA")
+
+    if [ "$BUILT_CHAINS" -ne "$EXPECTED_CHAINS" ]; then
+        log "ERROR: baked $BUILT_CHAINS anvil images but state-metadata.json lists $EXPECTED_CHAINS chains"
+        exit 1
+    fi
 
     # ------------------------------------------------------------------
     # agglayer: original image + config + keystore.

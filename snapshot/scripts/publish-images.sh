@@ -106,6 +106,15 @@ SERVICES=$(jq -r '.images | keys[]' "$IMAGE_INFO_JSON")
 COUNT=0
 FAILED=0
 
+# `.images == {}` (or a malformed IMAGE_INFO.json) would give zero loop
+# iterations below and a cheerful exit 0 -- a "successful publish" that pushed
+# nothing. Refuse up front.
+SERVICE_COUNT=$(jq -r 'if (.images | type) == "object" then (.images | length) else 0 end' "$IMAGE_INFO_JSON")
+if [ -z "$SERVICE_COUNT" ] || [ "$SERVICE_COUNT" -lt 1 ]; then
+    echo "ERROR: $IMAGE_INFO_JSON lists no images under .images -- nothing to publish" >&2
+    exit 1
+fi
+
 for SVC in $SERVICES; do
     LOCAL_IMAGE=$(jq -r --arg s "$SVC" '.images[$s].name' "$IMAGE_INFO_JSON")
 
@@ -132,10 +141,16 @@ for SVC in $SERVICES; do
 done
 
 log ""
-log "Processed $COUNT tag(s) across $(echo "$SERVICES" | wc -l) service(s)"
+log "Processed $COUNT tag(s) across $SERVICE_COUNT service(s)"
 
 if [ "$FAILED" -ne 0 ]; then
     echo "ERROR: one or more local images were missing -- see above" >&2
+    exit 1
+fi
+
+EXPECTED_COUNT=$((SERVICE_COUNT * ${#TAGS[@]}))
+if [ "$COUNT" -ne "$EXPECTED_COUNT" ]; then
+    echo "ERROR: processed $COUNT tag(s), expected $EXPECTED_COUNT ($SERVICE_COUNT services x ${#TAGS[@]} tags)" >&2
     exit 1
 fi
 

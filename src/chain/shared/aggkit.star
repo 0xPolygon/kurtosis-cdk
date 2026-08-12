@@ -648,6 +648,20 @@ def get_keystores_artifacts(plan, args):
     )
 
 
+# DEAD CODE -- kept deliberately, do not trust it.
+#
+# There is no caller anywhere in the repo (`grep -rn create_bridge_config_artifact`
+# over .star/.sh/.yml/.md returns only this definition). The live renderer of
+# static_files/chain/shared/zkevm-bridge-service/config.toml is
+# src/chain/shared/zkevm_bridge_service.star:run().
+#
+# In particular its sequencer_type branch below was NOT updated when
+# `anvil` was added as a third sovereign sequencer type: it still tests
+# `== cdk_erigon` where the live copy tests `in SOVEREIGN_SEQUENCER_TYPES`.
+# If this is ever revived, port zkevm_bridge_service.star's logic across
+# first -- reviving it as-is would render the wrong L2 RPC URL and the wrong
+# require_sovereign_chain_contract for an anvil (and, before that, an op-reth)
+# stack. Preferably just delete it.
 def create_bridge_config_artifact(
     plan,
     args,

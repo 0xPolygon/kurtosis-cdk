@@ -205,7 +205,10 @@ capture_anvil_state() {
     # the restored bundle. Fail the capture loudly rather than ship a bundle
     # that cannot settle.
     local historical
-    historical=$(jq -r '.historical_states | if . == null then 0 else length end' "$out_file" 2>/dev/null || echo "0")
+    # Guarded by a type check on purpose: jq's `length` on a NUMBER returns its
+    # absolute value and on a STRING its character count, so a malformed
+    # `"historical_states": 1` would pass a bare `length > 0`.
+    historical=$(jq -r 'if (.historical_states | type) as $t | ($t == "object" or $t == "array") then (.historical_states | length) else 0 end' "$out_file" 2>/dev/null || echo "0")
     if [ -z "$historical" ] || [ "$historical" = "null" ] || [ "$historical" -eq 0 ]; then
         log "    ERROR: decoded state for $container has NO historical_states." >&2
         log "           anvil_dumpState(true) is required so the restored chain can serve" >&2

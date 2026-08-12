@@ -1,3 +1,11 @@
 args:
   l1_engine: anvil
+  # An anvil L1 cannot be combined with the default sequencer_type (op-reth):
+  # the optimism-package's op-node launcher unconditionally requires an
+  # `el_cl_genesis_data` artifact that only the ethereum-package L1 flow
+  # produces, and src/l1/anvil.star never creates one, so the run dies at
+  # Starlark validation time. args_sanity_check now rejects that combination
+  # with an explicit message; pin cdk-erigon here, which is the pairing this
+  # fixture was always meant to exercise.
+  sequencer_type: cdk-erigon
   consensus_contract_type: rollup

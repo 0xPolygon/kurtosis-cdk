@@ -478,7 +478,10 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     log "Quick start (in any directory holding just docker-compose.yml):"
     log "  docker compose up -d --wait"
     log ""
-    log "Verification for this flavor is not implemented yet (see plan step S9)."
+    log "Verify this bundle (NOT run automatically for this flavor, unlike the"
+    log "default flavor -- it needs the bundle to be up):"
+    log "  snapshot/scripts/gate-snapshot-soundness.sh $OUTPUT_DIR/state/state-metadata.json"
+    log "  snapshot/verify.sh $OUTPUT_DIR"
     log ""
     log "Full log: $LOG_FILE"
     exit 0

@@ -731,6 +731,19 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
 
 
 def set_l1_client_args(args, user_args):
+    # An anvil L1 has no ethereum-package el/cl services to name: set_anvil_args
+    # (called just before this, so args["l1_engine"] is already final -- it may
+    # have been flipped to "anvil" by anvil_state_file) has already pointed the
+    # three L1 URLs at the anvil service. Without this guard the el/cl template
+    # below unconditionally clobbers them back to `http://el-1-<el>-<cl>:8545`
+    # etc., i.e. services that are never created for an anvil L1, and every
+    # consumer (contracts.sh, agglayer, aggkit, the bridge service) then retries
+    # forever against a nonexistent host. Every anvil params file used to carry
+    # an explicit three-line l1_rpc_url/l1_ws_url/l1_beacon_url workaround for
+    # exactly this.
+    if args["l1_engine"] == constants.L1_ENGINE.anvil:
+        return
+
     el_type = args["l1_el_type"]
     cl_type = args["l1_cl_type"]
     if not user_args.get("args", {}).get("l1_rpc_url"):
@@ -945,6 +958,23 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 # TODO: should this be AggchainFEP instead?
                 args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
 
+    # An anvil L1 cannot host an op-reth L2: the optimism-package's op-node
+    # launcher unconditionally requires the `el_cl_genesis_data` files artifact,
+    # which only the ethereum-package L1 flow produces -- src/l1/anvil.star never
+    # creates it. Without this check the run dies at Starlark validation time
+    # with "Files artifact 'el_cl_genesis_data' ... doesn't exist", which gives
+    # no hint about the real cause. Gated on the stage that actually launches
+    # the optimism-package (main.star), so a partial deployment that never
+    # reaches it is still allowed.
+    if (
+        args["l1_engine"] == constants.L1_ENGINE.anvil
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
+        and deployment_stages.get("deploy_agglayer_contracts_on_l1", False)
+    ):
+        fail(
+            "l1_engine 'anvil' cannot be combined with sequencer_type 'op-reth': the optimism-package requires an 'el_cl_genesis_data' artifact that only the ethereum-package L1 produces. Use sequencer_type 'cdk-erigon' or 'anvil' with an anvil L1, or l1_engine 'ethereum-package' with op-reth."
+        )
+
     # Anvil L2 checks.
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.anvil:
         # V1: the anvil L2 exists to serve the bridge/dev-ui flow end to end,
@@ -986,6 +1016,18 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         # V6: the mnemonic is both the chain's prefund source and the L2 funder.
         if not args["l2_anvil_mnemonic"]:
             fail("l2_anvil_mnemonic must not be empty")
+
+        # V7: initialize_rollup funds l2_sovereignadmin/aggoracle/claimsponsor on
+        # the L2 with a HARD-CODED "test test ... junk" key
+        # (static_files/contracts/contracts.sh, the `private_key=$(cast wallet
+        # private-key --mnemonic 'test test ...')` line). That mnemonic must
+        # therefore be the one anvil prefunded the chain from, or those three
+        # `cast send` calls run from a zero-balance account and fail deep inside
+        # the contracts service. Reject up front instead.
+        if args["l2_anvil_mnemonic"] != constants.ANVIL_DEFAULT_MNEMONIC:
+            fail(
+                "l2_anvil_mnemonic must currently stay at the default anvil dev mnemonic: contracts.sh's initialize_rollup hard-codes that same mnemonic when funding the sovereignadmin/aggoracle/claimsponsor accounts on the anvil L2, so a custom value leaves the funder with a zero balance."
+            )
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):

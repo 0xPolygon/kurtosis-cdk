@@ -13,7 +13,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck disable=SC1091 # script_dir is resolved at runtime relative to this file
+# shellcheck disable=SC1090,SC1091 # script_dir is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
 source "${script_dir}/ports.sh"
 
 fail_count=0
@@ -84,7 +84,7 @@ assert_fails "unknown L2 port env key rejected" snapshot_l2_port_env 001 nonexis
 assert_fails "unknown fixed port env key rejected" snapshot_fixed_port_env nonexistent_key
 
 # --- Idempotent source guard: sourcing twice must not error or reset state. ---
-# shellcheck disable=SC1091 # script_dir is resolved at runtime relative to this file
+# shellcheck disable=SC1090,SC1091 # script_dir is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
 source "${script_dir}/ports.sh"
 assert_eq "double-source is a no-op (guard held)" "${_SNAPSHOT_LIB_PORTS_SOURCED}" "1"
 assert_eq "double-source: offsets survive" "$(snapshot_l2_port 001 http)" "11545"

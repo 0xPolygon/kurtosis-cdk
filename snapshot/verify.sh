@@ -116,7 +116,7 @@ if [ "$SNAPSHOT_FLAVOR" = "anvil-aggkit" ]; then
     # under `set -u`.
     ANVIL_SNAPSHOT_ID=$(basename "$SNAPSHOT_DIR")
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    # shellcheck disable=SC1091 # SCRIPT_DIR is resolved at runtime relative to this file
+    # shellcheck disable=SC1090,SC1091 # SCRIPT_DIR is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
     source "$SCRIPT_DIR/scripts/lib/verify-anvil-aggkit.sh"
     run_anvil_aggkit_verification "$SNAPSHOT_DIR" "$ANVIL_SNAPSHOT_ID" "$SCRIPT_DIR"
     exit $?
