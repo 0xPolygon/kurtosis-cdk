@@ -473,11 +473,21 @@ run_anvil_aggkit_verification() {
                 "$(echo "$VALIDATE_OUT" | grep -q "validation passed" && echo pass || echo fail)"
         else
             log_warn "  dev-ui checkout with scripts/validateConfig.mjs not found; falling back to a structural check"
+            # Matches the real schema emitted by
+            # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl:
+            # "chains" is an OBJECT keyed by chain name (not an array), and
+            # "aggkitBridgeApis" lives inside appModes.configs.<mode>, not at
+            # the top level. This exact mismatch was only ever masked on dev
+            # machines that happen to have an agglayer-dev-ui checkout (which
+            # takes the validateConfig.mjs branch above instead) -- caught by
+            # S11's first real CI run, which has no such checkout.
             DEVUI_SCHEMA_OK=$(echo "$DEVUI_CONFIG" | jq -e '
-                (has("chains") and (.chains | type == "array") and (.chains | length > 0)) and
-                (has("appModes")) and (has("aggkitBridgeApis"))
+                (has("chains") and (.chains | type == "object") and (.chains | length > 0)) and
+                (has("appModes") and (.appModes | has("configs")) and
+                 (.appModes.configs | type == "object") and (.appModes.configs | length > 0) and
+                 (.appModes.configs | to_entries[0].value | has("aggkitBridgeApis")))
                 ' > /dev/null 2>&1 && echo true || echo false)
-            anvil_test_result "dev-ui /config.json has required top-level keys (chains, appModes, aggkitBridgeApis)" \
+            anvil_test_result "dev-ui /config.json has required keys (chains object; appModes.configs.<mode>.aggkitBridgeApis)" \
                 "$([ "$DEVUI_SCHEMA_OK" = true ] && echo pass || echo fail)"
         fi
     fi
