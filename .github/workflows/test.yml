@@ -486,17 +486,24 @@ jobs:
       - name: Verify aggkit bridge sync-status (L1 and L2 both synced+active)
         run: |
           bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001-bridge rest)
-          sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1")
-          echo "sync-status: ${sync_status}"
-          l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}")
-          l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}")
-          l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}")
-          l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}")
-          if [ "${l1_synced}" != "true" ] || [ "${l1_active}" != "true" ] || [ "${l2_synced}" != "true" ] || [ "${l2_active}" != "true" ]; then
-            echo "❌ aggkit bridge sync-status is not fully synced+active on both sides"
-            exit 1
-          fi
-          echo "✅ aggkit bridge sync-status: L1 and L2 both synced+active"
+          # The L1/L2 syncers race the "Monitor rollup progress" block-height wait above,
+          # not the other way round -- poll instead of a single shot (matches monitor.sh's
+          # own retry style).
+          for attempt in $(seq 1 24); do
+            sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1")
+            echo "attempt ${attempt}/24 sync-status: ${sync_status}"
+            l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}")
+            l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}")
+            l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}")
+            l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}")
+            if [ "${l1_synced}" = "true" ] && [ "${l1_active}" = "true" ] && [ "${l2_synced}" = "true" ] && [ "${l2_active}" = "true" ]; then
+              echo "✅ aggkit bridge sync-status: L1 and L2 both synced+active"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ aggkit bridge sync-status did not reach fully synced+active on both sides within 120s"
+          exit 1
 
       - name: Post kurtosis run
         if: always()
