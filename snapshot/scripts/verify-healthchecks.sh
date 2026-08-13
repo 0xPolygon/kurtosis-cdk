@@ -132,19 +132,57 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     done
 
     log ""
-    log "=== [anvil-aggkit] Every discovered component is present in the compose file ==="
+    log "=== [anvil-aggkit] Every discovered component matches its intended profile contract ==="
+    # K5b: K5's profile gating made `dev_ui` (agglayer-dev-ui-002) the ONE
+    # intentionally profile-gated component -- profiles: ["devui"], expected
+    # ABSENT from the default (`docker compose config --services`, no
+    # --profile flag) set and expected PRESENT only once --profile devui is
+    # passed. Every OTHER discovered component must be unconditionally in
+    # the default set, regardless of profile. Checking membership only
+    # against the (already --profile-devui-inclusive) $SERVICE_NAMES from
+    # the block above cannot fail on dev-ui at all -- it always sees it, by
+    # construction -- so this block also fetches the DEFAULT-profile service
+    # list and checks both halves explicitly. That keeps the check able to
+    # catch two distinct regressions: (a) a genuinely missing non-profiled
+    # component (the check's original purpose), and (b) dev-ui silently
+    # losing its profile gating (becoming default-always, defeating the
+    # whole point of K5's change) or silently disappearing even from
+    # --profile devui.
     if [ -f "$DISCOVERY_JSON" ]; then
+        DEFAULT_SERVICE_NAMES=$(docker compose -f "$COMPOSE_FILE" config --services 2>/dev/null || true)
+        if [ -z "$DEFAULT_SERVICE_NAMES" ]; then
+            error "Could not list default-profile services from $COMPOSE_FILE"
+            ERRORS=$((ERRORS + 1))
+        fi
+        DEVUI_SVC=$(jq -r '.dev_ui.service_name // empty' "$DISCOVERY_JSON" 2>/dev/null || true)
         DISCOVERED_SERVICES=$(jq -r '
             [.l1_anvil, .agglayer, .aggkit_proxy, .haproxy, .dev_ui,
              (.l2_chains[]? | (.anvil, .aggkit))]
             | map(select(.found == true) | .service_name) | .[]
         ' "$DISCOVERY_JSON" 2>/dev/null || true)
         for svc in $DISCOVERED_SERVICES; do
-            if echo "$SERVICE_NAMES" | grep -qx "$svc"; then
-                log "✓ discovered component '$svc' present in compose"
+            if [ -n "$DEVUI_SVC" ] && [ "$svc" = "$DEVUI_SVC" ]; then
+                # Expected ABSENT from the default set, expected PRESENT
+                # under --profile devui.
+                if echo "$SERVICE_NAMES" | grep -qx "$svc"; then
+                    log "✓ discovered component '$svc' present under --profile devui (profile-gated, as intended)"
+                else
+                    error "✗ discovered component '$svc' is MISSING even under --profile devui"
+                    ERRORS=$((ERRORS + 1))
+                fi
+                if echo "$DEFAULT_SERVICE_NAMES" | grep -qx "$svc"; then
+                    error "✗ discovered component '$svc' is present in the DEFAULT compose set -- it must stay behind --profile devui"
+                    ERRORS=$((ERRORS + 1))
+                else
+                    log "✓ discovered component '$svc' correctly absent from the default compose set"
+                fi
             else
-                error "✗ discovered component '$svc' is MISSING from the generated compose file"
-                ERRORS=$((ERRORS + 1))
+                if echo "$DEFAULT_SERVICE_NAMES" | grep -qx "$svc"; then
+                    log "✓ discovered component '$svc' present in compose (default set)"
+                else
+                    error "✗ discovered component '$svc' is MISSING from the generated compose file"
+                    ERRORS=$((ERRORS + 1))
+                fi
             fi
         done
     else
