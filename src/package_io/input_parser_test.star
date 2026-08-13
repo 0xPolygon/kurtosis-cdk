@@ -538,3 +538,65 @@ def test_parse_args_anvil_rejects_custom_mnemonic(plan):
         lambda: input_parser.parse_args(plan, user_args),
         "must currently stay at the default anvil dev mnemonic",
     )
+
+
+# K3 (snapshot-v2-aggkit-e2e plan): regression tests for agglayer_settle_
+# confirmations / agglayer_settlement_policy, the two new settlement knobs
+# added when the dead [outbound.rpc.settle] block was migrated to
+# [settlement.pessimistic-proof-tx-config] (see static_files/agglayer/
+# config.toml). These call parse_args() end to end, same as the anvil tests
+# above, so a revert of K3's validation (or of the defaults themselves) trips
+# a test here rather than silently restoring the old 12-confirmation
+# upstream default. Reuses _minimal_anvil_user_args() purely as "the smallest
+# valid args block" -- these two knobs are not anvil-specific.
+
+
+def test_parse_args_agglayer_settle_confirmations_default(plan):
+    (_, args, _) = input_parser.parse_args(plan, _minimal_anvil_user_args())
+    expect.eq(args["agglayer_settle_confirmations"], 1)
+
+
+def test_parse_args_agglayer_settle_confirmations_override(plan):
+    user_args = _with_args(
+        _minimal_anvil_user_args(), {"agglayer_settle_confirmations": 5}
+    )
+    (_, args, _) = input_parser.parse_args(plan, user_args)
+    expect.eq(args["agglayer_settle_confirmations"], 5)
+
+
+def test_parse_args_agglayer_settle_confirmations_rejects_below_one(plan):
+    # agglayer_settle_confirmations must be >= 1 -- 0 and negative values are
+    # nonsense (agglayer would need to wait for a receipt to appear before it
+    # exists).
+    for bad_value in [0, -1]:
+        user_args = _with_args(
+            _minimal_anvil_user_args(), {"agglayer_settle_confirmations": bad_value}
+        )
+        expect.fails(
+            lambda ua=user_args: input_parser.parse_args(plan, ua),
+            "agglayer_settle_confirmations must be >= 1",
+        )
+
+
+def test_parse_args_agglayer_settlement_policy_default(plan):
+    (_, args, _) = input_parser.parse_args(plan, _minimal_anvil_user_args())
+    expect.eq(args["agglayer_settlement_policy"], "safe")
+
+
+def test_parse_args_agglayer_settlement_policy_override(plan):
+    for value in ["latest", "safe", "finalized"]:
+        user_args = _with_args(
+            _minimal_anvil_user_args(), {"agglayer_settlement_policy": value}
+        )
+        (_, args, _) = input_parser.parse_args(plan, user_args)
+        expect.eq(args["agglayer_settlement_policy"], value)
+
+
+def test_parse_args_agglayer_settlement_policy_rejects_invalid(plan):
+    user_args = _with_args(
+        _minimal_anvil_user_args(), {"agglayer_settlement_policy": "bogus"}
+    )
+    expect.fails(
+        lambda: input_parser.parse_args(plan, user_args),
+        "Unsupported agglayer_settlement_policy",
+    )

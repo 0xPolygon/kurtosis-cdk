@@ -5,6 +5,8 @@
   "agglayer_grpc_port": 4443,
   "agglayer_prover_primary_prover": "mock-prover",
   "agglayer_readrpc_port": 4444,
+  "agglayer_settle_confirmations": 1,
+  "agglayer_settlement_policy": "safe",
   "agglayer_use_second_signer": false,
   "agglayer_version": "0.6.0-rc.5",
   "aggregator_db": {

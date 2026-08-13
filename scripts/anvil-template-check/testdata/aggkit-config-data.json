@@ -7,7 +7,7 @@
   "agg_sender_validator_total_number": 1,
   "aggkit_autoclaim_bridge_urls": [
     {
-      "bridge_url": "http://aggkit-001-bridge:5577",
+      "bridge_url": "http://aggkit-001:5577",
       "network_id": 1
     }
   ],

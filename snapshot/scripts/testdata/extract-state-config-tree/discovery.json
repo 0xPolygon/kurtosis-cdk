@@ -1,0 +1,78 @@
+{
+  "flavor": "anvil-aggkit",
+  "enclave_name": "k7-fixture",
+  "l1_anvil": {
+    "found": true,
+    "service_name": "anvil-001",
+    "container_name": "anvil-container",
+    "image": "ghcr.io/foundry-rs/foundry:v1.5.1",
+    "cmd": [
+      "anvil --block-time 1 --slots-in-an-epoch 1 --chain-id 271828 --host 0.0.0.0 --port 8545"
+    ],
+    "ports": {
+      "8545": "19001"
+    },
+    "chain_id": 271828
+  },
+  "l2_chains": {
+    "001": {
+      "prefix": "001",
+      "anvil": {
+        "found": true,
+        "service_name": "l2-anvil-001",
+        "container_name": "l2-anvil-001-container",
+        "image": "ghcr.io/foundry-rs/foundry:v1.5.1",
+        "cmd": [
+          "anvil --block-time 1 --slots-in-an-epoch 1 --chain-id 20201 --host 0.0.0.0 --port 8545 --init /genesis/l2-anvil-001-genesis.json"
+        ],
+        "ports": {
+          "8545": "19002"
+        },
+        "chain_id": 20201
+      },
+      "aggkit": {
+        "found": true,
+        "service_name": "aggkit-001",
+        "container_name": "aggkit-001-container"
+      }
+    },
+    "002": {
+      "prefix": "002",
+      "anvil": {
+        "found": true,
+        "service_name": "l2-anvil-002",
+        "container_name": "l2-anvil-002-container",
+        "image": "ghcr.io/foundry-rs/foundry:v1.5.1",
+        "cmd": [
+          "anvil --block-time 1 --slots-in-an-epoch 1 --chain-id 20202 --host 0.0.0.0 --port 8545 --init /genesis/l2-anvil-002-genesis.json"
+        ],
+        "ports": {
+          "8545": "19003"
+        },
+        "chain_id": 20202
+      },
+      "aggkit": {
+        "found": true,
+        "service_name": "aggkit-002",
+        "container_name": "aggkit-002-container"
+      }
+    }
+  },
+  "agglayer": {
+    "found": true,
+    "service_name": "agglayer",
+    "container_name": "agglayer-container",
+    "ports": {}
+  },
+  "aggkit_proxy": {
+    "found": true,
+    "service_name": "aggkit-proxy-001",
+    "container_name": "aggkit-proxy-001-container"
+  },
+  "haproxy": {
+    "found": false
+  },
+  "dev_ui": {
+    "found": false
+  }
+}

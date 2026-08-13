@@ -122,12 +122,34 @@ assert_contains "${aggkit_out}" '^\[AutoClaim\]$' "[AutoClaim] section present (
 # aggkit_legacy_bridge_addr=false in the fixture -> the deprecated
 # polygonBridgeAddr key must NOT render.
 assert_not_contains "${aggkit_out}" '^polygonBridgeAddr = ' "deprecated polygonBridgeAddr key (aggkit_legacy_bridge_addr fixture=false)"
+# K1 (aggkit merge): the bridge REST API now runs in-process inside each
+# aggkit-00X container -- there is no more standalone "aggkit-00X-bridge"
+# sidecar to route AutoClaim's BridgeServiceFinder at. The fixture's
+# aggkit_autoclaim_bridge_urls used to carry a stale pre-merge "-bridge"
+# hostname; assert it never comes back.
+assert_not_contains "${aggkit_out}" 'aggkit-[0-9]{3}-bridge' "stale pre-merge '-bridge' sidecar hostname in [AutoClaim.BridgeServiceFinder.BridgeURLs] (K1 merged the bridge REST API into the main aggkit container)"
 
 echo
 echo "=== agglayer/config.toml ==="
 assert_no_leftover_actions "${agglayer_out}"
 assert_contains "${agglayer_out}" '^\[full-node-rpcs\]$' "[full-node-rpcs] section present"
 assert_present_nonempty "${agglayer_out}" "1" # `1 = "<url>"` network-1 URL under [full-node-rpcs].
+# K3 (snapshot-v2-aggkit-e2e plan): [outbound.rpc.settle] used to be the
+# (dead, since agglayer PR #1393) home for settlement confirmations. K3
+# migrated the live knob to [settlement.pessimistic-proof-tx-config]. A
+# revert of K3 would silently restore the dead [outbound.*] section AND drop
+# back to agglayer's upstream 12-confirmation default -- assert BOTH: the new
+# section renders a present, non-empty confirmations value, and no
+# [outbound.* section survives at all.
+assert_contains "${agglayer_out}" '^\[settlement\.pessimistic-proof-tx-config\]$' "[settlement.pessimistic-proof-tx-config] section present (K3 migration target)"
+assert_present_nonempty "${agglayer_out}" "confirmations" # fixture: agglayer_settle_confirmations=1.
+assert_not_contains "${agglayer_out}" '^\[outbound\.' "dead [outbound.*] section (K3 migrated it away -- must never come back)"
+# K3: settlement-policy's rendered VALUE is PascalCase (upstream
+# SettlementPolicy enum has no #[serde(rename_all = "kebab-case")], confirmed
+# against agglayer's own v0.6.0-rc.8 fixtures) even though the input arg and
+# the TOML key are both lowercase/kebab-case. Fixture agglayer_settlement_policy
+# is "safe" -> must render "SafeBlock", NOT "safe" or "Safe" or "safe-block".
+assert_contains "${agglayer_out}" '^settlement-policy = "SafeBlock"$' "settlement-policy renders PascalCase 'SafeBlock' for input 'safe' (NOT kebab-case)"
 
 echo
 echo "=== zkevm-bridge-service/config.toml (S4 T13, the 10th branch site) ==="

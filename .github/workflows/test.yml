@@ -135,6 +135,9 @@ jobs:
       - name: Run ports.sh shell unit tests
         run: ./snapshot/scripts/lib/ports_test.sh
 
+      - name: Run extract-state.sh config-tree unit test (K5 emitted-file regression net)
+        run: ./snapshot/scripts/extract-state_test.sh
+
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"

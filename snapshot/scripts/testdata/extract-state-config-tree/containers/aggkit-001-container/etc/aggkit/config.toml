@@ -1,0 +1,8 @@
+# K7 fixture: minimal stand-in for a captured aggkit-001 /etc/aggkit/config.toml.
+# Content is illustrative only -- extract-state_test.sh asserts on the FILE
+# TREE SHAPE and on the TriggerCertMode line below (aggkit-env-design.md (d):
+# "Auto" silently resolves to "EpochBased" for a PessimisticProof aggsender,
+# so a live capture whose config lost this line, or reverted it to "Auto",
+# is exactly the regression this fixture's TriggerCertMode assertion catches).
+NetworkID = 1
+TriggerCertMode = "ASAP"

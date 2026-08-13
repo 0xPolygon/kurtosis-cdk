@@ -1,0 +1,4 @@
+# K7 fixture: minimal stand-in for a captured aggkit-002 /etc/aggkit/config.toml.
+# See aggkit-001-container's sibling file for the rationale.
+NetworkID = 2
+TriggerCertMode = "ASAP"
