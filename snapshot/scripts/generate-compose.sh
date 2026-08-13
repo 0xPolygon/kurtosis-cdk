@@ -597,9 +597,28 @@ EOF
         condition: service_healthy$L2_ANVIL_DEPENDS
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
-      interval: 3s
-      timeout: 10s
+      # K7b: was \`/bin/sh /snapshot/healthcheck.sh\` (a busybox wget against
+      # agglayer's OWN prometheus metrics endpoint, :9092). That endpoint can
+      # start answering before agglayer's gRPC listener (:4443) actually
+      # binds -- a Rust async multi-service binary has no obligation to
+      # bring both up in lockstep -- so \`service_healthy\` could fire early.
+      # aggkit-00X's aggsender races that gRPC bind against its own
+      # claim-syncer autostart on startup; losing the race does not error
+      # transiently, it WEDGES claim-syncer initialization permanently ("cannot
+      # set next required block to 0, it must be >= the first block in DB"
+      # retries forever, so the aggsender's certificate loop for that network
+      # never starts -- confirmed via K7b-evidence/04-ci-run-e84a1be8-job-log.txt
+      # showing exactly this on the default compose variant in CI, while the
+      # same suite regularly wins the race locally on a lighter-loaded host).
+      # K5c already diagnosed and fixed this EXACT race for the mounts
+      # variant with a genuine TCP-connect probe against the gRPC port
+      # itself; the default/baked variant never got the equivalent fix. Reuse
+      # K5c's probe here instead of the metrics wget -- bash's builtin
+      # /dev/tcp (no curl/wget/nc needed), confirmed present in this same
+      # upstream agglayer image by K5c's investigation of the bare image.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/4443"]
+      interval: 2s
+      timeout: 3s
       retries: 60
       start_period: 10s
 EOF
