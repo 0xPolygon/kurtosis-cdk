@@ -230,41 +230,6 @@ jobs:
       - name: Verify snapshot (full anvil-aggkit contract, incl. bridge round trip)
         run: snapshot/verify.sh "${{ steps.snap.outputs.dir }}"
 
-      # K7b DIAGNOSTIC (temporary, v2): snapshot-devui has failed on every
-      # push since K1 on exactly the L2->L1 round-trip's "reaches
-      # ready-to-claim" check, always with CertificatePending.status_string
-      # staying "?" for the full 5-minute budget (the certificate step
-      # never appears at all) -- yet the identical suite passes locally.
-      # verify.sh never tears the restored docker-compose stack down on its
-      # own (only the kurtosis enclave gets removed by the "Tear down
-      # enclave" step below), so the containers are still up here
-      # regardless of pass/fail. This workflow captures no other log
-      # artifact for the compose-restored stack.
-      #
-      # v1 of this step (a plain `tail -300`) came back 91% dominated by one
-      # benign, permanently-retrying INFO-level line ("Setting next required
-      # block for claim syncer" -- confirmed present even in K5b's healthy
-      # LOCAL runs too, see plans/snapshot-v2-aggkit-e2e/K5b-evidence/
-      # 3a-aggkit-001-mounts-3rdrun-full.log -- so it is NOT the cause here),
-      # which drowned out everything else in the 300-line window. v2 dumps
-      # full untruncated logs (no tail) with that one noisy line filtered
-      # out, so whatever the aggsender/certificate/epoch machinery actually
-      # did (or didn't do) around the Leg-2 send is visible. Remove once the
-      # root cause in this run is identified and fixed.
-      - name: K7b diag -- dump aggkit/agglayer logs (compose-restored stack)
-        if: always()
-        working-directory: ${{ steps.snap.outputs.dir }}
-        run: |
-          set -x
-          docker compose -f docker-compose.yml ps || true
-          for svc in aggkit-001 aggkit-002 agglayer l2-anvil-001 l2-anvil-002 anvil-001; do
-            echo "===== docker compose logs $svc (line count) ====="
-            docker compose -f docker-compose.yml logs --no-color --timestamps "$svc" 2>&1 | wc -l || true
-            echo "===== docker compose logs $svc (filtered, no tail) ====="
-            docker compose -f docker-compose.yml logs --no-color --timestamps "$svc" 2>&1 \
-              | grep -v "Setting next required block for claim syncer" || true
-          done
-
       - name: Disk usage (after verify, before push)
         run: df -h
 
