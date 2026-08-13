@@ -4,6 +4,14 @@ on:
   pull_request:
   push:
     branches: [main]
+  # K7b DIAGNOSTIC/RECOVERY (deliberate addition): this workflow's `test` runs
+  # stopped being created at all for PR #929 starting at commit 32a7ca61
+  # (K3) -- confirmed via the Actions API (total_count: 0 for that and every
+  # later commit's head_sha), even though `pull_request:` has no paths/
+  # branches filter and should fire on every synchronize. Before this
+  # change there was no way to trigger `test` manually to test that theory
+  # or to get PR #929 a real run while the underlying trigger is diagnosed.
+  workflow_dispatch: {}
 
 permissions:
   contents: read
