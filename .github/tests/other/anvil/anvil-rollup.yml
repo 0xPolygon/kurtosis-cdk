@@ -9,3 +9,24 @@ args:
   # fixture was always meant to exercise.
   sequencer_type: cdk-erigon
   consensus_contract_type: rollup
+  # K7c: pin agglayer below the DEFAULT_IMAGES 0.6.0-rc.8 default (K3). Upstream
+  # agglayer PR #1637 ("feat(rpc): disable the interop_sendTx method", closing
+  # issue #1632, first shipped in 0.6.0-rc.6) permanently and unconditionally
+  # disables the interop_sendTx JSON-RPC method (always returns error -10009
+  # "The interop_sendTx method is disabled" -- there is no config flag to
+  # re-enable it; the upstream commit explicitly deprecates the whole legacy
+  # flow). consensus_contract_type "rollup"/"cdk-validium" rely on that exact
+  # method: cdk-node's Aggregator (SettlementBackend = "agglayer" in
+  # static_files/chain/cdk-erigon/cdk-node/config.toml) relays each verified
+  # batch's proof-settlement tx through it, so with it disabled
+  # zkevm_verifiedBatchNumber never advances past 0 and
+  # .github/scripts/monitor.sh's "latest, virtual and verified" check times
+  # out -- confirmed via the cdk-node aggregator log repeating
+  # `failed to send tx to the agglayer: -10009 The interop_sendTx method is
+  # disabled` for the entire run. 0.6.0-rc.5 (the DEFAULT_IMAGES value before
+  # K3) still has the legacy flow and is confirmed working in CI (verified
+  # batches progressed normally to the target). rc.5 already understands the
+  # [settlement.pessimistic-proof-tx-config] schema K3 introduced (present
+  # since agglayer's agglayer-settlement-service, PR #1393, well before rc.5),
+  # so this override does not require any config.toml template change.
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.5
