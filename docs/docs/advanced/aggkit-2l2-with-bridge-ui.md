@@ -15,9 +15,11 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, auto
 - **Two L2 Optimism blockchains** (op-reth/op-node), each enhanced with [AggKit](https://github.com/agglayer/aggkit) for Agglayer connectivity:
   - **L2-1**: network_id = 1, chain_id = 20201
   - **L2-2**: network_id = 2, chain_id = 20202
-- **AggKit bridge services** (one per L2, syncing the shared L1 bridge state):
-  - `aggkit-001-bridge:5577` (REST)
-  - `aggkit-002-bridge:5577` (REST)
+- **AggKit bridge REST APIs** (one per L2, syncing the shared L1 bridge state; each
+  `aggkit-00X` process serves both its main components AND the bridge REST API in one
+  container — `--components=...,bridge`):
+  - `aggkit-001:5577` (REST)
+  - `aggkit-002:5577` (REST)
 - **AggKit proxy** (`aggkit-proxy-001:8080`) — runs with `--components=proxy,tracker`:
   - **proxy**: multiplexes all three networks (L1 + both L2s) via `network_id` query parameter routing
   - **tracker**: serves `/tracker/v1` (per-bridge-transaction status/progress tracking, backed by the Agglayer gRPC endpoint)
@@ -62,15 +64,17 @@ args:
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
 
   # AggKit components: aggsender and aggoracle on the main service, plus autoclaim
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # and bridge (the bridge REST API is served by this SAME process/container --
+  # there is no separate aggkit-001-bridge service)
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
   # Enable autoclaim on L2-1 (network_id = 1)
   aggkit_autoclaim_destinations: [1]
   # Static bridge service URLs for autoclaim discovery
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
   # Declare rollup-2 to agglayer so it accepts rollup-2 certificates
   # (both RPC URL and sequencer address are deterministic)
@@ -107,14 +111,15 @@ args:
   l2_chain_id: 20202
   network_id: 2
 
-  # Rollup-2's aggkit instance: same autoclaim config as rollup-1
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # Rollup-2's aggkit instance: same autoclaim config as rollup-1, plus bridge
+  # (see run1's comment above -- no separate aggkit-002-bridge service)
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
   aggkit_autoclaim_destinations: [2]    # Claim on L2-2 (its own destination)
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
   # AggKit proxy (fronts all networks for the bridge UI)
   additional_services:
@@ -123,11 +128,11 @@ args:
   # Static maps for the proxy: network_id → bridge REST URL and RPC URL
   aggkit_proxy_bridge_urls:
     - network_id: 0
-      bridge_url: "http://aggkit-001-bridge:5577"  # L1 side is synced via any bridge instance
+      bridge_url: "http://aggkit-001:5577"  # L1 side is synced via any aggkit instance
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
   aggkit_proxy_rpc_urls:
     - network_id: 0
@@ -161,12 +166,13 @@ Expected output: `Starlark code successfully run` (exit 0) for both runs. Total 
 kurtosis enclave inspect cdk
 ```
 
-All 28 services should be `RUNNING`:
+All 26 services should be `RUNNING`:
 - L1 services (el-1-geth-lighthouse, cl-1-lighthouse-geth, vc-1-...)
 - Agglayer (agglayer)
 - L2-1 services (op-el-1-op-reth-op-node-001, op-cl-...-001, op-batcher-001, proxyd-001)
 - L2-2 services (op-el-1-op-reth-op-node-002, op-cl-...-002, op-batcher-002, proxyd-002)
-- AggKit services (aggkit-001, aggkit-001-bridge, aggkit-002, aggkit-002-bridge)
+- AggKit services (aggkit-001, aggkit-002 -- each also serving the bridge REST API in the
+  same container, `--components=...,bridge`; there is no separate `-bridge` sibling)
 - AggKit proxy (aggkit-proxy-001)
 - Bridge UI proxy (agglayer-dev-ui-proxy-002)
 - Database services (postgres-001, postgres-002)
@@ -235,15 +241,15 @@ Autoclaim is enabled per-chain via two parameters:
 The proxy multiplexes all three networks (L1 + both L2s) via the `network_id` query parameter:
 
 **Query parameter semantics:**
-- `/bridge/v1/bridges?network_id=0` → L1 origin/destination routes (routed to any bridge instance; all sync the same L1 state)
-- `/bridge/v1/bridges?network_id=1` → L2-1 origin/destination routes (routed to aggkit-001-bridge)
-- `/bridge/v1/bridges?network_id=2` → L2-2 origin/destination routes (routed to aggkit-002-bridge)
+- `/bridge/v1/bridges?network_id=0` → L1 origin/destination routes (routed to any aggkit instance; all sync the same L1 state)
+- `/bridge/v1/bridges?network_id=1` → L2-1 origin/destination routes (routed to aggkit-001)
+- `/bridge/v1/bridges?network_id=2` → L2-2 origin/destination routes (routed to aggkit-002)
 
 **Proxy configuration args:**
-- `aggkit_proxy_bridge_urls` — Static map of network_id → `aggkit-00X-bridge:5577` URL
+- `aggkit_proxy_bridge_urls` — Static map of network_id → `aggkit-00X:5577` URL
 - `aggkit_proxy_rpc_urls` — Static map of network_id → L2 RPC URL (used for proof validation)
 
-Both maps are supplied at run2 time (they require both bridge services to already exist).
+Both maps are supplied at run2 time (they require both aggkit instances to already exist).
 
 ### Bridge Tracker Configuration
 
@@ -467,7 +473,7 @@ All tests assume `E2E_BACKEND_MODE=devnet` and will skip if not set.
 
 The `scripts/kurtosisDevnetEnv.mjs` script discovers L2 suffixes automatically. If it finds only one (001), recheck:
 - Both run1 and run2 completed successfully
-- `kurtosis enclave inspect cdk` shows `aggkit-002` and `aggkit-002-bridge` as `RUNNING`
+- `kurtosis enclave inspect cdk` shows `aggkit-002` as `RUNNING`
 
 ### Enclave State Issues
 

@@ -11,8 +11,8 @@
 
 deployment_stages:
   deploy_op_succinct: false
-  # Legacy zkevm-bridge-service is not needed; aggkit-001-bridge (a second
-  # aggkit instance with --components=bridge) is deployed unconditionally.
+  # Legacy zkevm-bridge-service is not needed; the aggkit-001 process serves
+  # the bridge REST API itself (--components=...,bridge) unconditionally.
   # See params-aggkit-anvil-l2l2-run1.yml for the same choice, and S15's
   # evidence (04-agglayer-config-data.json / 05-zkevmbridge-config-data.json)
   # for confirmation that the legacy bridge-service template ALSO renders
@@ -36,8 +36,10 @@ args:
 
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
   # "autoclaim" so destination network 1 gets an AutoClaim claimer -- see
-  # aggkit_autoclaim_destinations below.
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # aggkit_autoclaim_destinations below. "bridge" so this same process also
+  # serves the bridge REST API (port 5577) -- there is no longer a separate
+  # aggkit-001-bridge service.
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
 
   # aggsender multisig committee: 1 validator, threshold 1.
   use_agg_sender_validator: true
@@ -55,7 +57,7 @@ args:
   aggkit_autoclaim_destinations: [1]
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
 
 # NOTE: deliberately NO optimism_package: block -- sequencer_type: anvil
 # rejects one entirely (args_sanity_check rule V4: "sequencer_type 'anvil'

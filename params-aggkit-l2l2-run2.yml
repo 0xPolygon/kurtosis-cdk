@@ -1,7 +1,8 @@
 # S2 (aggkit-proxy-l2l2 plan): second `kurtosis run` into the SAME enclave as
 # params-aggkit-l2l2-run1.yml. Adds rollup 2 (network_id 2, deployment_suffix
-# -002, op-reth, aggkit-002 + aggkit-002-bridge), settling certificates
-# through the agglayer instance run1 already deployed.
+# -002, op-reth, aggkit-002, which also serves the bridge REST API via
+# --components=...,bridge), settling certificates through the agglayer
+# instance run1 already deployed.
 #
 # Must be run with `kurtosis run --enclave cdk --args-file params-aggkit-l2l2-run2.yml .`
 # AFTER run1 has completed in the same enclave. Do NOT `kurtosis enclave rm`
@@ -25,8 +26,10 @@ args:
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (2) gets an AutoClaim claimer -- see
-  # aggkit_autoclaim_destinations below.
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # aggkit_autoclaim_destinations below. "bridge" added so this same process
+  # also serves the bridge REST API (port 5577) -- there is no longer a
+  # separate aggkit-002-bridge service.
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
 
   use_agg_sender_validator: true
   agg_sender_validator_total_number: 1
@@ -48,7 +51,7 @@ args:
   # mode skips the bridge-hub stack and renders just the haproxy proxy.
   # aggkit_proxy_url points haproxy's single /aggkitapi backend at the
   # standalone aggkit-proxy service (deployed above) instead of this run's
-  # own l2_context.aggkit_bridge_url (aggkit-002-bridge only) -- one haproxy
+  # own l2_context.aggkit_bridge_url (aggkit-002 only) -- one haproxy
   # backend then fronts networks 0/1/2 via the proxy's own network_id-based
   # routing.
   bridge_ui_backend: aggkit
@@ -67,16 +70,16 @@ args:
   # BridgeServiceFinder. Required for every network including 0 -- network 0
   # (L1) is never enumerated on-chain, and the on-chain URLs (trustedSequencerURL
   # / aggchainMetadata) are enclave-internal hostnames not registered in this
-  # package anyway. Network 0 and network 1 both route to aggkit-001-bridge
+  # package anyway. Network 0 and network 1 both route to aggkit-001
   # (every aggkit bridge instance syncs the L1 side); network 2 routes to
-  # aggkit-002-bridge.
+  # aggkit-002.
   aggkit_proxy_bridge_urls:
     - network_id: 0
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
   aggkit_proxy_rpc_urls:
     - network_id: 0
       rpc_url: "http://el-1-geth-lighthouse:8545"
@@ -96,9 +99,9 @@ args:
   aggkit_autoclaim_destinations: [2]
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
   # NOTE: do NOT override l2_admin_address / l2_sequencer_address / other
   # l2_* role keys here. A first attempt at "distinct prefunded keys per

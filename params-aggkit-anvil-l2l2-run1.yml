@@ -1,7 +1,8 @@
 # S5 (dev-ui-ci-snapshot plan): anvil-flavor equivalent of
 # params-aggkit-l2l2-run1.yml -- first `kurtosis run` of a 2-L2 anvil
 # enclave. Deploys L1 (anvil) + agglayer + rollup 1 (network_id 1, anvil L2,
-# aggkit-001 + aggkit-001-bridge). A second `kurtosis run` with
+# aggkit-001, which also serves the bridge REST API via --components=...,bridge).
+# A second `kurtosis run` with
 # params-aggkit-anvil-l2l2-run2.yml (SAME enclave) adds rollup 2 and the
 # aggkit-proxy / bridge_ui / dev-ui stack.
 #
@@ -13,8 +14,8 @@
 
 deployment_stages:
   deploy_op_succinct: false
-  # Legacy zkevm-bridge-service is not needed; aggkit-001-bridge (a second
-  # aggkit instance with --components=bridge) is deployed unconditionally.
+  # Legacy zkevm-bridge-service is not needed; the aggkit-001 process serves
+  # the bridge REST API itself (--components=...,bridge) unconditionally.
   deploy_cdk_bridge_infra: false
   # S5: postgres-001 is otherwise deployed by default and is absent from the
   # plan's §2 compose map -- S3 confirmed nothing in the anvil path needs it
@@ -36,8 +37,10 @@ args:
 
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
   # "autoclaim" added so this instance's own destination network (1) gets an
-  # AutoClaim claimer -- see aggkit_autoclaim_destinations below.
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # AutoClaim claimer -- see aggkit_autoclaim_destinations below. "bridge"
+  # added so this same process also serves the bridge REST API (port 5577)
+  # -- there is no longer a separate aggkit-001-bridge service.
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
 
   # aggsender multisig committee: 1 validator, threshold 1.
   use_agg_sender_validator: true
@@ -87,9 +90,9 @@ args:
   aggkit_autoclaim_destinations: [1]
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
 # NOTE: deliberately NO optimism_package: block -- sequencer_type: anvil
 # rejects one entirely (args_sanity_check rule V4: "sequencer_type 'anvil'

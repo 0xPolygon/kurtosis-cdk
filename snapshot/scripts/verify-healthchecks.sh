@@ -130,7 +130,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     if [ -f "$DISCOVERY_JSON" ]; then
         DISCOVERED_SERVICES=$(jq -r '
             [.l1_anvil, .agglayer, .aggkit_proxy, .haproxy, .dev_ui,
-             (.l2_chains[]? | (.anvil, .aggkit, .aggkit_bridge))]
+             (.l2_chains[]? | (.anvil, .aggkit))]
             | map(select(.found == true) | .service_name) | .[]
         ' "$DISCOVERY_JSON" 2>/dev/null || true)
         for svc in $DISCOVERED_SERVICES; do

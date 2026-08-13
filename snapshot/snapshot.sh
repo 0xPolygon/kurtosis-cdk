@@ -98,8 +98,9 @@ Flavors:
   anvil-aggkit   Seeds the dev-ui ERC20 fixture, then captures all three
                  anvils live over the anvil_dumpState RPC (nothing is ever
                  stopped, so the "resume enclave" step does not apply) plus
-                 the configs/keystores of agglayer, aggkit x2 (+ -bridge),
-                 aggkit-proxy, haproxy and dev-ui. Every service is then baked
+                 the configs/keystores of agglayer, aggkit x2 (each also
+                 serving the bridge REST API in-process), aggkit-proxy,
+                 haproxy and dev-ui. Every service is then baked
                  into a self-contained image, so the resulting bundle is just
                  docker-compose.yml + summary.json -- no bind mounts, no
                  volumes, nothing else needed on disk.

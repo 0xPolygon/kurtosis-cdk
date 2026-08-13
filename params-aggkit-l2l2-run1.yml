@@ -1,7 +1,8 @@
 # S2 (aggkit-proxy-l2l2 plan): first `kurtosis run` of a 2-L2 enclave.
-# Deploys L1 + agglayer + rollup 1 (network_id 1, op-reth, aggkit-001 +
-# aggkit-001-bridge) on the develop aggkit image. A second `kurtosis run`
-# with params-aggkit-l2l2-run2.yml (SAME enclave) adds rollup 2.
+# Deploys L1 + agglayer + rollup 1 (network_id 1, op-reth, aggkit-001, which
+# also serves the bridge REST API via --components=...,bridge) on the
+# develop aggkit image. A second `kurtosis run` with
+# params-aggkit-l2l2-run2.yml (SAME enclave) adds rollup 2.
 #
 # Modeled on params-aggkit-ui.yml (single-L2 baseline) and on aggkit's own
 # multi-chain CI recipe (agglayer/aggkit .github/test_e2e_op_args_base.json +
@@ -9,8 +10,8 @@
 
 deployment_stages:
   deploy_op_succinct: false
-  # Legacy zkevm-bridge-service is not needed; aggkit-001-bridge (a second
-  # aggkit instance with --components=bridge) is deployed unconditionally.
+  # Legacy zkevm-bridge-service is not needed; the aggkit-001 process serves
+  # the bridge REST API itself (--components=...,bridge) unconditionally.
   deploy_cdk_bridge_infra: false
 
 args:
@@ -34,8 +35,10 @@ args:
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (1) gets an AutoClaim claimer -- see
-  # aggkit_autoclaim_destinations below.
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # aggkit_autoclaim_destinations below. "bridge" added so this same process
+  # also serves the bridge REST API (port 5577) -- there is no longer a
+  # separate aggkit-001-bridge service.
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
 
   # aggsender multisig committee: 1 validator, threshold 1.
   use_agg_sender_validator: true
@@ -82,9 +85,9 @@ args:
   aggkit_autoclaim_destinations: [1]
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
 optimism_package:
   chains:

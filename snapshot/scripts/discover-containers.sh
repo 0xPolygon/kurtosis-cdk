@@ -7,7 +7,8 @@
 # enclave.
 #
 # Flavor "anvil-aggkit": locates the anvil-based dev-ui stack instead --
-# anvil-001 (L1), l2-anvil-00X, agglayer, aggkit-00X (+ -bridge),
+# anvil-001 (L1), l2-anvil-00X, agglayer, aggkit-00X (which also serves the
+# bridge REST API -- there is no separate -bridge sibling container),
 # aggkit-proxy-001, the bridge-ui haproxy and the dev-ui container.
 #
 # Usage: discover-containers.sh [--flavor <default|anvil-aggkit>] <ENCLAVE_NAME> <OUTPUT_FILE>
@@ -205,11 +206,11 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         l2_json=$(echo "$l2_json" | jq --argjson chain_id "$chain_id" '. + {chain_id: $chain_id}')
         log "    ✓ l2 anvil: $container (chain id $chain_id)"
 
-        # aggkit-<prefix>--<hash>, NOT aggkit-<prefix>-bridge--<hash> and NOT
-        # aggkit-proxy-<prefix>--<hash>: both are excluded by anchoring the
-        # kurtosis hash suffix directly after the numeric prefix.
+        # aggkit-<prefix>--<hash>, NOT aggkit-proxy-<prefix>--<hash>: excluded
+        # by anchoring the kurtosis hash suffix directly after the numeric
+        # prefix. This same container now also serves the bridge REST API
+        # (--components=...,bridge) -- there is no separate -bridge sibling.
         aggkit=$(find_containers "^aggkit-$prefix$KURTOSIS_SUFFIX_RE" | head -1)
-        aggkit_bridge=$(find_containers "^aggkit-$prefix-bridge$KURTOSIS_SUFFIX_RE" | head -1)
 
         if [ -z "$aggkit" ]; then
             log "ERROR: aggkit-$prefix not found for L2 network $prefix"
@@ -218,20 +219,11 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         log "    ✓ aggkit: $aggkit"
         aggkit_json=$(component_json "$aggkit")
 
-        if [ -n "$aggkit_bridge" ]; then
-            log "    ✓ aggkit bridge: $aggkit_bridge"
-            aggkit_bridge_json=$(component_json "$aggkit_bridge")
-        else
-            log "    WARNING: aggkit-$prefix-bridge not found"
-            aggkit_bridge_json="$NOT_FOUND_JSON"
-        fi
-
         L2_CHAINS_JSON=$(echo "$L2_CHAINS_JSON" | jq \
             --arg prefix "$prefix" \
             --argjson anvil "$l2_json" \
             --argjson aggkit "$aggkit_json" \
-            --argjson aggkit_bridge "$aggkit_bridge_json" \
-            '.[$prefix] = {prefix: $prefix, anvil: $anvil, aggkit: $aggkit, aggkit_bridge: $aggkit_bridge}')
+            '.[$prefix] = {prefix: $prefix, anvil: $anvil, aggkit: $aggkit}')
         L2_COUNT=$((L2_COUNT + 1))
     done
     log "Found $L2_COUNT L2 network(s)"
@@ -301,7 +293,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
           haproxy: $haproxy,
           dev_ui: $dev_ui}
          | . + {components: ([.l1_anvil, .agglayer, .aggkit_proxy, .haproxy, .dev_ui]
-                             + ([.l2_chains[] | .anvil, .aggkit, .aggkit_bridge])
+                             + ([.l2_chains[] | .anvil, .aggkit])
                              | map(select(.found == true) | .service_name))}' \
         > "$OUTPUT_FILE"
 

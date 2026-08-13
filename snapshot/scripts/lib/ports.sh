@@ -46,10 +46,11 @@ SNAPSHOT_L2_PORT_STRIDE=1000
 #   node_rpc       op-node RPC
 #   node_metrics   op-node metrics
 #   aggkit_rpc     aggkit JSON-RPC (5576)
-#   aggkit_rest    aggkit bridge REST API (5577)
-# anvil-aggkit flavor addition:
-#   aggkit_bridge_rpc  the `-bridge` sibling's JSON-RPC (also 5576 in-container,
-#                      so it needs its own host port next to aggkit_rpc)
+#   aggkit_rest    aggkit bridge REST API (5577) -- as of K1, served by the
+#                  SAME aggkit-00X process/container as aggkit_rpc
+#                  (--components=...,bridge). There is no separate `-bridge`
+#                  sibling service/port anymore -- the offset that used to
+#                  back its JSON-RPC (aggkit_bridge_rpc=586) was deleted.
 declare -gA SNAPSHOT_L2_PORT_OFFSETS=(
     [http]=545
     [ws]=546
@@ -58,7 +59,6 @@ declare -gA SNAPSHOT_L2_PORT_OFFSETS=(
     [node_metrics]=300
     [aggkit_rpc]=576
     [aggkit_rest]=577
-    [aggkit_bridge_rpc]=586
 )
 
 # Single-instance services. Values are the plan's §2 component/port map.

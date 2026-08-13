@@ -1,7 +1,8 @@
 # S5 (dev-ui-ci-snapshot plan): anvil-flavor equivalent of
 # params-aggkit-l2l2-run2.yml -- second `kurtosis run` into the SAME enclave
 # as params-aggkit-anvil-l2l2-run1.yml. Adds rollup 2 (network_id 2,
-# deployment_suffix -002, anvil L2, aggkit-002 + aggkit-002-bridge), settling
+# deployment_suffix -002, anvil L2, aggkit-002, which also serves the bridge
+# REST API via --components=...,bridge), settling
 # certificates through the agglayer instance run1 already deployed, and
 # stands up the aggkit-proxy + bridge_ui (aggkit backend) + dev-ui stack that
 # run1 deliberately skips.
@@ -35,8 +36,10 @@ args:
 
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
   # "autoclaim" added so this instance's own destination network (2) gets an
-  # AutoClaim claimer -- see aggkit_autoclaim_destinations below.
-  aggkit_components: "aggsender,aggoracle,autoclaim"
+  # AutoClaim claimer -- see aggkit_autoclaim_destinations below. "bridge"
+  # added so this same process also serves the bridge REST API (port 5577)
+  # -- there is no longer a separate aggkit-002-bridge service.
+  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
 
   use_agg_sender_validator: true
   agg_sender_validator_total_number: 1
@@ -60,7 +63,7 @@ args:
   # and renders just the haproxy proxy (+ the opt-in dev-ui container).
   # aggkit_proxy_url points haproxy's single /aggkitapi backend at the
   # standalone aggkit-proxy service (deployed above) instead of this run's
-  # own l2_context.aggkit_bridge_url (aggkit-002-bridge only) -- one haproxy
+  # own l2_context.aggkit_bridge_url (aggkit-002 only) -- one haproxy
   # backend then fronts networks 0/1/2 via the proxy's own network_id-based
   # routing.
   bridge_ui_backend: aggkit
@@ -92,15 +95,15 @@ args:
   # every network including 0 -- network 0 (L1) is never enumerated on-chain,
   # and the on-chain URLs are enclave-internal hostnames not registered in
   # this package anyway. Network 0 and network 1 both route to
-  # aggkit-001-bridge (every aggkit bridge instance syncs the L1 side);
-  # network 2 routes to aggkit-002-bridge.
+  # aggkit-001 (every aggkit bridge instance syncs the L1 side);
+  # network 2 routes to aggkit-002.
   aggkit_proxy_bridge_urls:
     - network_id: 0
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
   # S5: network 0 -> the anvil L1 service directly (http://anvil-001:8545),
   # NOT an op-reth/op-node service name -- anvil is both L1 sequencer and RPC.
   aggkit_proxy_rpc_urls:
@@ -122,9 +125,9 @@ args:
   aggkit_autoclaim_destinations: [2]
   aggkit_autoclaim_bridge_urls:
     - network_id: 1
-      bridge_url: "http://aggkit-001-bridge:5577"
+      bridge_url: "http://aggkit-001:5577"
     - network_id: 2
-      bridge_url: "http://aggkit-002-bridge:5577"
+      bridge_url: "http://aggkit-002:5577"
 
   # NOTE: do NOT override l2_admin_address / l2_sequencer_address / other
   # l2_* role keys here -- see params-aggkit-anvil-l2l2-run1.yml and

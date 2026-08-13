@@ -228,39 +228,21 @@ EOF
 EOF
 
     # ------------------------------------------------------------------
-    # aggkit x N (+ -bridge siblings)
+    # aggkit x N -- each process serves both the main aggkit components
+    # (aggsender/aggoracle/autoclaim) AND the bridge REST API in one
+    # container (--components=...,bridge). There is no separate -bridge
+    # sibling service (merged in K1); the healthcheck below proves both the
+    # process booted AND the bridge REST API is synced.
     # ------------------------------------------------------------------
-    BRIDGE_DEPENDS=""
+    AGGKIT_DEPENDS=""
     for prefix in $PREFIXES; do
         L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
         AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
-        BRIDGE_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit_bridge.service_name' "$DISCOVERY_JSON")
-        BRIDGE_DEPENDS="$BRIDGE_DEPENDS
-      $BRIDGE_SVC:
+        AGGKIT_DEPENDS="$AGGKIT_DEPENDS
+      $AGGKIT_SVC:
         condition: service_healthy"
 
         cat >> "$COMPOSE_FILE" << EOF
-
-  $BRIDGE_SVC:
-    image: $(image_ref "$BRIDGE_SVC")
-    hostname: $BRIDGE_SVC
-    entrypoint: $(entrypoint_of ".l2_chains[\"$prefix\"].aggkit_bridge")
-    command: $(cmd_of ".l2_chains[\"$prefix\"].aggkit_bridge")
-    ports:
-      - "$(snapshot_l2_port_expr "$prefix" aggkit_bridge_rpc):5576"   # JSON-RPC (debug)
-      - "$(snapshot_l2_port_expr "$prefix" aggkit_rest):5577"   # bridge REST API
-    depends_on:
-      $L1_SVC:
-        condition: service_healthy
-      $L2_SVC:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "/snapshot/busybox", "sh", "/snapshot/healthcheck.sh"]
-      interval: 3s
-      timeout: 10s
-      retries: 60
-      start_period: 10s
 
   $AGGKIT_SVC:
     image: $(image_ref "$AGGKIT_SVC")
@@ -269,6 +251,7 @@ EOF
     command: $(cmd_of ".l2_chains[\"$prefix\"].aggkit")
     ports:
       - "$(snapshot_l2_port_expr "$prefix" aggkit_rpc):5576"   # JSON-RPC (debug)
+      - "$(snapshot_l2_port_expr "$prefix" aggkit_rest):5577"   # bridge REST API
     depends_on:
       $L1_SVC:
         condition: service_healthy
@@ -300,7 +283,7 @@ EOF
       - "$(snapshot_fixed_port_expr aggkit_proxy):8080"   # bridge + tracker REST
     depends_on:
       $AGGLAYER_SVC:
-        condition: service_healthy$BRIDGE_DEPENDS
+        condition: service_healthy$AGGKIT_DEPENDS
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/snapshot/busybox", "sh", "/snapshot/healthcheck.sh"]

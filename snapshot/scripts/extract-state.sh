@@ -7,8 +7,9 @@
 #
 # Flavor "anvil-aggkit": captures state from the three anvils over the
 # `anvil_dumpState` RPC -- WITHOUT stopping anything -- plus the configs and
-# keystores of the stateless services (agglayer, aggkit x2 (+ -bridge),
-# aggkit-proxy, haproxy, dev-ui). The L2 anvils are launched with `--init`,
+# keystores of the stateless services (agglayer, aggkit x2 -- each also
+# serving the bridge REST API in the same container/config, aggkit-proxy,
+# haproxy, dev-ui). The L2 anvils are launched with `--init`,
 # which anvil refuses to combine with `--dump-state`, so RPC capture is the
 # only option there; the L1 anvil is captured the same way for symmetry and
 # because `--dump-state` only writes its file on shutdown.
@@ -321,19 +322,20 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     copy_container_file "$AGGLAYER_CONTAINER" "/etc/agglayer/aggregator.keystore" "$CONFIG_DIR/agglayer/aggregator.keystore"
     log "  Note: /etc/agglayer/storage and /etc/agglayer/backups NOT extracted (stateless by design)"
 
-    # ---- aggkit configs ----------------------------------------------------
+    # ---- aggkit configs -----------------------------------------------------
+    # Each aggkit-00X container now also serves the bridge REST API in-process
+    # (--components=...,bridge), so there is only one role/container per L2
+    # network to extract -- no separate "-bridge" sibling (merged in K1).
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
-        for role in aggkit aggkit_bridge; do
-            found=$(jq -r ".l2_chains[\"$prefix\"].$role.found // false" "$DISCOVERY_JSON")
-            if [ "$found" != "true" ]; then
-                log "  Skipping $role for network $prefix (not present)"
-                continue
-            fi
-            container=$(jq -r ".l2_chains[\"$prefix\"].$role.container_name" "$DISCOVERY_JSON")
-            service=$(jq -r ".l2_chains[\"$prefix\"].$role.service_name" "$DISCOVERY_JSON")
-            log "Extracting $service configuration..."
-            copy_container_dir "$container" "/etc/aggkit" "$CONFIG_DIR/$service"
-        done
+        found=$(jq -r ".l2_chains[\"$prefix\"].aggkit.found // false" "$DISCOVERY_JSON")
+        if [ "$found" != "true" ]; then
+            log "  Skipping aggkit for network $prefix (not present)"
+            continue
+        fi
+        container=$(jq -r ".l2_chains[\"$prefix\"].aggkit.container_name" "$DISCOVERY_JSON")
+        service=$(jq -r ".l2_chains[\"$prefix\"].aggkit.service_name" "$DISCOVERY_JSON")
+        log "Extracting $service configuration..."
+        copy_container_dir "$container" "/etc/aggkit" "$CONFIG_DIR/$service"
     done
 
     # ---- aggkit-proxy config ----------------------------------------------

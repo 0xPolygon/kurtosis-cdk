@@ -159,18 +159,18 @@ def _create_deployment_context(
 
 
 def _deploy_core_aggkit_services(plan, args, deployment_context):
-    """Deploy the core aggkit services (main service and bridge)."""
+    """Deploy the core aggkit service (main service, with the bridge component
+    merged in -- see _deploy_main_aggkit_service)."""
     plan.print("Deploying core aggkit services")
 
-    # Create main aggkit service with inline config
-    _deploy_main_aggkit_service(plan, args, deployment_context)
-
-    # Create bridge service with inline config
-    return _deploy_bridge_service(plan, args, deployment_context)
+    # Create main aggkit service (also serves the bridge REST API) with inline config
+    return _deploy_main_aggkit_service(plan, args, deployment_context)
 
 
 def _deploy_main_aggkit_service(plan, args, deployment_context):
-    """Deploy the main aggkit service with inline config creation."""
+    """Deploy the main aggkit service with inline config creation. This
+    service also serves the bridge component (REST API) -- the bridge is no
+    longer a separate service/container, see aggkit_components."""
     # Create config artifact
     config_template = read_file(
         src="../../../static_files/chain/shared/aggkit/config.toml"
@@ -191,7 +191,7 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
 
     # Create and deploy service
     service_name = "aggkit" + args["deployment_suffix"]
-    ports = _get_aggkit_ports(args)
+    ports = _get_aggkit_bridge_ports(args)
 
     files_config = {
         "/etc/aggkit": Directory(
@@ -220,58 +220,6 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
             "run",
             "--cfg=/etc/aggkit/config.toml",
             "--components=" + args.get("aggkit_components", ""),
-        ],
-    )
-
-    plan.add_service(name=service_name, config=service_config)
-
-
-def _deploy_bridge_service(plan, args, deployment_context):
-    """Deploy the bridge service with inline config creation."""
-    # Create config artifact
-    config_template = read_file(
-        src="../../../static_files/chain/shared/aggkit/config.toml"
-    )
-    config_artifact = plan.render_templates(
-        name="aggkit-bridge-config{}".format(args.get("deployment_suffix")),
-        config={
-            "config.toml": struct(
-                template=config_template,
-                data=_build_config_data(args, deployment_context),
-            )
-        },
-    )
-
-    # Create and deploy bridge service
-    service_name = "aggkit" + args["deployment_suffix"] + "-bridge"
-    ports = _get_aggkit_bridge_ports(args)
-
-    files_config = {
-        "/etc/aggkit": Directory(
-            artifact_names=[
-                config_artifact,
-                deployment_context.keystore_artifacts.aggoracle,
-                deployment_context.keystore_artifacts.sovereignadmin,
-                deployment_context.keystore_artifacts.sequencer,
-            ]
-            + (
-                [deployment_context.keystore_artifacts.claim_sponsor]
-                if deployment_context.keystore_artifacts.claim_sponsor
-                else []
-            ),
-        ),
-        "/data": Directory(artifact_names=[]),
-    }
-
-    service_config = ServiceConfig(
-        image=args["aggkit_image"],
-        ports=ports,
-        files=files_config,
-        entrypoint=["/usr/local/bin/aggkit"],
-        cmd=[
-            "run",
-            "--cfg=/etc/aggkit/config.toml",
-            "--components=bridge",
         ],
     )
 

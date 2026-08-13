@@ -497,7 +497,7 @@ jobs:
 
       - name: Verify aggkit bridge sync-status (L1 and L2 both synced+active)
         run: |
-          bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001-bridge rest)
+          bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001 rest)
           # The L1/L2 syncers race the "Monitor rollup progress" block-height wait above,
           # not the other way round -- poll instead of a single shot (matches monitor.sh's
           # own retry style).

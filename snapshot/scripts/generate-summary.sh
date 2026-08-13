@@ -229,7 +229,6 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
         L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
         AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
-        BRIDGE_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit_bridge.service_name' "$DISCOVERY_JSON")
         AGGKIT_CONFIG="$OUTPUT_DIR/config/$AGGKIT_SVC/config.toml"
         L2_META=$(jq -c --arg p "$prefix" '.chains[] | select(.prefix == $p)' "$STATE_METADATA")
 
@@ -246,14 +245,12 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             --arg prefix "$prefix" \
             --arg svc "$L2_SVC" \
             --arg aggkit "$AGGKIT_SVC" \
-            --arg bridge_svc "$BRIDGE_SVC" \
             --arg base "$PROXY_BASE" \
             --arg rpc_port "$(snapshot_l2_port "$prefix" http)" \
             --arg rpc_env "$(snapshot_l2_port_env "$prefix" http)" \
             --arg rest_port "$(snapshot_l2_port "$prefix" aggkit_rest)" \
             --arg rest_env "$(snapshot_l2_port_env "$prefix" aggkit_rest)" \
             --arg aggkit_rpc_port "$(snapshot_l2_port "$prefix" aggkit_rpc)" \
-            --arg bridge_rpc_port "$(snapshot_l2_port "$prefix" aggkit_bridge_rpc)" \
             '{
                 prefix: $prefix,
                 service: $svc,
@@ -268,23 +265,15 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 },
                 aggkit: {
                     service: $aggkit,
-                    components: "aggsender,aggoracle,autoclaim",
+                    components: "aggsender,aggoracle,autoclaim,bridge",
                     rpc: {
                         internal: ("http://" + $aggkit + ":5576"),
                         external: ("http://127.0.0.1:" + $aggkit_rpc_port)
-                    }
-                },
-                aggkit_bridge: {
-                    service: $bridge_svc,
-                    components: "bridge",
+                    },
                     rest_api: {
-                        internal: ("http://" + $bridge_svc + ":5577"),
+                        internal: ("http://" + $aggkit + ":5577"),
                         external: ("http://127.0.0.1:" + $rest_port),
                         host_port_env: $rest_env
-                    },
-                    rpc: {
-                        internal: ("http://" + $bridge_svc + ":5576"),
-                        external: ("http://127.0.0.1:" + $bridge_rpc_port)
                     }
                 },
                 contracts: $contracts[0]
@@ -354,15 +343,13 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     add_keystore "$OUTPUT_DIR/config/agglayer/aggregator.keystore" "$AGGLAYER_SVC" \
         "/etc/agglayer/aggregator.keystore" "agglayer settlement signer"
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
-        for role in aggkit aggkit_bridge; do
-            SVC=$(jq -r --arg p "$prefix" --arg r "$role" '.l2_chains[$p][$r].service_name' "$DISCOVERY_JSON")
-            add_keystore "$OUTPUT_DIR/config/$SVC/sequencer.keystore" "$SVC" \
-                "/etc/aggkit/sequencer.keystore" "sequencer / aggsender signer"
-            add_keystore "$OUTPUT_DIR/config/$SVC/aggoracle.keystore" "$SVC" \
-                "/etc/aggkit/aggoracle.keystore" "aggoracle + autoclaim signer"
-            add_keystore "$OUTPUT_DIR/config/$SVC/sovereignadmin.keystore" "$SVC" \
-                "/etc/aggkit/sovereignadmin.keystore" "sovereign admin"
-        done
+        SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+        add_keystore "$OUTPUT_DIR/config/$SVC/sequencer.keystore" "$SVC" \
+            "/etc/aggkit/sequencer.keystore" "sequencer / aggsender signer"
+        add_keystore "$OUTPUT_DIR/config/$SVC/aggoracle.keystore" "$SVC" \
+            "/etc/aggkit/aggoracle.keystore" "aggoracle + autoclaim signer"
+        add_keystore "$OUTPUT_DIR/config/$SVC/sovereignadmin.keystore" "$SVC" \
+            "/etc/aggkit/sovereignadmin.keystore" "sovereign admin"
     done
 
     FIXTURES='null'
@@ -396,11 +383,9 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
         L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
         AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
-        BRIDGE_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit_bridge.service_name' "$DISCOVERY_JSON")
         add_port "$L2_SVC" "$(snapshot_l2_port_env "$prefix" http)" "$(snapshot_l2_port "$prefix" http)" 8545 "L2 JSON-RPC (debug)"
         add_port "$AGGKIT_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_rpc)" "$(snapshot_l2_port "$prefix" aggkit_rpc)" 5576 "aggkit JSON-RPC (debug)"
-        add_port "$BRIDGE_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_bridge_rpc)" "$(snapshot_l2_port "$prefix" aggkit_bridge_rpc)" 5576 "aggkit-bridge JSON-RPC (debug)"
-        add_port "$BRIDGE_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_rest)" "$(snapshot_l2_port "$prefix" aggkit_rest)" 5577 "aggkit-bridge REST API"
+        add_port "$AGGKIT_SVC" "$(snapshot_l2_port_env "$prefix" aggkit_rest)" "$(snapshot_l2_port "$prefix" aggkit_rest)" 5577 "aggkit bridge REST API"
     done
     add_port "$AGGLAYER_SVC" "$(snapshot_fixed_port_env agglayer_grpc)" "$(snapshot_fixed_port agglayer_grpc)" 4443 "agglayer gRPC"
     add_port "$AGGLAYER_SVC" "$(snapshot_fixed_port_env agglayer_readrpc)" "$(snapshot_fixed_port agglayer_readrpc)" 4444 "agglayer read RPC"

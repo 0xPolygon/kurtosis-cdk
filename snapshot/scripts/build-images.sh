@@ -359,65 +359,55 @@ DOCKER_EOF
     # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
-    # aggkit x N (+ their -bridge siblings)
+    # aggkit x N
     #
-    # aggkit-00X and aggkit-00X-bridge ship identical config.tomls and differ
-    # only in --components, but each gets its own image so the two stay
-    # independently pullable/pinnable (S7).
+    # Each aggkit-00X process now runs --components=...,bridge itself (K1:
+    # the aggkit-00X-bridge sibling was merged into the main process/image),
+    # so its healthcheck must prove BOTH that the process booted AND that the
+    # bridge REST API is actually synced -- not just the pprof-only check
+    # that was previously sufficient for the non-bridge sibling.
     # ------------------------------------------------------------------
     log "Building aggkit images..."
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
         NETWORK_ID=$(jq -r --arg p "$prefix" '.chains[] | select(.prefix == $p) | .network_id' "$STATE_METADATA")
 
-        for role in aggkit aggkit_bridge; do
-            SVC=$(jq -r --arg p "$prefix" --arg r "$role" '.l2_chains[$p][$r].service_name' "$DISCOVERY_JSON")
-            BASE_IMAGE=$(jq -r --arg p "$prefix" --arg r "$role" '.l2_chains[$p][$r].image' "$DISCOVERY_JSON")
-            BUILD_DIR="$OUTPUT_DIR/images/$SVC"
-            mkdir -p "$BUILD_DIR"
-            cp "$OUTPUT_DIR/config/$SVC/config.toml" "$BUILD_DIR/"
-            cp "$OUTPUT_DIR/config/$SVC"/*.keystore "$BUILD_DIR/"
-            # Baked verbatim -- see the "NO RESTORE-TIME CONFIG ADAPTATION"
-            # note above (S9b).
+        SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+        BASE_IMAGE=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.image' "$DISCOVERY_JSON")
+        BUILD_DIR="$OUTPUT_DIR/images/$SVC"
+        mkdir -p "$BUILD_DIR"
+        cp "$OUTPUT_DIR/config/$SVC/config.toml" "$BUILD_DIR/"
+        cp "$OUTPUT_DIR/config/$SVC"/*.keystore "$BUILD_DIR/"
+        # Baked verbatim -- see the "NO RESTORE-TIME CONFIG ADAPTATION"
+        # note above (S9b).
 
-            if [ "$role" = "aggkit_bridge" ]; then
-                # The bar S9/dev-ui hold: is_synced AND is_active on BOTH
-                # l1_info and l2_info, hence the >= 2 occurrences.
-                cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
+        # The bar S9/dev-ui hold: is_synced AND is_active on BOTH l1_info and
+        # l2_info, hence the >= 2 occurrences.
+        cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
 #!/bin/sh
 BB=/snapshot/busybox
 n=\$(\$BB wget -q -O - "http://127.0.0.1:5577/bridge/v1/sync-status?network_id=${NETWORK_ID}" \\
       | \$BB grep -o '"is_synced":true,"is_active":true' | \$BB wc -l)
 [ "\$n" -ge 2 ]
 HC_EOF
-            else
-                cat > "$BUILD_DIR/healthcheck.sh" << 'HC_EOF'
-#!/bin/sh
-# aggsender/aggoracle/autoclaim expose no REST surface; the pprof server
-# (ProfilingEnabled = true in the captured config) is the only HTTP endpoint
-# that proves the process finished booting.
-exec /snapshot/busybox wget -q -O /dev/null http://127.0.0.1:6060/debug/pprof/
-HC_EOF
-            fi
 
-            {
-                echo "FROM $BUSYBOX_IMAGE AS busybox"
-                echo "FROM $BASE_IMAGE"
-                echo ""
-                echo "COPY config.toml /etc/aggkit/config.toml"
-                for ks in "$BUILD_DIR"/*.keystore; do
-                    echo "COPY $(basename "$ks") /etc/aggkit/$(basename "$ks")"
-                done
-                echo "# aggkit ships no shell, so no RUN layer is possible here: /snapshot"
-                echo "# gets its 0755 mode from this first, plain (non---chmod) COPY."
-                echo "COPY --from=busybox /bin/busybox /snapshot/busybox"
-                echo "COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh"
-                echo ""
-                echo 'ENTRYPOINT ["/usr/local/bin/aggkit"]'
-            } > "$BUILD_DIR/Dockerfile"
+        {
+            echo "FROM $BUSYBOX_IMAGE AS busybox"
+            echo "FROM $BASE_IMAGE"
+            echo ""
+            echo "COPY config.toml /etc/aggkit/config.toml"
+            for ks in "$BUILD_DIR"/*.keystore; do
+                echo "COPY $(basename "$ks") /etc/aggkit/$(basename "$ks")"
+            done
+            echo "# aggkit ships no shell, so no RUN layer is possible here: /snapshot"
+            echo "# gets its 0755 mode from this first, plain (non---chmod) COPY."
+            echo "COPY --from=busybox /bin/busybox /snapshot/busybox"
+            echo "COPY --chmod=0555 healthcheck.sh /snapshot/healthcheck.sh"
+            echo ""
+            echo 'ENTRYPOINT ["/usr/local/bin/aggkit"]'
+        } > "$BUILD_DIR/Dockerfile"
 
-            docker build -q -t "${IMAGE_PREFIX}${SVC}:$TAG" "$BUILD_DIR" > /dev/null
-            record_image "$SVC" "${IMAGE_PREFIX}${SVC}:$TAG" "$BASE_IMAGE"
-        done
+        docker build -q -t "${IMAGE_PREFIX}${SVC}:$TAG" "$BUILD_DIR" > /dev/null
+        record_image "$SVC" "${IMAGE_PREFIX}${SVC}:$TAG" "$BASE_IMAGE"
     done
 
     # ------------------------------------------------------------------

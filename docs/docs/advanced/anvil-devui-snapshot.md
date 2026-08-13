@@ -64,8 +64,7 @@ rewriting is near-zero:
 | `l2-anvil-001` | L2 rollup 1 (network_id 1, chain_id 20201) | 8545 |
 | `l2-anvil-002` | L2 rollup 2 (network_id 2, chain_id 20202) | 8545 |
 | `agglayer` | Settlement / certificate pipeline | 4443 (grpc), 4444 (readrpc), 4446 (admin), 9092 (prometheus) |
-| `aggkit-001` / `aggkit-002` | aggsender + aggoracle + autoclaim per rollup | 5576 (rpc) |
-| `aggkit-001-bridge` / `aggkit-002-bridge` | aggkit bridge REST per rollup | 5576 (rpc), 5577 (rest) |
+| `aggkit-001` / `aggkit-002` | aggsender + aggoracle + autoclaim + bridge per rollup (one process/container serves both the main components and the bridge REST API) | 5576 (rpc), 5577 (rest) |
 | `aggkit-proxy-001` | `--components=proxy,tracker`; multiplexes all 3 networks by `network_id` | 8080 |
 | `agglayer-dev-ui-proxy-002` (haproxy) | Single CORS-enabled origin: `/l1rpc`, `/l2rpc-001`, `/l2rpc-002`, `/l2rpc` (alias), `/aggkitapi` | 80 |
 | `agglayer-dev-ui-002` | `agglayer_dev_ui_aggkit_image`, opt-in | 80 |
@@ -222,8 +221,7 @@ table can never drift apart:
 | `anvil-001` (L1) | 8545 | `${L1_RPC_PORT:-8545}` |
 | `l2-anvil-001` | 8545 | `${L2_001_HTTP_PORT:-11545}` |
 | `l2-anvil-002` | 8545 | `${L2_002_HTTP_PORT:-12545}` |
-| `aggkit-001` / `aggkit-002` | 5576 | `${L2_00X_AGGKIT_RPC_PORT:-11576/12576}` |
-| `aggkit-001-bridge` / `aggkit-002-bridge` | 5576 / 5577 | `${L2_00X_AGGKIT_BRIDGE_RPC_PORT:-11586/12586}` / `${L2_00X_AGGKIT_REST_PORT:-11577/12577}` |
+| `aggkit-001` / `aggkit-002` | 5576 (rpc), 5577 (bridge rest) | `${L2_00X_AGGKIT_RPC_PORT:-11576/12576}` / `${L2_00X_AGGKIT_REST_PORT:-11577/12577}` |
 | `agglayer` | 4443/4444/4446/9092 | same (debug only) |
 
 Every port above is env-overridable, computed from the same `snapshot_l2_port`/
@@ -267,7 +265,7 @@ vendoring or publishing this file.
 `.github/workflows/snapshot-devui.yml` runs the whole pipeline in CI: checkout →
 `kurtosis-pre-run` → the two `kurtosis run` calls → `snapshot.sh --flavor anvil-aggkit`
 → **gate** on `state-metadata.json`'s soundness invariants → `verify.sh` (the full
-dev-ui contract, including a real L1→L2 and L2→L1 bridge round trip) → publish 11
+dev-ui contract, including a real L1→L2 and L2→L1 bridge round trip) → publish 9
 images to GHCR → upload `docker-compose.yml` + `summary.json` as a workflow artifact.
 
 ```bash
@@ -277,9 +275,9 @@ Usage: ./snapshot/scripts/gate-snapshot-soundness.sh <state-metadata.json>
 
 Images publish under `ghcr.io/0xpolygon/kurtosis-cdk-snapshot-<service>` with tags
 `snapshot-<sha>` and `snapshot-latest-devui` — both the package name and every tag
-deliberately contain the literal word `snapshot`. The 11 services:
+deliberately contain the literal word `snapshot`. The 9 services:
 `anvil-001`, `l2-anvil-001`, `l2-anvil-002`, `agglayer`, `aggkit-001`,
-`aggkit-001-bridge`, `aggkit-002`, `aggkit-002-bridge`, `aggkit-proxy-001`,
+`aggkit-002`, `aggkit-proxy-001`,
 `agglayer-dev-ui-proxy-002`, `agglayer-dev-ui-002`.
 
 Publishing is opt-in: `workflow_dispatch`'s `publish` input **defaults to `false`**

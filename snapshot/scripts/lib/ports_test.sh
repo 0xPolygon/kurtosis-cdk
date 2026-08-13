@@ -43,7 +43,6 @@ assert_eq "L2 002 http port" "$(snapshot_l2_port 002 http)" "12545"
 assert_eq "L2 001 ws port" "$(snapshot_l2_port 001 ws)" "11546"
 assert_eq "L2 001 aggkit_rpc port" "$(snapshot_l2_port 001 aggkit_rpc)" "11576"
 assert_eq "L2 002 aggkit_rest port" "$(snapshot_l2_port 002 aggkit_rest)" "12577"
-assert_eq "L2 002 aggkit_bridge_rpc port" "$(snapshot_l2_port 002 aggkit_bridge_rpc)" "12586"
 
 # --- snapshot_l2_port_env: <PREFIX>_<KEY upper>_PORT ---
 assert_eq "L2 001 http env name" "$(snapshot_l2_port_env 001 http)" "L2_001_HTTP_PORT"
@@ -79,6 +78,10 @@ assert_eq "historical offset: aggkit_rest" "${SNAPSHOT_L2_PORT_OFFSETS[aggkit_re
 # (a caller that mistypes a key must not get a compose file with a blank
 # port mapping). ---
 assert_fails "unknown L2 port key rejected" snapshot_l2_port 001 nonexistent_key
+# K1: the `-bridge` sibling service was merged into the main aggkit process,
+# so its dedicated JSON-RPC offset (aggkit_bridge_rpc) was deleted rather than
+# left dangling with nothing rendering it.
+assert_fails "deleted aggkit_bridge_rpc key rejected" snapshot_l2_port 001 aggkit_bridge_rpc
 assert_fails "unknown fixed port key rejected" snapshot_fixed_port nonexistent_key
 assert_fails "unknown L2 port env key rejected" snapshot_l2_port_env 001 nonexistent_key
 assert_fails "unknown fixed port env key rejected" snapshot_fixed_port_env nonexistent_key
