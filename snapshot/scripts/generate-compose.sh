@@ -181,18 +181,69 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     #      shape aggkit's own e2e envs already use (op-pp-2chains's
     #      aggkit-001: image aggkit:local, bind-mounted config, NO
     #      healthcheck block -- downstream depends via
-    #      condition: service_started). Because bare agglayer/aggkit images
-    #      ship no shell or HTTP client (both distroless -- see
-    #      build-images.sh's busybox comment), and a consumer's overridden
-    #      image cannot be assumed to carry the busybox the DERIVED image
-    #      bakes in either, these three services get NO healthcheck here --
-    #      matching aggkit's own env precedent, and making the override
-    #      genuinely safe (nothing depends on baked-in probe tooling a
-    #      swapped image might lack). Anything that depended on their health
-    #      now depends on them via `condition: service_started` instead.
-    #      aggkit-00X and aggkit-proxy-001 share ONE env var (AGGKIT_IMAGE):
-    #      the proxy binary ships in the same aggkit image, entrypoint
-    #      overridden (same as docker-compose.yml).
+    #      condition: service_started). aggkit-00X and aggkit-proxy-001
+    #      share ONE env var (AGGKIT_IMAGE): the proxy binary ships in the
+    #      same aggkit image, entrypoint overridden (same as
+    #      docker-compose.yml).
+    #
+    #      aggkit's own images ARE distroless (no shell at all -- verified:
+    #      `docker run --entrypoint sh <aggkit-image>` fails with "exec: sh:
+    #      executable file not found"), so aggkit-00X/aggkit-proxy-001
+    #      genuinely cannot carry a compose-level healthcheck without
+    #      assuming a consumer's override image bundles one; they get NO
+    #      healthcheck here, matching aggkit's own env precedent exactly.
+    #      Dependents of aggkit-00X (aggkit-proxy-001, haproxy) use
+    #      `condition: service_started` for it, unchanged.
+    #
+    #      agglayer's bare upstream image is DIFFERENT: it is a slim Debian
+    #      base, not distroless (verified: it ships /bin/sh -> dash AND
+    #      /bin/bash). K5's original design gave agglayer no healthcheck
+    #      either, on the assumption it was as tool-less as aggkit -- that
+    #      assumption was wrong, and its absence is the root cause of a
+    #      reproducible aggsender deadlock fixed here (K5c): aggkit-00X
+    #      starting on bare `condition: service_started` races agglayer's
+    #      own async gRPC-listener bind. When agglayer isn't yet accepting
+    #      connections, aggsender's `SetClaimSyncerNextRequiredBlock` gRPC
+    #      call to agglayer stalls for several seconds waiting for the
+    #      connection (its GRPC client's MinConnectTimeout=5s) while, in
+    #      parallel and with NO dependency on agglayer at all, the claim
+    #      syncer's own local autostart sync races ahead past block 100
+    #      purely from local L2 chain state (confirmed empirically:
+    #      aggkit-001's own logs show the local claim-sync DB already past
+    #      block 100 within ~150ms of container start, well before the
+    #      first `SetClaimSyncerNextRequiredBlock` attempt resolves ~3.8s
+    #      later). Once the local DB has moved past 0, agglayer settling a
+    #      certificate later can never re-arm the "block 0" fallback --
+    #      `ClaimSync.SetNextRequiredBlock` rejects the mismatch permanently
+    #      and aggsender is stuck at `starting_claim_syncer_stage` forever.
+    #      A merely-started agglayer process provides no assurance its gRPC
+    #      listener is already bound; the fix has to gate on genuine
+    #      TCP-level readiness so aggsender's very first gRPC attempt lands
+    #      before the local autostart race gets ahead.
+    #
+    #      Fix (K5c): agglayer gets an explicit COMPOSE-LEVEL healthcheck
+    #      here -- `bash -c 'exec 3<>/dev/tcp/127.0.0.1/<grpc-port>'`, a
+    #      genuine TCP-connect probe against its own gRPC port, using only
+    #      bash's builtin /dev/tcp (confirmed present in the bare image; no
+    #      curl/wget/nc needed, so the override risk is limited to "your
+    #      AGGLAYER_IMAGE must carry bash", which is true of every
+    #      mainstream base image and is stated explicitly in this file's
+    #      header comment below). This is stronger than the trivial
+    #      `test -f /proc/1/cmdline` process-exists healthcheck aggkit's own
+    #      op-pp-2chains gives its agglayer service (same compose-level
+    #      mechanism, but "process exists" passes within milliseconds of
+    #      container start -- before the gRPC listener binds -- so it would
+    #      not close this race; a real listen-socket probe is required, and
+    #      the plan's own candidate (A) explicitly allows a TCP form for
+    #      exactly this reason). aggkit-00X and aggkit-proxy-001's
+    #      `depends_on: agglayer` both move from `condition: service_started`
+    #      to `condition: service_healthy` to actually consume this signal.
+    #      This does weaken the AGGLAYER_IMAGE override contract slightly:
+    #      an override image with no /bin/bash would sit permanently
+    #      unhealthy and block aggkit-00X from ever starting (a fail-closed,
+    #      loud failure -- not a silent hang) -- see the file header for the
+    #      explicit trade-off statement. AGGKIT_IMAGE is the seam the
+    #      acceptance criteria actually exercise and is untouched by this.
     #
     #  (ii) haproxy is NOT override-able (no env var -- it was never in
     #       scope) and keeps the SAME derived snapshot-<haproxy-svc> image,
@@ -254,6 +305,21 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
 # aggkit-00X and aggkit-proxy-001 share AGGKIT_IMAGE (the proxy binary ships
 # in the same image, entrypoint overridden -- same as docker-compose.yml).
 # The anvil family is NOT override-able: swapping it loses the baked state.
+#
+# K5c: $AGGLAYER_SVC carries a compose-level healthcheck (a bash /dev/tcp
+# TCP-connect probe against its own gRPC port -- no curl/wget/nc needed,
+# only /bin/bash) so aggkit-00X/aggkit-proxy-001 can gate on
+# \`condition: service_healthy\` instead of \`service_started\`; without this,
+# aggkit-00X's aggsender races agglayer's own async gRPC-listener bind
+# against its own local claim-syncer autostart and permanently deadlocks at
+# \`starting_claim_syncer_stage\` (see the comment above generate_mounts_compose
+# for the full mechanism). Trade-off: AGGLAYER_IMAGE, unlike AGGKIT_IMAGE, is
+# no longer override-able with an arbitrary bash-less image -- an override
+# with no /bin/bash sits permanently unhealthy and aggkit-00X never starts (a
+# loud, fail-closed error, not a silent hang). aggkit-00X/aggkit-proxy-001
+# still carry NO healthcheck of their own (their images are genuinely
+# distroless -- no shell at all), matching aggkit's own e2e-env precedent
+# for those two services exactly.
 #
 # apply-digests.sh's post-publish digest pin applies to the anvil family,
 # haproxy and dev-ui here (same tag-based ref as docker-compose.yml); it is
@@ -323,10 +389,22 @@ EOF
       $L1_SVC:
         condition: service_healthy$L2_ANVIL_DEPENDS_M
     restart: unless-stopped
-    # No healthcheck: this service's image is override-able (AGGLAYER_IMAGE)
-    # and neither the bare upstream image nor an arbitrary override can be
-    # assumed to carry the busybox probe tooling the derived image bakes
-    # in. Dependents below use \`condition: service_started\` instead.
+    healthcheck:
+      # K5c: genuine TCP-connect probe against agglayer's own gRPC port,
+      # using only bash's builtin /dev/tcp (no curl/wget/nc/busybox needed
+      # -- confirmed present in the bare upstream image). This is NOT
+      # cosmetic: aggkit-00X's aggsender races agglayer's own async
+      # gRPC-listener bind against its own local claim-syncer autostart on
+      # startup, and a merely-"process started" agglayer loses that race
+      # deterministically (see the comment above generate_mounts_compose).
+      # A trivial "process exists" check (aggkit's own op-pp-2chains's
+      # agglayer healthcheck) passes too early to close this window; the
+      # probe below genuinely waits for the listener socket.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/4443"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
 EOF
 
         local AGGKIT_DEPENDS_M="" L2_SVC AGGKIT_SVC
@@ -355,11 +433,15 @@ EOF
       $L2_SVC:
         condition: service_healthy
       $AGGLAYER_SVC:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
-    # No healthcheck -- see the $AGGLAYER_SVC comment above; matches
-    # aggkit's own e2e envs (op-pp-2chains's aggkit-001 has no healthcheck
-    # block either, downstream depends via condition: service_started).
+    # aggkit-00X itself carries NO healthcheck -- its image is genuinely
+    # distroless (no shell at all: \`docker run --entrypoint sh <image>\`
+    # fails with "exec: sh: executable file not found"), matching aggkit's
+    # own e2e envs exactly (op-pp-2chains's aggkit-001 has no healthcheck
+    # block either). Its OWN depends_on above on $AGGLAYER_SVC is now
+    # service_healthy (K5c) -- see the healthcheck comment on $AGGLAYER_SVC.
+    # Dependents of aggkit-00X (below) still use condition: service_started.
 EOF
         done
 
@@ -376,9 +458,12 @@ EOF
       - "$(snapshot_fixed_port_expr aggkit_proxy):8080"   # bridge + tracker REST
     depends_on:
       $AGGLAYER_SVC:
-        condition: service_started$AGGKIT_DEPENDS_M
+        condition: service_healthy$AGGKIT_DEPENDS_M
     restart: unless-stopped
-    # No healthcheck -- see the $AGGLAYER_SVC comment above.
+    # aggkit-proxy-001 itself carries NO healthcheck (same distroless image
+    # as aggkit-00X). Its depends_on on $AGGLAYER_SVC is service_healthy
+    # (K5c); its depends_on on aggkit-00X (\$AGGKIT_DEPENDS_M above) stays
+    # service_started, since aggkit-00X has no healthcheck of its own.
 
   $DEVUI_SVC:
     image: $(image_ref "$DEVUI_SVC")
