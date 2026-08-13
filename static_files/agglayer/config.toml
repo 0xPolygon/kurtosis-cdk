@@ -56,12 +56,45 @@ max-request-body-size = 104857600
 # default value is equal to 4MB
 max-decoding-message-size = 104857600
 
-[outbound.rpc.settle]
-max-retries = 3
-retry-interval = 7
-confirmations = 1
-settlement-timeout = 1200
-gas-multiplier-factor = 175
+# [outbound.rpc.settle] used to live here. It has had no effect on settlement
+# since agglayer PR #1393 introduced the agglayer-settlement-service --
+# OutboundConfig is explicitly documented upstream as deprecated, and at
+# v0.6.0-rc.7+ the binary itself warns on startup if this section is present
+# (OutboundConfig::ignored_config_warning()). The real settlement-tx knobs
+# live under [settlement.pessimistic-proof-tx-config] below.
+[settlement.pessimistic-proof-tx-config]
+# Number of L1 block confirmations required before a settlement tx's receipt
+# is considered resolved. Upstream default is 12 (default_confirmations(),
+# crates/agglayer-config/src/settlement_service.rs); this devnet had
+# effectively been stuck at that default the whole time the dead
+# [outbound.rpc.settle] confirmations=1 above was silently ignored. Lower
+# values settle certificates faster at the cost of reorg safety -- fine on a
+# throwaway anvil L1, not a production recommendation.
+confirmations = {{.agglayer_settle_confirmations}}
+# Finality level required for a settlement tx to be considered settled.
+# Upstream enum is LatestBlock/SafeBlock/FinalizedBlock (SafeBlock is the
+# upstream default); the latest->safe->finalized lag on an anvil L1 is
+# l1_anvil_block_time * l1_anvil_slots_in_epoch seconds per step. The
+# agglayer_settlement_policy input arg uses the lowercase
+# latest/safe/finalized tokens; they're translated to the upstream wire
+# enum names here since agglayer's SettlementPolicy has no
+# #[serde(rename_all = "kebab-case")] (confirmed against
+# crates/agglayer-config/tests/fixtures/settlement/*.toml at v0.6.0-rc.8,
+# which all use the PascalCase variant names verbatim).
+{{- if eq .agglayer_settlement_policy "latest" }}
+settlement-policy = "LatestBlock"
+{{- else if eq .agglayer_settlement_policy "finalized" }}
+settlement-policy = "FinalizedBlock"
+{{- else }}
+settlement-policy = "SafeBlock"
+{{- end }}
+# retry-on-transient-failure / retry-on-not-included-on-l1 and
+# gas-limit-multiplier-factor are intentionally left unset here (upstream
+# defaults apply): the old [outbound.rpc.settle] max-retries/retry-interval
+# had no 1:1 mapping onto the new schema's two separate retry-policy tables,
+# and settlement-timeout = 1200 has no equivalent anywhere in the new schema
+# at all (grepped SettlementTransactionConfig/SettlementServiceConfig at
+# v0.6.0-rc.8 -- no timeout field exists upstream; that intent has no home).
 
 [log]
 # level = "{{.log_level}}"
@@ -103,6 +136,11 @@ send-tx = "unlimited"
 
 [rate-limiting.network]
 
+# Bookkeeping-only from v0.6.0-rc.2 onward: per-epoch certificate rate
+# limiting was deleted in commit 41d7a17e (PR #1615). epoch-duration still
+# parses and drives epoch bookkeeping/storage indexing, but it moves neither
+# settlement nor submission timing under trigger_cert_mode: ASAP (this
+# package's default) -- do not treat it as a latency knob.
 [epoch.block-clock]
 epoch-duration = 15
 genesis-block = {{.rollup_manager_block_number}}

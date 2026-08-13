@@ -126,7 +126,11 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0-rc7",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.1.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.5",
+    # NOTE: v0.6.0-rc.8 is the upstream git tag name; the published GHCR image
+    # tag omits the "v" prefix (verified via GET
+    # https://ghcr.io/v2/agglayer/agglayer/tags/list?n=1000 -- the tag list
+    # contains "0.6.0-rc.8", not "v0.6.0-rc.8").
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.8",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     # bridge_ui_backend "bridge_hub" mode only (src/additional_services/
     # bridge_ui/ui.star run_server): mounts a rendered config.ts and expects

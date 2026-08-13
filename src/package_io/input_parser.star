@@ -298,6 +298,24 @@ DEFAULT_ROLLUP_ARGS = {
     # time on the run that deploys the agglayer.
     # Each entry: {"network_id": <int>, "op_el_rpc_url": <str>, "sequencer_address": <str>}.
     "agglayer_extra_rollups": [],
+    # Number of L1 block confirmations agglayer requires before considering a
+    # settlement tx's receipt resolved. Units: L1 blocks. Maps to
+    # [settlement.pessimistic-proof-tx-config] confirmations in
+    # static_files/agglayer/config.toml. Upstream default is 12; this devnet
+    # defaults to 1 -- the actual fix for the settlement-latency bug that the
+    # old (dead since agglayer PR #1393) [outbound.rpc.settle] confirmations
+    # key was supposed to provide.
+    "agglayer_settle_confirmations": 1,
+    # Finality level agglayer requires before considering a settlement tx
+    # settled. Valid values: "latest", "safe", "finalized" (see
+    # VALID_AGGLAYER_SETTLEMENT_POLICIES below), translated in the config
+    # template to the upstream SettlementPolicy enum's LatestBlock/SafeBlock/
+    # FinalizedBlock wire names. Upstream default is "safe". On an anvil L1,
+    # the latest->safe->finalized lag is l1_anvil_block_time *
+    # l1_anvil_slots_in_epoch seconds per step -- with both at 1 (this
+    # package's anvil defaults), that lag is only ~1s, so "latest" buys
+    # little here versus on a real L1 with multi-minute safe/finalized lag.
+    "agglayer_settlement_policy": "safe",
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
     # The URL where the aggkit-prover can be reached for gRPC
@@ -540,6 +558,16 @@ VALID_AGGKIT_TRIGGER_CERT_MODES = [
     constants.VALID_AGGKIT_TRIGGER_CERT_MODES.new_bridge,
     constants.VALID_AGGKIT_TRIGGER_CERT_MODES.asap,
     constants.VALID_AGGKIT_TRIGGER_CERT_MODES.auto,
+]
+
+# Valid values for agglayer_settlement_policy. These are the lowercase
+# user-facing tokens; static_files/agglayer/config.toml translates them to
+# agglayer's upstream SettlementPolicy wire enum names
+# (LatestBlock/SafeBlock/FinalizedBlock).
+VALID_AGGLAYER_SETTLEMENT_POLICIES = [
+    "latest",
+    "safe",
+    "finalized",
 ]
 
 
@@ -1028,6 +1056,18 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
             fail(
                 "l2_anvil_mnemonic must currently stay at the default anvil dev mnemonic: contracts.sh's initialize_rollup hard-codes that same mnemonic when funding the sovereignadmin/aggoracle/claimsponsor accounts on the anvil L2, so a custom value leaves the funder with a zero balance."
             )
+
+    # agglayer_settle_confirmations must be a sane (non-negative, non-zero)
+    # number of L1 block confirmations to wait for.
+    if args["agglayer_settle_confirmations"] < 1:
+        fail("agglayer_settle_confirmations must be >= 1")
+
+    if args["agglayer_settlement_policy"] not in VALID_AGGLAYER_SETTLEMENT_POLICIES:
+        fail(
+            "Unsupported agglayer_settlement_policy: '{}', please use one of {}".format(
+                args["agglayer_settlement_policy"], VALID_AGGLAYER_SETTLEMENT_POLICIES
+            )
+        )
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):

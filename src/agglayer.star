@@ -104,6 +104,10 @@ def create_agglayer_config_artifact(
                     "sp1_cluster_endpoint": args.get("sp1_cluster_endpoint"),
                     "agglayer_admin_port": args["agglayer_admin_port"],
                     "prometheus_port": args["agglayer_metrics_port"],
+                    "agglayer_settle_confirmations": args[
+                        "agglayer_settle_confirmations"
+                    ],
+                    "agglayer_settlement_policy": args["agglayer_settlement_policy"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
                     "mock_verifier": args["agglayer_prover_primary_prover"]
