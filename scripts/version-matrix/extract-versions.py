@@ -43,6 +43,8 @@ PINNED_VERSIONS = {
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
     ("cdk-erigon-zkrollup", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+    ("cdk-erigon-validium", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
+    ("cdk-erigon-zkrollup", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
 }
 
@@ -510,13 +512,23 @@ class VersionMatrixExtractor:
     def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion]):
         """Re-label deliberately held-back components as pinned.
 
-        Only downgrades a "behind stable" status: if a pinned component ever
-        catches up with (or overtakes) stable, the real status is kept so that
-        the pin can be retired.
+        Downgrades a "behind stable" status: if a pinned component ever catches
+        up with (or overtakes) stable, the real status is kept so that the pin
+        can be retired.
+
+        Also covers components held back to an older *pre-release* while the
+        default moved ahead (e.g. agglayer pinned to 0.6.0-rc.5 for cdk-node
+        environments). Those still read "newer than stable" against the latest
+        stable tag, so the pin would otherwise stay invisible in the matrix.
         """
         for name, component in components.items():
             reason = PINNED_VERSIONS.get((environment_name, name))
-            if reason and component.status == "behind stable":
+            if not reason:
+                continue
+            if component.status == "behind stable":
+                component.status = "pinned"
+                component.pin_reason = reason
+            elif component.status == "newer than stable" and component.version in reason:
                 component.status = "pinned"
                 component.pin_reason = reason
 

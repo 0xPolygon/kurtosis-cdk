@@ -94,9 +94,9 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0-rc7",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.1.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.5",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.8",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
@@ -113,7 +113,7 @@ DEFAULT_IMAGES = {
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
     "geth_image": "ethereum/client-go:v1.17.5",
-    "reth_image": "ghcr.io/paradigmxyz/reth:v2.4.1",
+    "reth_image": "ghcr.io/paradigmxyz/reth:v2.5.0",
     "lighthouse_image": "sigp/lighthouse:v8.2.1",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.12",
