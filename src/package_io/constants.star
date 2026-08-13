@@ -94,9 +94,9 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0-rc7",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.1.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.5",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.8",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
