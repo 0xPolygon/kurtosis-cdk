@@ -158,6 +158,7 @@ if [ "$HAS_MOUNTS_FILE" = true ]; then
     cp "$MOUNTS_COMPOSE_FILE" "$WORK_MOUNTS_COMPOSE"
     CLEANUP_FILES+=("$WORK_MOUNTS_COMPOSE")
 fi
+# shellcheck disable=SC2317 # only invoked indirectly via "trap cleanup EXIT" below
 cleanup() { rm -f "${CLEANUP_FILES[@]}"; }
 trap cleanup EXIT
 
