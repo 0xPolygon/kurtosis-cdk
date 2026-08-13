@@ -188,7 +188,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/other/anvil/anvil-rollup.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -198,6 +198,12 @@ jobs:
             folder_name=$(basename $(dirname "${file_path}"))
             if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]]; then
               job_name="${folder_name}-${file_name}"
+            elif [[ "${folder_name}" == "anvil" ]]; then
+              # file_name is already "anvil-rollup" -- prefixing with the
+              # folder name too would produce the redundant
+              # "anvil-anvil-rollup", so this arm is explicit but keeps the
+              # bare file_name as the job name.
+              job_name="${file_name}"
             else
               job_name="${file_name}"
             fi
@@ -450,11 +456,25 @@ jobs:
 
   # S15 (dev-ui-ci-snapshot plan): single-chain sequencer_type: anvil bring-up
   # (S3/S4/S4b/S5). Deliberately its OWN job rather than a row in list-ymls'
-  # matrix: that matrix's "Run bridge tests" step (./.github/actions/bridge-tests)
-  # needs a live zkevm-bridge-service (BRIDGE_SERVICE_URL), which the anvil
-  # params file intentionally does not deploy (deploy_cdk_bridge_infra: false --
-  # aggkit's own --components=bridge instance covers it instead, see S4's
-  # outcome). Verifies the two things S3/S4 identified as this stack's load-bearing
+  # matrix, and deliberately NOT using the generic ./.github/actions/bridge-tests
+  # action (K2 investigated this explicitly):
+  #
+  # Since K2, _get_bridge_service_url (src/additional_services/test_runner.star)
+  # returns a real, reachable BRIDGE_SERVICE_URL for this stack too (the merged
+  # aggkit-001 service's "rest" port) when test_runner is wired in -- so the
+  # missing piece is no longer an empty URL. It's that bridge-tests' bats suite
+  # (tests/agglayer/bridges.bats, shipped in test_runner_image) drives claims via
+  # `polycli ulxly claim asset`, whose `--legacy` bridge-service client defaults
+  # to true and requests the legacy zkevm-bridge-service's REST shape
+  # (e.g. GET /bridges/{addr}). The aggkit bridge only serves /bridge/v1/...
+  # routes, so that request 404s with a plain-text body ("404 page not found"),
+  # and polycli's JSON decoder chokes on it ("invalid character 'p' after
+  # top-level value"), failing the "bridge native ETH from L1 to L2" bats case.
+  # (Verified empirically: K2-evidence/d-bats-run-l1-to-l2.log and
+  # K2-evidence/d-legacy-endpoint-probe.txt in the snapshot-v2-aggkit-e2e plan.)
+  # Until polycli/the bats suite gains a non-legacy (aggkit) bridge-service
+  # mode, this job keeps its bespoke checks below instead of the generic action.
+  # Verifies the two things S3/S4 identified as this stack's load-bearing
   # invariants: the sovereign bridge/GER bytecode landed at the deterministic
   # addresses, and aggkit's bridge REST reports both L1 and L2 sides synced+active.
   run-with-anvil-l2:

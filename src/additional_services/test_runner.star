@@ -83,7 +83,28 @@ def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
             fail("The 'rpc' port of the l2 rpc service is not available.")
         return service.ports["rpc"].url
     else:
-        return ""
+        # The legacy zkevm-bridge-service isn't deployed -- the merged
+        # aggkit service (see src/chain/shared/aggkit.star) serves the
+        # bridge REST API itself when "bridge" is included in
+        # aggkit_components. That service always opens a "rest" port
+        # (_get_aggkit_bridge_ports), but the port only actually serves
+        # /bridge/v1/... routes when the bridge component is enabled -- fail
+        # loudly instead of pointing the test runner at a rest port that
+        # never registers those routes.
+        components = args.get("aggkit_components", "").split(",")
+        if "bridge" not in components:
+            fail(
+                "_get_bridge_service_url: deploy_cdk_bridge_infra is false and "
+                + "'bridge' is not in aggkit_components ('{}') -- there is no ".format(
+                    args.get("aggkit_components", "")
+                )
+                + "bridge REST API for the test runner to target."
+            )
+        service_name = "aggkit" + args["deployment_suffix"]
+        service = plan.get_service(service_name)
+        if "rest" not in service.ports:
+            fail("The 'rest' port of the aggkit bridge service is not available.")
+        return service.ports["rest"].url
 
 
 def _get_l2_bridge_address(
