@@ -110,7 +110,13 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
 
     log ""
     log "=== [anvil-aggkit] Every service has a healthcheck ==="
-    SERVICE_NAMES=$(docker compose -f "$COMPOSE_FILE" config --services 2>/dev/null || true)
+    # K5: `config --services` filters out profile-gated services (e.g.
+    # dev-ui's `profiles: ["devui"]`) unless the profile is explicitly
+    # requested. This is a static AUDIT of the whole compose file's shape,
+    # not a live `up`, so it must see every service regardless of profile --
+    # `--profile devui` here only affects what `config` prints, it starts
+    # nothing.
+    SERVICE_NAMES=$(docker compose -f "$COMPOSE_FILE" --profile devui config --services 2>/dev/null || true)
     if [ -z "$SERVICE_NAMES" ]; then
         error "Could not list services from $COMPOSE_FILE (docker compose config --services failed)"
         ERRORS=$((ERRORS + 1))

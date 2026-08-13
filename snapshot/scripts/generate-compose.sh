@@ -106,6 +106,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     IMAGE_TAG=$(jq -r '.tag' "$IMAGE_INFO")
     IMAGE_PREFIX=$(jq -r '.image_prefix' "$IMAGE_INFO")
     COMPOSE_FILE="$OUTPUT_DIR/docker-compose.yml"
+    MOUNTS_COMPOSE_FILE="$OUTPUT_DIR/docker-compose.mounts.yml"
 
     # Image references are env-overridable too, so the very same compose file
     # works against locally built images (the default) and against the GHCR
@@ -114,6 +115,21 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         # shellcheck disable=SC2016 # literal ${VAR:-default} compose-interpolation syntax, not shell expansion
         printf '${SNAPSHOT_IMAGE_PREFIX:-%s}%s:${SNAPSHOT_IMAGE_TAG:-%s}' \
             "$IMAGE_PREFIX" "$1" "$IMAGE_TAG"
+    }
+
+    # base_image_of <compose-service> -- the ORIGINAL upstream image ref this
+    # service ran under in the enclave (IMAGE_INFO.json's per-service
+    # base_image field, written by build-images.sh's record_image()). This is
+    # the mounts variant's default for the override-able services (K5 C53/54)
+    # -- never the derived snapshot-<svc> image.
+    base_image_of() {
+        local ref
+        ref=$(jq -r --arg svc "$1" '.images[$svc].base_image // empty' "$IMAGE_INFO")
+        if [ -z "$ref" ]; then
+            log "ERROR: no base_image recorded for service '$1' in $IMAGE_INFO"
+            exit 1
+        fi
+        printf '%s' "$ref"
     }
 
     L1_SVC=$(jq -r '.l1_anvil.service_name' "$DISCOVERY_JSON")
@@ -132,6 +148,282 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     }
 
     L1_PORT_EXPR=$(snapshot_fixed_port_expr l1_rpc)
+
+    # The haproxy healthcheck (both compose variants) probes exactly the
+    # bridge REST route dev-ui CI actually needs, on the FIRST L2 network --
+    # same derivation build-images.sh's baked healthcheck.sh already uses
+    # (build-images.sh's `FIRST_L2_NETWORK_ID`), read here from
+    # state-metadata.json so the compose-level override and the image-baked
+    # script never disagree.
+    FIRST_L2_NETWORK_ID=$(jq -r '[.chains[] | select(.role == "l2") | .network_id] | first' "$STATE_METADATA")
+    if [ -z "$FIRST_L2_NETWORK_ID" ] || [ "$FIRST_L2_NETWORK_ID" = "null" ]; then
+        log "ERROR: could not determine first L2 network_id from $STATE_METADATA"
+        exit 1
+    fi
+
+    # ========================================================================
+    # generate_mounts_compose -- the SECOND compose variant (K5 / C53-C55):
+    # docker-compose.mounts.yml. Same topology as docker-compose.yml, but
+    # points at the on-disk ./config/<svc>/ tree extract-state.sh already
+    # wrote instead of relying on a derived image's baked-in COPY.
+    #
+    # Two explicit design decisions (K5 asks that these be stated, not left
+    # to be inferred from omission):
+    #
+    #  (i) OVERRIDE-ABLE services (agglayer, aggkit-00X, aggkit-proxy-001)
+    #      run the BARE UPSTREAM image recorded in IMAGE_INFO.json's
+    #      base_image field ($AGGLAYER_IMAGE / $AGGKIT_IMAGE default),
+    #      NOT the derived snapshot-<svc> image with the mount merely
+    #      shadowing its bake. Reasoning: "override the image" only means
+    #      something honest if the un-overridden default is ALSO the bare
+    #      image -- otherwise "override" is just swapping one
+    #      already-augmented image for another. This is also exactly the
+    #      shape aggkit's own e2e envs already use (op-pp-2chains's
+    #      aggkit-001: image aggkit:local, bind-mounted config, NO
+    #      healthcheck block -- downstream depends via
+    #      condition: service_started). Because bare agglayer/aggkit images
+    #      ship no shell or HTTP client (both distroless -- see
+    #      build-images.sh's busybox comment), and a consumer's overridden
+    #      image cannot be assumed to carry the busybox the DERIVED image
+    #      bakes in either, these three services get NO healthcheck here --
+    #      matching aggkit's own env precedent, and making the override
+    #      genuinely safe (nothing depends on baked-in probe tooling a
+    #      swapped image might lack). Anything that depended on their health
+    #      now depends on them via `condition: service_started` instead.
+    #      aggkit-00X and aggkit-proxy-001 share ONE env var (AGGKIT_IMAGE):
+    #      the proxy binary ships in the same aggkit image, entrypoint
+    #      overridden (same as docker-compose.yml).
+    #
+    #  (ii) haproxy is NOT override-able (no env var -- it was never in
+    #       scope) and keeps the SAME derived snapshot-<haproxy-svc> image,
+    #       only bind-mounting haproxy.cfg over its baked copy. Its
+    #       healthcheck is therefore unchanged and stays meaningful (bare
+    #       haproxy ships neither curl nor wget, hence the derived image's
+    #       baked busybox). dev-ui behaves the same way (still profiles:
+    #       [devui]) -- its healthcheck uses a plain `wget` already present
+    #       in the upstream dev-ui base image, so it carries no busybox
+    #       dependency either way.
+    #
+    #  anvil family (L1 + every L2): UNCHANGED from docker-compose.yml --
+    #  fully baked, no mount, no override env var. Swapping the anvil image
+    #  would lose the captured chain state (K5 explicit non-goal).
+    #
+    # apply-digests.sh's post-publish digest pin therefore still applies to
+    # this file for the anvil family + haproxy + dev-ui (same
+    # ${SNAPSHOT_IMAGE_PREFIX:-...}<svc>:${SNAPSHOT_IMAGE_TAG:-...} pattern
+    # as docker-compose.yml) but is a no-op, by design, for agglayer/
+    # aggkit-00X/aggkit-proxy-001 (their refs here are bare upstream image
+    # strings, e.g. ghcr.io/agglayer/aggkit:0.11.0-rc5 -- already a complete,
+    # non-derived reference this repo never republishes, so there is no
+    # digest of OUR OWN for apply-digests.sh to pin over it).
+    # ========================================================================
+    generate_mounts_compose() {
+        log "Generating anvil-aggkit mounts-variant compose file: $MOUNTS_COMPOSE_FILE"
+
+        local AGGLAYER_BASE_IMAGE AGGKIT_BASE_IMAGE prefix svc this_base
+
+        AGGLAYER_BASE_IMAGE=$(base_image_of "$AGGLAYER_SVC")
+        AGGKIT_BASE_IMAGE=$(base_image_of "$PROXY_SVC")
+        for prefix in $PREFIXES; do
+            svc=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+            this_base=$(base_image_of "$svc")
+            if [ "$this_base" != "$AGGKIT_BASE_IMAGE" ]; then
+                log "ERROR: aggkit base image mismatch: $svc=$this_base vs $PROXY_SVC=$AGGKIT_BASE_IMAGE"
+                log "       AGGKIT_IMAGE needs one shared default across every aggkit-role service"
+                exit 1
+            fi
+        done
+
+        cat > "$MOUNTS_COMPOSE_FILE" << EOF
+# Self-contained devnet snapshot -- flavor: anvil-aggkit, MOUNTS variant
+#
+# Enclave:   $ENCLAVE_NAME
+# Image tag: $IMAGE_TAG
+#
+# Same topology as docker-compose.yml, but agglayer / aggkit-00X /
+# aggkit-proxy-001 run their BARE upstream image and bind-mount
+# ./config/<svc>/ (read-only) instead of a derived image's baked-in config;
+# haproxy and dev-ui keep their derived image (for baked healthcheck
+# tooling) and bind-mount just their own config file. The anvil family is
+# unchanged -- baked state only, never bind-mounted.
+#
+# Image overrides (the whole point of this file): point these at your own
+# build to run it against the captured devnet state.
+#   AGGLAYER_IMAGE=<your agglayer image>   (default: $AGGLAYER_BASE_IMAGE)
+#   AGGKIT_IMAGE=<your aggkit image>       (default: $AGGKIT_BASE_IMAGE)
+# aggkit-00X and aggkit-proxy-001 share AGGKIT_IMAGE (the proxy binary ships
+# in the same image, entrypoint overridden -- same as docker-compose.yml).
+# The anvil family is NOT override-able: swapping it loses the baked state.
+#
+# apply-digests.sh's post-publish digest pin applies to the anvil family,
+# haproxy and dev-ui here (same tag-based ref as docker-compose.yml); it is
+# a deliberate no-op for agglayer/aggkit-00X/aggkit-proxy-001, whose refs
+# above are already-complete upstream image strings this repo never
+# republishes under its own digest.
+
+services:
+  $L1_SVC:
+    image: $(image_ref "$L1_SVC")
+    hostname: $L1_SVC
+    ports:
+      - "$L1_PORT_EXPR:8545"   # L1 JSON-RPC (debug)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+EOF
+
+        local L2_ANVIL_DEPENDS_M="" PORT_EXPR CHAIN_ID
+        for prefix in $PREFIXES; do
+            svc=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
+            PORT_EXPR=$(snapshot_l2_port_expr "$prefix" http)
+            CHAIN_ID=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.chain_id' "$DISCOVERY_JSON")
+            L2_ANVIL_DEPENDS_M="$L2_ANVIL_DEPENDS_M
+      $svc:
+        condition: service_healthy"
+
+            cat >> "$MOUNTS_COMPOSE_FILE" << EOF
+
+  $svc:
+    image: $(image_ref "$svc")
+    hostname: $svc
+    ports:
+      - "$PORT_EXPR:8545"   # L2 chain $CHAIN_ID JSON-RPC (debug)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+EOF
+        done
+
+        cat >> "$MOUNTS_COMPOSE_FILE" << EOF
+
+  $AGGLAYER_SVC:
+    image: \${AGGLAYER_IMAGE:-$AGGLAYER_BASE_IMAGE}
+    hostname: $AGGLAYER_SVC
+    entrypoint: $(entrypoint_of '.agglayer')
+    command: $(cmd_of '.agglayer')
+    environment:
+      - RUST_BACKTRACE=1
+    volumes:
+      - ./config/$AGGLAYER_SVC/config.toml:/etc/agglayer/config.toml:ro
+      - ./config/$AGGLAYER_SVC/aggregator.keystore:/etc/agglayer/aggregator.keystore:ro
+    ports:
+      - "$(snapshot_fixed_port_expr agglayer_grpc):4443"   # gRPC
+      - "$(snapshot_fixed_port_expr agglayer_readrpc):4444"   # read RPC
+      - "$(snapshot_fixed_port_expr agglayer_admin):4446"   # admin API
+      - "$(snapshot_fixed_port_expr agglayer_metrics):9092"   # prometheus
+    depends_on:
+      $L1_SVC:
+        condition: service_healthy$L2_ANVIL_DEPENDS_M
+    restart: unless-stopped
+    # No healthcheck: this service's image is override-able (AGGLAYER_IMAGE)
+    # and neither the bare upstream image nor an arbitrary override can be
+    # assumed to carry the busybox probe tooling the derived image bakes
+    # in. Dependents below use \`condition: service_started\` instead.
+EOF
+
+        local AGGKIT_DEPENDS_M="" L2_SVC AGGKIT_SVC
+        for prefix in $PREFIXES; do
+            L2_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].anvil.service_name' "$DISCOVERY_JSON")
+            AGGKIT_SVC=$(jq -r --arg p "$prefix" '.l2_chains[$p].aggkit.service_name' "$DISCOVERY_JSON")
+            AGGKIT_DEPENDS_M="$AGGKIT_DEPENDS_M
+      $AGGKIT_SVC:
+        condition: service_started"
+
+            cat >> "$MOUNTS_COMPOSE_FILE" << EOF
+
+  $AGGKIT_SVC:
+    image: \${AGGKIT_IMAGE:-$AGGKIT_BASE_IMAGE}
+    hostname: $AGGKIT_SVC
+    entrypoint: $(entrypoint_of ".l2_chains[\"$prefix\"].aggkit")
+    command: $(cmd_of ".l2_chains[\"$prefix\"].aggkit")
+    volumes:
+      - ./config/$AGGKIT_SVC:/etc/aggkit:ro
+    ports:
+      - "$(snapshot_l2_port_expr "$prefix" aggkit_rpc):5576"   # JSON-RPC (debug)
+      - "$(snapshot_l2_port_expr "$prefix" aggkit_rest):5577"   # bridge REST API
+    depends_on:
+      $L1_SVC:
+        condition: service_healthy
+      $L2_SVC:
+        condition: service_healthy
+      $AGGLAYER_SVC:
+        condition: service_started
+    restart: unless-stopped
+    # No healthcheck -- see the $AGGLAYER_SVC comment above; matches
+    # aggkit's own e2e envs (op-pp-2chains's aggkit-001 has no healthcheck
+    # block either, downstream depends via condition: service_started).
+EOF
+        done
+
+        cat >> "$MOUNTS_COMPOSE_FILE" << EOF
+
+  $PROXY_SVC:
+    image: \${AGGKIT_IMAGE:-$AGGKIT_BASE_IMAGE}
+    hostname: $PROXY_SVC
+    entrypoint: $(entrypoint_of '.aggkit_proxy')
+    command: $(cmd_of '.aggkit_proxy')
+    volumes:
+      - ./config/$PROXY_SVC:/etc/aggkit-proxy:ro
+    ports:
+      - "$(snapshot_fixed_port_expr aggkit_proxy):8080"   # bridge + tracker REST
+    depends_on:
+      $AGGLAYER_SVC:
+        condition: service_started$AGGKIT_DEPENDS_M
+    restart: unless-stopped
+    # No healthcheck -- see the $AGGLAYER_SVC comment above.
+
+  $DEVUI_SVC:
+    image: $(image_ref "$DEVUI_SVC")
+    hostname: $DEVUI_SVC
+    profiles: ["devui"]
+    volumes:
+      - ./config/$DEVUI_SVC/config.json:/etc/agglayer-dev-ui/config.json:ro
+    ports:
+      - "$(snapshot_fixed_port_expr dev_ui):80"   # dev-ui (manual use, --profile devui)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
+      start_period: 5s
+
+  $HAPROXY_SVC:
+    image: $(image_ref "$HAPROXY_SVC")
+    hostname: $HAPROXY_SVC
+    volumes:
+      - ./config/$HAPROXY_SVC/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "$(snapshot_fixed_port_expr devnet_proxy):80"   # THE dev-ui CI origin
+    depends_on:
+      $PROXY_SVC:
+        condition: service_started
+      $L1_SVC:
+        condition: service_healthy$L2_ANVIL_DEPENDS_M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/snapshot/busybox", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:80/aggkitapi/bridge/v1/sync-status?network_id=$FIRST_L2_NETWORK_ID"]
+      interval: 3s
+      timeout: 10s
+      retries: 60
+      start_period: 10s
+
+# Bind mounts: agglayer/aggkit-00X/aggkit-proxy-001/haproxy/dev-ui read their
+# captured config from ./config/<svc>/ (see extract-state.sh). The anvil
+# family has no bind mounts -- state stays baked, never mountable.
+EOF
+
+        log "Mounts-variant compose file generated: $MOUNTS_COMPOSE_FILE"
+        log "  services: $(grep -cE '^  [a-z0-9-]+:$' "$MOUNTS_COMPOSE_FILE")"
+    }
 
     log "Generating anvil-aggkit compose file: $COMPOSE_FILE"
 
@@ -295,8 +587,14 @@ EOF
   $DEVUI_SVC:
     image: $(image_ref "$DEVUI_SVC")
     hostname: $DEVUI_SVC
+    # K5 (devui-under-test.md (c)): NOT started by a plain \`docker compose
+    # up\` / \`up -d --wait\` -- CI never uses this container (only bare \`/\`
+    # through haproxy's default_backend does, and nothing CI-relevant hits
+    # bare \`/\`). Bring it up for manual/local debugging with
+    # \`docker compose --profile devui up -d\`.
+    profiles: ["devui"]
     ports:
-      - "$(snapshot_fixed_port_expr dev_ui):80"   # dev-ui (manual use)
+      - "$(snapshot_fixed_port_expr dev_ui):80"   # dev-ui (manual use, --profile devui)
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
@@ -313,17 +611,23 @@ EOF
     depends_on:
       $PROXY_SVC:
         condition: service_healthy
-      $DEVUI_SVC:
-        condition: service_healthy
       $L1_SVC:
         condition: service_healthy$L2_ANVIL_DEPENDS
     restart: unless-stopped
+    # K5: the image's baked /snapshot/healthcheck.sh probes BOTH
+    # /aggkitapi/bridge/v1/sync-status AND bare / (routed to $DEVUI_SVC by
+    # haproxy.cfg's default_backend). Since $DEVUI_SVC is profile-gated off
+    # by default, bare / has no live backend and that baked script would
+    # fail forever, hanging \`docker compose up -d --wait\`. This
+    # compose-level override fully replaces the image's HEALTHCHECK and
+    # probes only the route CI actually needs, reusing the busybox binary
+    # already baked into this image.
     healthcheck:
-      test: ["CMD", "/bin/sh", "/snapshot/healthcheck.sh"]
+      test: ["CMD", "/snapshot/busybox", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:80/aggkitapi/bridge/v1/sync-status?network_id=$FIRST_L2_NETWORK_ID"]
       interval: 3s
       timeout: 10s
-      retries: 40
-      start_period: 5s
+      retries: 60
+      start_period: 10s
 
 # No volumes and no bind mounts: all state and config is baked into the images.
 EOF
@@ -336,6 +640,8 @@ EOF
         log "ERROR: generated compose file contains volumes/bind mounts"
         exit 1
     fi
+
+    generate_mounts_compose
 
     exit 0
 fi

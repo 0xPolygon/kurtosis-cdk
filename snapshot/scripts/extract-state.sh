@@ -248,6 +248,80 @@ copy_container_file() {
     return 1
 }
 
+# patch_haproxy_default_backend <haproxy.cfg path>
+#
+# K5 FINDING (beyond devui-under-test.md's design, verified live): profile-
+# gating agglayer-dev-ui-002 off is NOT sufficient on its own even with the
+# 3-edit fix generate-compose.sh applies (drop the depends_on edge, override
+# the compose-level healthcheck to skip bare /). The CAPTURED haproxy.cfg's
+# `backend backend_default { server server4 agglayer-dev-ui-002:80 }` line
+# has no `resolvers`/`init-addr` directive, so haproxy resolves that
+# hostname EAGERLY AT BOOT and, when agglayer-dev-ui-002 was never started
+# (no Docker embedded-DNS record for it at all -- it is not merely
+# "unhealthy", it does not exist on the network), haproxy logs
+# "could not resolve address 'agglayer-dev-ui-002'" / "Failed to initialize
+# server(s) addr" and CRASH-LOOPS. This is a fatal boot failure of the
+# haproxy PROCESS itself, unrelated to and unfixed by any healthcheck
+# change -- verified empirically: `docker compose up -d --wait` never
+# reaches healthy, the container sits in `Restarting`.
+#
+# Since bare `/` is never hit by anything CI-relevant (devui-under-test.md
+# finding (b): no bare-root fetch anywhere in the Playwright suite,
+# devnetReady.mjs, or e2e.yaml), the fix applied here is to drop haproxy's
+# `default_backend` fallback ENTIRELY from the captured config used by this
+# snapshot bundle -- an unmatched request 503s instead of routing anywhere,
+# which is exactly as inert to CI as the removed fallback was. This is a
+# snapshot-pipeline-only patch of the CAPTURED file (the live enclave's own
+# haproxy.cfg / static_files/additional_services/bridge-ui/haproxy.cfg
+# template are untouched -- out of K5's scope, and the live enclave always
+# has agglayer-dev-ui-002 running so it never hits this failure mode).
+# `backend_default` is deterministically the LAST block in the file (per
+# the template), so truncating from its header comment to EOF is safe and
+# unambiguous; `default_backend backend_default` is deleted separately from
+# the frontend section. Idempotent (a no-op if already patched or absent).
+#
+# Trade-off, stated explicitly: with dev-ui brought up manually via
+# `--profile devui up -d`, bare `/` through haproxy no longer proxies to it
+# (previously true only because the container happened to be up). The
+# container itself is still directly reachable on its own published port
+# (${DEVUI_PORT:-8557}) either way, so "stays available for manual
+# debugging" (devui-under-test.md (c) item 1) still holds.
+patch_haproxy_default_backend() {
+    local cfg="$1"
+    if [ ! -f "$cfg" ]; then
+        return 0
+    fi
+    if ! grep -q '^backend backend_default$' "$cfg"; then
+        return 0
+    fi
+    local tmp orig_mode
+    tmp=$(mktemp)
+    # `mktemp` files are 0600 -- if that mode ends up baked into the derived
+    # image's COPY (build-images.sh's Dockerfile has no --chmod for this
+    # file), haproxy fails with "Could not open configuration file:
+    # Permission denied" and crash-loops just as badly as the unpatched
+    # DNS-resolution failure this function exists to fix. Capture and
+    # restore the ORIGINAL file's mode explicitly rather than relying on
+    # `mv`/`cp` to preserve anything.
+    orig_mode=$(stat -c '%a' "$cfg" 2>/dev/null || stat -f '%Lp' "$cfg" 2>/dev/null || echo 644)
+    # 1) drop the `default_backend backend_default` frontend line.
+    # 2) truncate the file at (and including) the "# Default backend
+    #    configuration" header comment that immediately precedes the
+    #    backend_default block -- everything from there to EOF is that one
+    #    block, per the template's fixed ordering.
+    sed '/^[[:space:]]*default_backend backend_default[[:space:]]*$/d' "$cfg" \
+        | sed '/^# Default backend configuration$/,$d' > "$tmp"
+    if ! grep -q '^backend backend_default$' "$tmp" && [ -s "$tmp" ]; then
+        chmod "$orig_mode" "$tmp"
+        mv "$tmp" "$cfg"
+        log "    ✓ patched $(basename "$cfg"): dropped default_backend/backend_default (K5 -- see extract-state.sh comment)"
+    else
+        rm -f "$tmp"
+        log "    ERROR: patch_haproxy_default_backend failed to remove backend_default from $cfg"
+        return 1
+    fi
+}
+
 if [ "$FLAVOR" = "anvil-aggkit" ]; then
     log "Flavor: anvil-aggkit (live capture -- no containers are stopped)"
 
@@ -326,6 +400,41 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # Each aggkit-00X container now also serves the bridge REST API in-process
     # (--components=...,bridge), so there is only one role/container per L2
     # network to extract -- no separate "-bridge" sibling (merged in K1).
+    #
+    # K5 / aggkit-env-design.md (d): this loop (plus the agglayer and
+    # aggkit-proxy blocks above/below it) is what produces the config/ tree
+    # aggkit's own e2e env (test/e2e/envs/anvil-2chains/, built by A2 -- not
+    # this repo) is built FROM. The emitted layout here is named after
+    # kurtosis-cdk's own service names, not aggkit's expected per-network
+    # "001"/"002" directories, so the mapping is spelled out explicitly:
+    #
+    #   kurtosis-cdk (emitted here)              aggkit's env (A2 builds this)
+    #   ----------------------------------------  -----------------------------
+    #   config/agglayer/config.toml               config/agglayer/config.toml
+    #   config/agglayer/aggregator.keystore       config/agglayer/aggregator.keystore
+    #   config/aggkit-001/config.toml              config/001/aggkit-config.toml
+    #   config/aggkit-001/sequencer.keystore       config/001/sequencer.keystore
+    #   config/aggkit-001/aggoracle.keystore       config/001/aggoracle.keystore
+    #   config/aggkit-001/sovereignadmin.keystore  config/001/sovereignadmin.keystore
+    #   config/aggkit-002/config.toml              config/002/aggkit-config.toml
+    #   config/aggkit-002/sequencer.keystore       config/002/sequencer.keystore
+    #   config/aggkit-002/aggoracle.keystore       config/002/aggoracle.keystore
+    #   config/aggkit-002/sovereignadmin.keystore  config/002/sovereignadmin.keystore
+    #   config/aggkit-proxy-001/config.toml        config/aggkit-proxy/aggkit-proxy.toml
+    #
+    # i.e. kurtosis-cdk names each directory after the kurtosis SERVICE
+    # (aggkit-<prefix>, aggkit-proxy-<prefix>) and every config file
+    # "config.toml" (the literal filename every one of these containers
+    # exposes at /etc/aggkit{,-proxy}/config.toml); aggkit's own env instead
+    # keys the per-L2 directories by bare network prefix ("001"/"002", no
+    # "aggkit-" prefix) and names the aggkit config file "aggkit-config.toml"
+    # (its own docker-compose.yml's bind-mount target name). The KEYSTORE
+    # filenames are identical in both layouts (sequencer/aggoracle/
+    # sovereignadmin.keystore) and need no rename. An optional
+    # claimsponsor.keystore may also be present per instance (11 files are
+    # REQUIRED across the whole tree -- 2 agglayer + 4x2 aggkit + 1
+    # aggkit-proxy; claimsponsor.keystore, if present, is a 12th, optional
+    # file, not part of the required count).
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
         found=$(jq -r ".l2_chains[\"$prefix\"].aggkit.found // false" "$DISCOVERY_JSON")
         if [ "$found" != "true" ]; then
@@ -353,6 +462,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         log "Extracting $HAPROXY_SERVICE configuration..."
         copy_container_file "$HAPROXY_CONTAINER" "/usr/local/etc/haproxy/haproxy.cfg" \
             "$CONFIG_DIR/$HAPROXY_SERVICE/haproxy.cfg"
+        patch_haproxy_default_backend "$CONFIG_DIR/$HAPROXY_SERVICE/haproxy.cfg"
     fi
 
     # ---- dev-ui config -----------------------------------------------------

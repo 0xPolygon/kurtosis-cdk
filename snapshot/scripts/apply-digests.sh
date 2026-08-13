@@ -30,6 +30,21 @@
 #                                      <svc>:${SNAPSHOT_IMAGE_TAG:-...}` line
 #                                      to `image: <registry-prefix><svc>@
 #                                      <digest>  # <immutable-tag>`
+#   <OUTPUT_DIR>/docker-compose.mounts.yml (K5, OPTIONAL -- only present for
+#                                      the anvil-aggkit flavor) -- same
+#                                      rewrite, applied ONLY to the services
+#                                      that still use that ref pattern there
+#                                      (anvil family, haproxy, dev-ui). The
+#                                      override-able services in that file
+#                                      (agglayer, aggkit-00X,
+#                                      aggkit-proxy-001) intentionally use a
+#                                      bare upstream image ref
+#                                      (${AGGLAYER_IMAGE:-...} /
+#                                      ${AGGKIT_IMAGE:-...}), never
+#                                      republished under this repo's own
+#                                      digest, so a miss for those services
+#                                      in that file is expected, not an
+#                                      error.
 #
 # Fails loudly (non-zero, no partial write) if PUBLISHED_TAGS.json is
 # missing/empty, any service's digest is null/empty (a dry-run's
@@ -92,6 +107,14 @@ PUBLISHED_TAGS_JSON="$OUTPUT_DIR/images/PUBLISHED_TAGS.json"
 IMAGE_INFO_JSON="$OUTPUT_DIR/images/IMAGE_INFO.json"
 SUMMARY_JSON="$OUTPUT_DIR/summary.json"
 COMPOSE_FILE="$OUTPUT_DIR/docker-compose.yml"
+# K5: the mounts-variant compose file (generate-compose.sh's
+# generate_mounts_compose) uses the SAME ${SNAPSHOT_IMAGE_PREFIX:-...}<svc>:
+# ${SNAPSHOT_IMAGE_TAG:-...} ref pattern as docker-compose.yml for the
+# anvil family, haproxy and dev-ui, so it gets the SAME digest patch applied
+# below. It is OPTIONAL (only the anvil-aggkit flavor emits it, and only
+# after this step's generate-compose.sh lands) and deliberately NOT required
+# to exist -- other flavors/older bundles have no such file.
+MOUNTS_COMPOSE_FILE="$OUTPUT_DIR/docker-compose.mounts.yml"
 
 for f in "$PUBLISHED_TAGS_JSON" "$IMAGE_INFO_JSON" "$SUMMARY_JSON" "$COMPOSE_FILE"; do
     if [ ! -f "$f" ]; then
@@ -99,6 +122,11 @@ for f in "$PUBLISHED_TAGS_JSON" "$IMAGE_INFO_JSON" "$SUMMARY_JSON" "$COMPOSE_FIL
         exit 1
     fi
 done
+
+HAS_MOUNTS_FILE=false
+if [ -f "$MOUNTS_COMPOSE_FILE" ]; then
+    HAS_MOUNTS_FILE=true
+fi
 
 SERVICE_COUNT=$(jq -r 'if type == "object" then length else 0 end' "$PUBLISHED_TAGS_JSON")
 if [ -z "$SERVICE_COUNT" ] || [ "$SERVICE_COUNT" -lt 1 ]; then
@@ -123,7 +151,14 @@ WORK_SUMMARY=$(mktemp)
 WORK_COMPOSE=$(mktemp)
 cp "$SUMMARY_JSON" "$WORK_SUMMARY"
 cp "$COMPOSE_FILE" "$WORK_COMPOSE"
-cleanup() { rm -f "$WORK_SUMMARY" "$WORK_COMPOSE"; }
+CLEANUP_FILES=("$WORK_SUMMARY" "$WORK_COMPOSE")
+WORK_MOUNTS_COMPOSE=""
+if [ "$HAS_MOUNTS_FILE" = true ]; then
+    WORK_MOUNTS_COMPOSE=$(mktemp)
+    cp "$MOUNTS_COMPOSE_FILE" "$WORK_MOUNTS_COMPOSE"
+    CLEANUP_FILES+=("$WORK_MOUNTS_COMPOSE")
+fi
+cleanup() { rm -f "${CLEANUP_FILES[@]}"; }
 trap cleanup EXIT
 
 # bash pattern-substitution (${var//pattern/replacement}) uses glob
@@ -132,8 +167,13 @@ trap cleanup EXIT
 # exact and safe here, with none of the escaping headaches a sed/regex
 # approach would need.
 COMPOSE_CONTENT=$(cat "$WORK_COMPOSE")
+MOUNTS_CONTENT=""
+if [ "$HAS_MOUNTS_FILE" = true ]; then
+    MOUNTS_CONTENT=$(cat "$WORK_MOUNTS_COMPOSE")
+fi
 
 PATCHED=0
+MOUNTS_PATCHED=0
 for SVC in $(jq -r 'keys[]' "$PUBLISHED_TAGS_JSON"); do
     TAG=$(jq -r --arg s "$SVC" '.[$s].tag' "$PUBLISHED_TAGS_JSON")
     DIGEST=$(jq -r --arg s "$SVC" '.[$s].digest' "$PUBLISHED_TAGS_JSON")
@@ -160,6 +200,18 @@ for SVC in $(jq -r 'keys[]' "$PUBLISHED_TAGS_JSON"); do
     fi
     COMPOSE_CONTENT="${COMPOSE_CONTENT//$OLD_REF/$NEW_REF}"
     PATCHED=$((PATCHED + 1))
+
+    # docker-compose.mounts.yml: patch IF this service still uses the same
+    # derived-image ref pattern there (the anvil family, haproxy, dev-ui).
+    # By design (K5 C53/54) agglayer/aggkit-00X/aggkit-proxy-001 do NOT --
+    # their refs in that file are bare upstream image strings
+    # (${AGGLAYER_IMAGE:-...} / ${AGGKIT_IMAGE:-...}), never republished
+    # under this repo's own digest, so a miss there is expected and not an
+    # error.
+    if [ "$HAS_MOUNTS_FILE" = true ] && [[ "$MOUNTS_CONTENT" == *"$OLD_REF"* ]]; then
+        MOUNTS_CONTENT="${MOUNTS_CONTENT//$OLD_REF/$NEW_REF}"
+        MOUNTS_PATCHED=$((MOUNTS_PATCHED + 1))
+    fi
 done
 
 if [ "$PATCHED" -ne "$SERVICE_COUNT" ]; then
@@ -180,12 +232,26 @@ if ! jq empty "$WORK_SUMMARY" > /dev/null 2>&1; then
     exit 1
 fi
 
+if [ "$HAS_MOUNTS_FILE" = true ]; then
+    printf '%s' "$MOUNTS_CONTENT" > "$WORK_MOUNTS_COMPOSE"
+    if ! docker compose -f "$WORK_MOUNTS_COMPOSE" config > /dev/null; then
+        echo "ERROR: patched $MOUNTS_COMPOSE_FILE fails 'docker compose config' -- not writing it" >&2
+        exit 1
+    fi
+fi
+
 cp "$WORK_SUMMARY" "$SUMMARY_JSON"
 cp "$WORK_COMPOSE" "$COMPOSE_FILE"
+if [ "$HAS_MOUNTS_FILE" = true ]; then
+    cp "$WORK_MOUNTS_COMPOSE" "$MOUNTS_COMPOSE_FILE"
+fi
 
 log ""
 log "Patched digest + immutable tag into $SERVICE_COUNT service(s) in:"
 log "  $SUMMARY_JSON"
 log "  $COMPOSE_FILE"
+if [ "$HAS_MOUNTS_FILE" = true ]; then
+    log "  $MOUNTS_COMPOSE_FILE ($MOUNTS_PATCHED of $SERVICE_COUNT service(s) -- the rest are bare upstream refs by design, see this file's header comment)"
+fi
 
 exit 0

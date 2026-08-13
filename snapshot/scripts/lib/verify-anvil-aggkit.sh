@@ -139,11 +139,20 @@ run_anvil_aggkit_verification() {
     local SNAPSHOT_DIR="$1"
     local SNAPSHOT_ID="$2"
     local SCRIPT_DIR_OF_VERIFY="$3"
+    # K5 (C55): which compose file to verify against -- docker-compose.yml
+    # (the zero-mount default) or docker-compose.mounts.yml (the
+    # config-tree-mounted variant). Every `docker compose -f ...` call below
+    # uses this instead of a hardcoded docker-compose.yml.
+    local COMPOSE_FILE_NAME="${4:-docker-compose.yml}"
+    local IS_MOUNTS_VARIANT=false
+    if [ "$COMPOSE_FILE_NAME" != "docker-compose.yml" ]; then
+        IS_MOUNTS_VARIANT=true
+    fi
     local SUMMARY_JSON="$SNAPSHOT_DIR/summary.json"
     local START_TS
     START_TS=$(date +%s)
 
-    log_step "Snapshot Verification (flavor: anvil-aggkit)"
+    log_step "Snapshot Verification (flavor: anvil-aggkit, compose file: $COMPOSE_FILE_NAME)"
     log "Snapshot directory: $SNAPSHOT_DIR"
 
     if [ ! -f "$SUMMARY_JSON" ]; then
@@ -217,7 +226,7 @@ run_anvil_aggkit_verification() {
             MISSING_IMAGES=$((MISSING_IMAGES + 1))
         fi
         SEEN_IMAGES=$((SEEN_IMAGES + 1))
-    done < <(docker compose -f "$SNAPSHOT_DIR/docker-compose.yml" config --images 2>/dev/null)
+    done < <(docker compose -f "$SNAPSHOT_DIR/$COMPOSE_FILE_NAME" config --images 2>/dev/null)
     # A failing `docker compose config` yields an empty stream, zero loop
     # iterations and MISSING_IMAGES=0 -- i.e. a vacuous PASS. Require that the
     # compose file actually named some images.
@@ -230,9 +239,23 @@ run_anvil_aggkit_verification() {
     # ------------------------------------------------------------------
     # TEST 2: static healthcheck / compose-shape audit (the fix for the
     # always-exit-0 verify-healthchecks.sh, scoped to this flavor).
+    #
+    # K5: this check's entire premise -- every service has a healthcheck,
+    # every depends_on is gated on service_healthy, and the bundle has NO
+    # bind mounts/volumes -- is the docker-compose.yml "self-contained,
+    # zero-mount" contract. docker-compose.mounts.yml deliberately violates
+    # all three (that IS the point of that file: it bind-mounts config, and
+    # the override-able services intentionally drop their healthcheck /
+    # depend on `service_started`, see generate-compose.sh's
+    # generate_mounts_compose). Running this static contract-checker against
+    # that file would not be "stricter", it would be checking the wrong
+    # contract -- so it only runs for the default compose file.
     # ------------------------------------------------------------------
     log_step "TEST 2: Healthcheck Configuration (static)"
-    if "$SCRIPT_DIR_OF_VERIFY/scripts/verify-healthchecks.sh" --flavor anvil-aggkit "$SNAPSHOT_DIR"; then
+    if [ "$IS_MOUNTS_VARIANT" = true ]; then
+        log_info "  skipped: verify-healthchecks.sh's zero-mount/all-healthchecked contract"
+        log_info "  is specific to docker-compose.yml and does not apply to $COMPOSE_FILE_NAME"
+    elif "$SCRIPT_DIR_OF_VERIFY/scripts/verify-healthchecks.sh" --flavor anvil-aggkit "$SNAPSHOT_DIR"; then
         anvil_test_result "verify-healthchecks.sh --flavor anvil-aggkit" "pass"
     else
         anvil_test_result "verify-healthchecks.sh --flavor anvil-aggkit" "fail"
@@ -244,7 +267,7 @@ run_anvil_aggkit_verification() {
     log_step "TEST 3: Start Services"
     local COMPOSE_UP_LOG UP_RC
     COMPOSE_UP_LOG=$(mktemp)
-    (cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml up -d --wait --wait-timeout 180) \
+    (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" up -d --wait --wait-timeout 180) \
         > "$COMPOSE_UP_LOG" 2>&1
     UP_RC=$?
     if [ "$UP_RC" -eq 0 ]; then
@@ -276,9 +299,9 @@ run_anvil_aggkit_verification() {
             log_error "  $NAME: $STATE${HEALTH:+ ($HEALTH)}"
             UNHEALTHY=$((UNHEALTHY + 1))
         fi
-    done < <(cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml ps --all --format json 2>/dev/null \
+    done < <(cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" ps --all --format json 2>/dev/null \
         | jq -r '[.Name, .State, .Health] | @tsv')
-    EXPECTED_SERVICES=$( (cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml config --services 2>/dev/null) | grep -c . || true)
+    EXPECTED_SERVICES=$( (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" config --services 2>/dev/null) | grep -c . || true)
     if [ "$SEEN_CONTAINERS" -eq 0 ] || [ "$SEEN_CONTAINERS" -ne "${EXPECTED_SERVICES:-0}" ]; then
         log_error "  saw $SEEN_CONTAINERS container(s) for ${EXPECTED_SERVICES:-0} compose service(s)"
         UNHEALTHY=$((UNHEALTHY + 1))
@@ -359,16 +382,30 @@ run_anvil_aggkit_verification() {
         #       BlockOutOfRangeError and kill aggkit / panic agglayer).
         local AGGKIT_SVC
         AGGKIT_SVC=$(jq -r --arg p "$PREFIX" '.networks.l2[$p].aggkit.service' "$SUMMARY_JSON")
-        local LIVE_CFG
-        LIVE_CFG=$( (cd "$SNAPSHOT_DIR" && docker compose -f docker-compose.yml exec -T "$AGGKIT_SVC" \
-            /snapshot/busybox cat /etc/aggkit/config.toml) 2>/dev/null)
-        local LIVE_ROLLUP_BLOCK CAPTURED_ROLLUP_BLOCK
-        LIVE_ROLLUP_BLOCK=$(echo "$LIVE_CFG" | grep -E '^rollupCreationBlockNumber[[:space:]]*=' | sed -E 's/.*"([0-9]+)".*/\1/')
+        local CAPTURED_ROLLUP_BLOCK
         CAPTURED_ROLLUP_BLOCK=$(grep -E '^rollupCreationBlockNumber[[:space:]]*=' \
             "$SNAPSHOT_DIR/config/$AGGKIT_SVC/config.toml" 2>/dev/null | sed -E 's/.*"([0-9]+)".*/\1/')
-        log_info "  live rollupCreationBlockNumber=$LIVE_ROLLUP_BLOCK, captured=$CAPTURED_ROLLUP_BLOCK (L1 snapshot block $L1_BLOCK_AT_CAPTURE)"
-        anvil_test_result "L2-$PREFIX aggkit: rollupCreationBlockNumber baked verbatim (no restore-time rewrite)" \
-            "$([ -n "$LIVE_ROLLUP_BLOCK" ] && [ "$LIVE_ROLLUP_BLOCK" = "$CAPTURED_ROLLUP_BLOCK" ] && echo pass || echo fail)"
+        if [ "$IS_MOUNTS_VARIANT" = true ]; then
+            # K5: this check's whole point is proving the DERIVED image's
+            # BAKED config wasn't rewritten at restore time. In this variant
+            # there is no baked config at all -- the container reads
+            # /etc/aggkit/config.toml straight off the host bind mount, so
+            # "live vs captured" is tautological (same file) AND, more
+            # importantly, the override-able aggkit image here ships no
+            # shell/busybox to `exec` into (K5 C53's bare-upstream-image
+            # decision) so a docker compose exec would just fail to launch,
+            # not fail the assertion. Skip rather than force a meaningless
+            # or mechanically-broken check.
+            log_info "  skipped (mounts variant): config is bind-mounted, not baked -- see this block's comment"
+        else
+            local LIVE_CFG LIVE_ROLLUP_BLOCK
+            LIVE_CFG=$( (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" exec -T "$AGGKIT_SVC" \
+                /snapshot/busybox cat /etc/aggkit/config.toml) 2>/dev/null)
+            LIVE_ROLLUP_BLOCK=$(echo "$LIVE_CFG" | grep -E '^rollupCreationBlockNumber[[:space:]]*=' | sed -E 's/.*"([0-9]+)".*/\1/')
+            log_info "  live rollupCreationBlockNumber=$LIVE_ROLLUP_BLOCK, captured=$CAPTURED_ROLLUP_BLOCK (L1 snapshot block $L1_BLOCK_AT_CAPTURE)"
+            anvil_test_result "L2-$PREFIX aggkit: rollupCreationBlockNumber baked verbatim (no restore-time rewrite)" \
+                "$([ -n "$LIVE_ROLLUP_BLOCK" ] && [ "$LIVE_ROLLUP_BLOCK" = "$CAPTURED_ROLLUP_BLOCK" ] && echo pass || echo fail)"
+        fi
 
         # (b) Historical state read: eth_getCode against the L1 bridge pinned
         # at the rollup's creation block. Before S9b this returned
@@ -483,8 +520,25 @@ run_anvil_aggkit_verification() {
 
     # ------------------------------------------------------------------
     # TEST 11: dev-ui /config.json is valid
+    #
+    # K5: /config.json used to be reachable through the proxy unconditionally
+    # (haproxy's now-removed `default_backend` fell through to
+    # agglayer-dev-ui-002, which was always running). Per the profile design
+    # (devui-under-test.md (c)) agglayer-dev-ui-002 is now `profiles:
+    # [devui]` and NOT started by a plain `up -d --wait` -- and per that same
+    # doc's finding (b), nothing CI-relevant ever fetches /config.json
+    # THROUGH the proxy anyway (only the 4 routes l1rpc/l2rpc-*/aggkitapi
+    # are). So this check only makes sense, and is only attempted, when the
+    # devui profile is actually part of THIS run.
     # ------------------------------------------------------------------
     log_step "TEST 11: dev-ui /config.json"
+    local DEVUI_SVC_NAME DEVUI_RUNNING
+    DEVUI_SVC_NAME=$(jq -r '.dev_ui.service // empty' "$SUMMARY_JSON")
+    DEVUI_RUNNING=$( (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" ps --status running --format json -- "$DEVUI_SVC_NAME" 2>/dev/null) | jq -r '.Name // empty' 2>/dev/null)
+    if [ -z "$DEVUI_SVC_NAME" ] || [ -z "$DEVUI_RUNNING" ]; then
+        log_info "  skipped: $DEVUI_SVC_NAME is not running in this invocation (no --profile devui)"
+        log_info "  -- /config.json through the proxy is a manual-debug convenience only, not a CI-needed route"
+    else
     local DEVUI_CONFIG DEVUI_CONFIG_FILE
     DEVUI_CONFIG_FILE=$(mktemp)
     DEVUI_CONFIG=$(curl -s -m 10 "${PROXY_BASE}/config.json")
@@ -540,6 +594,7 @@ run_anvil_aggkit_verification() {
         fi
     fi
     rm -f "$DEVUI_CONFIG_FILE"
+    fi
 
     # ------------------------------------------------------------------
     # TEST 12: scripted bridge round trip
