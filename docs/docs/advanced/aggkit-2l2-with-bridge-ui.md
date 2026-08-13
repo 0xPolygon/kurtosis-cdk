@@ -568,7 +568,7 @@ failure modes when a row's tracking doesn't behave as expected:
 - [Agglayer Dev UI GitHub](https://github.com/agglayer/agglayer-dev-ui)
 - [AggLayer SDK](https://github.com/agglayer/sdk) — TypeScript client for bridge operations
 - [Bridge Configuration Guide](../configuration/examples/bridge-ui.md)
-- [Anvil-Flavor DevUI Snapshot](./anvil-devui-snapshot.md) — a fast-boot,
+- [Anvil Devnet Snapshot](./anvil-devnet-snapshot.md) — a fast-boot,
   `sequencer_type: anvil` equivalent of this same topology, captured as a
-  self-contained docker-compose bundle for hermetic CI (no Kurtosis toolchain needed to
-  consume it)
+  self-contained docker-compose bundle consumable by dev-ui, aggkit, or agglayer (no
+  Kurtosis toolchain needed to consume it)
