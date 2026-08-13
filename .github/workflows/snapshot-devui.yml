@@ -9,7 +9,7 @@
 # per-chain historical_states (a bundle failing either can never settle a
 # certificate after restore -- see plans/dev-ui-ci-snapshot/s9b-evidence/) ->
 # snapshot/verify.sh (the full anvil-aggkit contract: sync-status, tracker,
-# CORS, a real L1->L2 and L2->L1 bridge round trip) -> publish the 11 derived
+# CORS, a real L1->L2 and L2->L1 bridge round trip) -> publish the 9 derived
 # images to GHCR + upload docker-compose.yml/summary.json as a workflow
 # artifact for agglayer-dev-ui to vendor.
 #
@@ -33,11 +33,12 @@
 #   https://github.com/0xPolygon/kurtosis-cdk/actions/runs/31616965584,
 #   verified by `docker logout ghcr.io && docker pull` for all 11 services x
 #   both tags -- see plans/dev-ui-ci-snapshot/s11-evidence/14-anonymous-pull-verification.log).
-#   No manual toggle was required. If a future org policy change makes a new
-#   package private, fix it once per image (services: anvil-001,
-#   l2-anvil-001, l2-anvil-002, agglayer, aggkit-001, aggkit-001-bridge,
-#   aggkit-002, aggkit-002-bridge, aggkit-proxy-001,
-#   agglayer-dev-ui-proxy-002, agglayer-dev-ui-002):
+#   (That first-ever publish predates K1's aggkit+bridge merge, hence 11
+#   packages -- see the current 9 below.) No manual toggle was required. If a
+#   future org policy change makes a new package private, fix it once per
+#   image (services: anvil-001, l2-anvil-001, l2-anvil-002, agglayer,
+#   aggkit-001, aggkit-002, aggkit-proxy-001, agglayer-dev-ui-proxy-002,
+#   agglayer-dev-ui-002):
 #     1. https://github.com/orgs/0xPolygon/packages -> find
 #        kurtosis-cdk-snapshot-<service> -> Package settings ->
 #        "Change visibility" -> Public -> type the package name to confirm.
@@ -52,10 +53,18 @@
 #   Verify anonymously (no docker login, no token) after any toggle:
 #     docker logout ghcr.io
 #     docker pull ghcr.io/0xpolygon/kurtosis-cdk-snapshot-anvil-001:snapshot-latest-devui
-#   Naming note: both the package name AND every tag deliberately contain
-#   the literal word "snapshot" (package: kurtosis-cdk-snapshot-<service>;
-#   tags: snapshot-<sha>, snapshot-latest-devui) so it is unambiguous in the
-#   org's package listing which artifacts these are.
+#   Naming note: the package name always contains the literal word "snapshot"
+#   (kurtosis-cdk-snapshot-<service>), and so does the moving human alias tag
+#   `snapshot-latest-devui`. K4 (snapshot-v2-aggkit-e2e plan) retired
+#   `snapshot-<sha>` as the pinning mechanism; every service is now also
+#   tagged with an immutable, self-describing tag of the form
+#   "<component-version>-<unix-ts>" (e.g. "0.11.0-rc5-1755100800", resolved
+#   from the exact upstream image ref that produced that service's baked
+#   image -- see snapshot/scripts/lib/version-tag.sh), which does NOT contain
+#   the word "snapshot". The authoritative pin is the `@sha256:<digest>`
+#   reference recorded in the generated docker-compose.yml (readable tag kept
+#   as a trailing comment) and in summary.json's
+#   images.services.<svc>.{tag,digest} -- see apply-digests.sh.
 
 name: snapshot-devui
 
@@ -105,7 +114,7 @@ permissions:
 concurrency:
   # Deliberately ref-INDEPENDENT. Two runs on different refs would otherwise sit
   # in different groups and race, and both move the same mutable
-  # `snapshot-latest-devui` tag across 11 packages one image at a time -- a
+  # `snapshot-latest-devui` tag across 9 packages one image at a time -- a
   # consumer pulling mid-push would get a mixed bundle. The enclave name is also
   # fixed ("cdk"), so concurrent runs on one runner pool would collide anyway.
   # Not cancel-in-progress: a run must never be torn down half-way through
@@ -230,32 +239,57 @@ jobs:
       # `publish: true`. Every other trigger dry-runs the push (echoes the
       # exact command) so the tag/push logic is exercised on every run
       # without ever risking an unintended publish.
+      #
+      # The old uniform `snapshot-<sha>` tag is no longer passed here (K4:
+      # retired as the pinning mechanism). `publish-images.sh` itself always
+      # additionally tags+pushes one immutable, self-describing
+      # "<component-version>-<unix-ts>" tag per service (see that script's
+      # header) -- `snapshot-latest-devui` below is the only uniform tag this
+      # workflow still asks for, kept purely as a moving human-friendly
+      # alias.
       - name: Publish images to GHCR
+        id: publish
         env:
           # Two explicit, fully-quoted invocations rather than an unquoted
           # $DRY_RUN_FLAG whose word-splitting decides whether a real push
           # happens. Safety must not hinge on a token surviving expansion.
           DO_PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
           REGISTRY_PREFIX: ${{ env.GHCR_IMAGE_PREFIX }}
-          PUBLISH_TAG: ${{ steps.tag.outputs.tag }}
           IMAGE_INFO: ${{ steps.snap.outputs.dir }}/images/IMAGE_INFO.json
         run: |
           set -euo pipefail
+          echo "do_publish=$DO_PUBLISH" >> "$GITHUB_OUTPUT"
           if [ "$DO_PUBLISH" = "true" ]; then
             echo "Publishing for real (workflow_dispatch with publish=true)."
             snapshot/scripts/publish-images.sh \
               --registry-prefix "$REGISTRY_PREFIX" \
-              --tag "$PUBLISH_TAG" \
               --tag snapshot-latest-devui \
               "$IMAGE_INFO"
           else
             echo "Dry run (event=${GITHUB_EVENT_NAME}); rehearsing tag/push commands only."
             snapshot/scripts/publish-images.sh --dry-run \
               --registry-prefix "$REGISTRY_PREFIX" \
-              --tag "$PUBLISH_TAG" \
               --tag snapshot-latest-devui \
               "$IMAGE_INFO"
           fi
+
+      # Only meaningful after a REAL push: a dry run's PUBLISHED_TAGS.json
+      # (written by publish-images.sh above) has a null digest for every
+      # service, since nothing was actually pushed to inspect. Patches the
+      # already-written summary.json/docker-compose.yml (see that script's
+      # own header for why this must be a separate, later step) so the
+      # distributed compose file pins `image: <ref>@sha256:<digest>` with
+      # the immutable tag kept as a trailing comment.
+      - name: Record published image digests
+        if: steps.publish.outputs.do_publish == 'true'
+        env:
+          REGISTRY_PREFIX: ${{ env.GHCR_IMAGE_PREFIX }}
+          OUTPUT_DIR: ${{ steps.snap.outputs.dir }}
+        run: |
+          set -euo pipefail
+          snapshot/scripts/apply-digests.sh \
+            --registry-prefix "$REGISTRY_PREFIX" \
+            "$OUTPUT_DIR"
 
       - name: Disk usage (after push)
         run: df -h

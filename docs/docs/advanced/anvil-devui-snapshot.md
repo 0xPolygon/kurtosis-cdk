@@ -273,9 +273,16 @@ $ ./snapshot/scripts/gate-snapshot-soundness.sh
 Usage: ./snapshot/scripts/gate-snapshot-soundness.sh <state-metadata.json>
 ```
 
-Images publish under `ghcr.io/0xpolygon/kurtosis-cdk-snapshot-<service>` with tags
-`snapshot-<sha>` and `snapshot-latest-devui` — both the package name and every tag
-deliberately contain the literal word `snapshot`. The 9 services:
+Images publish under `ghcr.io/0xpolygon/kurtosis-cdk-snapshot-<service>` with the
+moving human alias `snapshot-latest-devui` plus, per service, an immutable,
+self-describing tag `<component-version>-<unix-ts>` (e.g. `0.11.0-rc5-1755100800`,
+resolved from the exact upstream image ref that produced that service's baked
+image) — the package name and the alias tag both contain the literal word
+`snapshot`; the per-service immutable tag does not. The `snapshot-<sha>` tag has
+been retired as the pinning mechanism: the authoritative pin is the
+`@sha256:<digest>` reference recorded in the generated `docker-compose.yml`
+(with the readable tag kept as a trailing comment) and in `summary.json`'s
+`images.services.<svc>.{tag,digest}`. The 9 services:
 `anvil-001`, `l2-anvil-001`, `l2-anvil-002`, `agglayer`, `aggkit-001`,
 `aggkit-002`, `aggkit-proxy-001`,
 `agglayer-dev-ui-proxy-002`, `agglayer-dev-ui-002`.
