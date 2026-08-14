@@ -154,12 +154,22 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             error "Could not list default-profile services from $COMPOSE_FILE"
             ERRORS=$((ERRORS + 1))
         fi
-        DEVUI_SVC=$(jq -r '.dev_ui.service_name // empty' "$DISCOVERY_JSON" 2>/dev/null || true)
-        DISCOVERED_SERVICES=$(jq -r '
+        if ! DEVUI_SVC=$(jq -er '.dev_ui.service_name // empty' "$DISCOVERY_JSON" 2>/dev/null); then
+            error "discovery.json is invalid or has no dev_ui.service_name: $DISCOVERY_JSON"
+            ERRORS=$((ERRORS + 1))
+            DEVUI_SVC=""
+        fi
+        if ! DISCOVERED_SERVICES=$(jq -er '
             [.l1_anvil, .agglayer, .aggkit_proxy, .haproxy, .dev_ui,
              (.l2_chains[]? | (.anvil, .aggkit))]
-            | map(select(.found == true) | .service_name) | .[]
-        ' "$DISCOVERY_JSON" 2>/dev/null || true)
+            | map(select(.found == true) | .service_name)
+            | select(length > 0)
+            | .[]
+        ' "$DISCOVERY_JSON" 2>/dev/null); then
+            error "discovery.json is invalid or lists no found services: $DISCOVERY_JSON"
+            ERRORS=$((ERRORS + 1))
+            DISCOVERED_SERVICES=""
+        fi
         for svc in $DISCOVERED_SERVICES; do
             if [ -n "$DEVUI_SVC" ] && [ "$svc" = "$DEVUI_SVC" ]; then
                 # Expected ABSENT from the default set, expected PRESENT
@@ -186,8 +196,8 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             fi
         done
     else
-        warn "discovery.json not found at $DISCOVERY_JSON -- skipping the discovery cross-check"
-        WARNINGS=$((WARNINGS + 1))
+        error "discovery.json not found at $DISCOVERY_JSON -- cannot cross-check discovered components"
+        ERRORS=$((ERRORS + 1))
     fi
 
     log ""

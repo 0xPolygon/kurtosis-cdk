@@ -48,6 +48,7 @@ fail() {
 
 # Usage
 usage() {
+    local status="${1:-0}"
     cat << EOF
 Snapshot Verification Script
 
@@ -80,7 +81,7 @@ Examples:
   $0 --compose-file docker-compose.mounts.yml snapshots/cdk-20260202-115500
 
 EOF
-    exit 0
+    exit "$status"
 }
 
 # Parse arguments
@@ -101,7 +102,7 @@ while [ $# -gt 0 ]; do
             ;;
         -*)
             log_error "Unknown option: $1"
-            usage
+            usage 1
             ;;
         *)
             POSITIONAL+=("$1")
@@ -111,7 +112,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ ${#POSITIONAL[@]} -ne 1 ]; then
-    usage
+    usage 1
 fi
 
 SNAPSHOT_DIR="${POSITIONAL[0]}"
