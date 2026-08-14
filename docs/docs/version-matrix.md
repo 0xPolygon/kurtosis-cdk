@@ -46,7 +46,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
 | op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
 | op-proposer | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | ✅ matches stable |
-| op-reth | [2.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.1) | [2.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.1) | ✅ matches stable |
+| op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ### cdk-opreth-sovereign-pessimistic
@@ -62,7 +62,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
 | op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
 | op-proposer | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | ✅ matches stable |
-| op-reth | [2.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.1) | [2.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.1) | ✅ matches stable |
+| op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ### cdk-opreth-zkrollup
@@ -78,7 +78,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | ✅ matches stable |
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
 | op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
-| op-reth | [2.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.1) | [2.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.1) | ✅ matches stable |
+| op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
 | op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.11.2-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.11.2-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
@@ -157,7 +157,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned Version | Latest Stable Version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | ✅ matches stable |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [04988b4d121e](https://github.com/ethpandaops/ethereum-package/tree/04988b4d121eec11d930086c899a19768f06f452) | [HEAD (04988b4d121e)](https://github.com/ethpandaops/ethereum-package/tree/04988b4d121e) | ✅ matches stable |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [0350d2e98735](https://github.com/ethpandaops/ethereum-package/tree/0350d2e98735ff395b088fe8c261f0c9bb652c8a) | [HEAD (0350d2e98735)](https://github.com/ethpandaops/ethereum-package/tree/0350d2e98735) | ✅ matches stable |
 | [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [1.0.0](https://github.com/kurtosis-tech/grafana-package/releases/tag/1.0.0) | ⚡️ newer than stable — 2 commits ahead of 1.0.0 |
 | [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [1.1.0](https://github.com/kurtosis-tech/prometheus-package/releases/tag/1.1.0) | ⚡️ newer than stable — 2 commits ahead of 1.1.0 |
 | [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [HEAD (9de7765a6c98)](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98) | ✅ matches stable |

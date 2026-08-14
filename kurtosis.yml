@@ -14,7 +14,7 @@ description: |
 # pinned inline in a `.star` file, or if an entry here is missing a version.
 replace:
   github.com/agglayer/optimism-package: github.com/agglayer/optimism-package@v2.0.0  # 2026-07-30
-  github.com/ethpandaops/ethereum-package: github.com/ethpandaops/ethereum-package@04988b4d121eec11d930086c899a19768f06f452  # 2026-08-12, ahead of v6.1.0
+  github.com/ethpandaops/ethereum-package: github.com/ethpandaops/ethereum-package@0350d2e98735ff395b088fe8c261f0c9bb652c8a  # 2026-08-13, ahead of v6.1.0
   github.com/kurtosis-tech/prometheus-package: github.com/kurtosis-tech/prometheus-package@f3402ebad8cffe98eef990e41ca863f7e8746c21  # 2026-06-24
   github.com/kurtosis-tech/grafana-package: github.com/kurtosis-tech/grafana-package@c8ff0b52d25deb0bc4ec95971dcf25b2fca11287  # 2025-03-31
   github.com/xavier-romero/kurtosis-blockscout: github.com/xavier-romero/kurtosis-blockscout@9de7765a6c98c8c357f747ff953fdbc0e39ebc3d  # 2025-01-29
