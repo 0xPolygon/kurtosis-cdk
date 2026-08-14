@@ -158,7 +158,13 @@ DEFAULT_IMAGES = {
     # acceptance criterion forbids. See
     # src/additional_services/bridge_ui/ui.star's new run_dev_ui(), used only
     # by the opt-in aggkit-mode dev-ui deployment (aggkit_deploy_dev_ui).
-    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-dd070d7db256-31574163188",
+    # K9: bumped to D0c's published image, which understands the single
+    # `aggkitProxy` string field
+    # (static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl)
+    # -- dev-ui's config schema is `.strict()` and D0c's build removed the old
+    # per-network `aggkitBridgeApis` map entirely, so it hard-rejects it. Any
+    # older tag here would fail to load the generated config.
+    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-8563dd4ba876-31732860787",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     # foundry >= v1.5.0 is REQUIRED when the L1 is anvil: agglayer's settlement
     # task probes nonce inclusion with `eth_getTransactionBySenderAndNonce`

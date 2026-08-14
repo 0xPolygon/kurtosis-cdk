@@ -339,10 +339,7 @@ The script `scripts/kurtosisDevnetEnv.mjs` writes:
   "appModes": {
     "configs": {
       "devnet": {
-        "aggkitBridgeApis": {
-          "1": "http://127.0.0.1:<haproxyPort>/aggkitapi",
-          "2": "http://127.0.0.1:<haproxyPort>/aggkitapi"
-        },
+        "aggkitProxy": "http://127.0.0.1:<haproxyPort>/aggkitapi",
         "chainKeys": ["DEVNET_L1", "DEVNET_L2_001", "DEVNET_L2_002"],
         "defaultFromChainKey": "DEVNET_L1",
         "defaultToChainKey": "DEVNET_L2_001"
@@ -352,7 +349,10 @@ The script `scripts/kurtosisDevnetEnv.mjs` writes:
 }
 ```
 
-Both networks use the **same proxy URL** — routing to different backends happens via `network_id` query parameter.
+A single `aggkitProxy` URL fronts every network — routing to different backends happens via the
+`network_id` query parameter, not via a per-network map (dev-ui removed the old per-network
+`aggkitBridgeApis` map form entirely; see the AggLayer dev-ui `docs/config.md` "Relative
+`aggkitProxy` URLs" section).
 
 ## Important Notes
 

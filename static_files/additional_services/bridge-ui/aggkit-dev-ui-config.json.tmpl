@@ -55,11 +55,7 @@
       "devnet": {
         "label": "Devnet",
         "bridgeAddress": "{{.l1_bridge_address}}",
-        "aggkitBridgeApis": {
-          {{- range $i, $e := .l2_chains }}{{ if $i }},{{ end }}
-          "{{ $e.network_id }}": "/aggkitapi"
-          {{- end }}
-        },
+        "aggkitProxy": "/aggkitapi",
         "chainKeys": [
           "DEVNET_L1"{{ range .l2_chains }}, "{{ .chain_key }}"{{ end }}
         ],

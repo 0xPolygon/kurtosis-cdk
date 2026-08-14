@@ -107,11 +107,11 @@ def run_dev_ui(plan, args, contract_setup_addresses, l1_context, l2_context):
     # backend, exactly like the bridge_hub backend's own agglayer_dev_ui_url
     # wiring above.
     #
-    # aggkitBridgeApis in the rendered config uses the relative path
-    # "/aggkitapi" (allowed only for that field -- see dev-ui docs/config.md
-    # "Relative aggkitBridgeApis URLs"): the dev-ui container is served
-    # through this same haproxy origin (backend_default), so the browser
-    # resolves it against the page's own origin with no CORS involved. Chain
+    # aggkitProxy in the rendered config uses the relative path "/aggkitapi"
+    # (allowed only for that field -- see dev-ui docs/config.md "Relative
+    # aggkitProxy URLs"): the dev-ui container is served through this same
+    # haproxy origin (backend_default), so the browser resolves it against
+    # the page's own origin with no CORS involved. Chain
     # rpcUrl values, by contrast, must be absolute (wallets need a concrete
     # URL) -- this function uses the enclave-internal DNS URLs
     # (l1_context.rpc_url / l2_context.rpc_url / bridge_ui_l2_rpc_urls[].url)
