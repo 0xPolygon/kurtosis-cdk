@@ -1,3 +1,9 @@
 args:
   l1_engine: anvil
   consensus_contract_type: rollup
+  # Pinned: this setup settles proofs through cdk-node, whose only settlement path is
+  # `interop_sendTx` (SettlementBackend = "agglayer"). agglayer v0.6.0-rc.6 disabled that
+  # method (returns -10009), so the aggregator can no longer settle and no batch ever gets
+  # verified. Unpin once cdk-node supports the certificate-based settlement flow.
+  # See https://github.com/agglayer/agglayer/releases/tag/v0.6.0-rc.6
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.5
