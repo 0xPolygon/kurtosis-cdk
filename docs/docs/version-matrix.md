@@ -79,7 +79,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
 | op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
 | op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
-| op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.11.2-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.11.2-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
+| op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.12.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.12.0-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ## CDK Erigon
@@ -146,7 +146,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | geth | [1.17.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.5) | [1.17.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.5) | ✅ matches stable |
-| lighthouse | [8.2.1](https://github.com/sigp/lighthouse/releases/tag/v8.2.1) | [8.2.1](https://github.com/sigp/lighthouse/releases/tag/v8.2.1) | ✅ matches stable |
+| lighthouse | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | ✅ matches stable |
 | reth | [2.5.0](https://github.com/paradigmxyz/reth/releases/tag/v2.5.0) | [2.5.0](https://github.com/paradigmxyz/reth/releases/tag/v2.5.0) | ✅ matches stable |
 | status-checker | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | ✅ matches stable |
 

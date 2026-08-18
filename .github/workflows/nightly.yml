@@ -32,6 +32,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     continue-on-error: true  # prevent this job from failing the workflow
+    outputs:
+      # `continue-on-error` reports the job as successful, so the drift verdict
+      # has to travel to the summary as an output rather than a job result.
+      # Empty when the job was skipped (fork / no token) or an earlier step
+      # failed before the comparison ran — the summary treats that as "unknown"
+      # rather than as "up to date".
+      outdated: ${{ steps.version-check.outputs.outdated }}
     steps:
       - uses: actions/checkout@v4
 
@@ -87,33 +94,7 @@ jobs:
           fi
           echo "HAS_DIFF=${has_diff}" >> $GITHUB_ENV
           echo "HAS_DIFF=${has_diff}"
-
-      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        with:
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          method: chat.postMessage
-          payload: |
-            {
-              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
-              "text": "Kurtosis CDK Nightly - Version matrix check",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
-                  }
-                }${{ env.HAS_DIFF == 'true' && ',
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Check the documentation at `scripts/version-matrix` to update it"
-                  }
-                }' || '' }}
-              ]
-            }
+          echo "outdated=${has_diff}" >> $GITHUB_OUTPUT
 
       - name: Display check result
         if: ${{ steps.check-run.outputs.skip == 'false' }}
@@ -811,6 +792,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() && github.event_name == 'schedule' }}
     needs:
+      - check-version-matrix
       - run-without-args
       - run-with-args
       - run-with-op-succinct
@@ -832,7 +814,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || (contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')) && 'some tests were skipped ⚠️' || 'all tests passed ✅' }}",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || (contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')) && 'some tests were skipped ⚠️' || 'all tests passed ✅' }} | version matrix is ${{ needs.check-version-matrix.outputs.outdated == 'true' && 'outdated ❌, check the documentation at `scripts/version-matrix` to update it' || needs.check-version-matrix.outputs.outdated == 'false' && 'up to date ✅' || 'unknown ⚠️, the check failed before it could compare the matrix' }}"
                   }
                 }
               ]
