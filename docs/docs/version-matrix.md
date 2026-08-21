@@ -42,9 +42,9 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | ✅ matches stable |
 | agglayer | [0.6.0-rc.9](https://github.com/agglayer/agglayer/releases/tag/v0.6.0-rc.9) | [0.5.1](https://github.com/agglayer/agglayer/releases/tag/v0.5.1) | ⚡️ newer than stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | ✅ matches stable |
+| op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.13](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.13) | 🚨 behind stable |
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
-| op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
+| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | ✅ matches stable |
 | op-proposer | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | ✅ matches stable |
 | op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
@@ -58,9 +58,9 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | 📌 pinned — Only supports aggkit 0.5.x so far. |
 | agglayer | [0.6.0-rc.9](https://github.com/agglayer/agglayer/releases/tag/v0.6.0-rc.9) | [0.5.1](https://github.com/agglayer/agglayer/releases/tag/v0.5.1) | ⚡️ newer than stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | ✅ matches stable |
+| op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.13](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.13) | 🚨 behind stable |
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
-| op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
+| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | ✅ matches stable |
 | op-proposer | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.3) | ✅ matches stable |
 | op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
@@ -75,9 +75,9 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit-prover | [2.1.0](https://github.com/agglayer/provers/releases/tag/v2.1.0) | [2.1.0](https://github.com/agglayer/provers/releases/tag/v2.1.0) | ✅ matches stable |
 | agglayer | [0.6.0-rc.9](https://github.com/agglayer/agglayer/releases/tag/v0.6.0-rc.9) | [0.5.1](https://github.com/agglayer/agglayer/releases/tag/v0.5.1) | ⚡️ newer than stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | ✅ matches stable |
+| op-batcher | [1.16.12](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.12) | [1.16.13](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.13) | 🚨 behind stable |
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
-| op-node | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | [1.19.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.4) | ✅ matches stable |
+| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | ✅ matches stable |
 | op-reth | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | [2.4.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.2) | ✅ matches stable |
 | op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.12.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.12.0-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
@@ -147,7 +147,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 |-----------|-------------------------------|-----------------------|--------|
 | geth | [1.17.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.5) | [1.17.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.5) | ✅ matches stable |
 | lighthouse | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | ✅ matches stable |
-| reth | [2.5.0](https://github.com/paradigmxyz/reth/releases/tag/v2.5.0) | [2.5.0](https://github.com/paradigmxyz/reth/releases/tag/v2.5.0) | ✅ matches stable |
+| reth | [2.5.0](https://github.com/paradigmxyz/reth/releases/tag/v2.5.0) | [2.5.1](https://github.com/paradigmxyz/reth/releases/tag/v2.5.1) | 🚨 behind stable |
 | status-checker | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | ✅ matches stable |
 
 ## Kurtosis Packages
