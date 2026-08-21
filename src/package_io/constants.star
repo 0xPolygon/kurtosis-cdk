@@ -116,7 +116,7 @@ DEFAULT_IMAGES = {
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.5.0",
     "lighthouse_image": "sigp/lighthouse:v8.2.2",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.12",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.13",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
     "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.4.2",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.4",
