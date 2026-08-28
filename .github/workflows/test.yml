@@ -273,7 +273,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: f480110a7dd66a5c9178fdf5af45fbb481f596ba # 2026-03-05 pin (3fb8af01) + cast >= 1.8 --json envelope compat (agglayer/e2e#266) — re-pin to main once merged
+          ref: 3a80868ae618a52cc98d70e5ef6d9484063fa9e5 # 2026-08-28, cast >= 1.8 --json envelope compat (agglayer/e2e#266)
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
