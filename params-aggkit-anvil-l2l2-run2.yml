@@ -34,7 +34,7 @@ args:
   sequencer_type: anvil
   consensus_contract_type: ecdsa-multisig
 
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc7
   # "autoclaim" added so this instance's own destination network (2) gets an
   # AutoClaim claimer -- see aggkit_autoclaim_destinations below. "bridge"
   # added so this same process also serves the bridge REST API (port 5577)

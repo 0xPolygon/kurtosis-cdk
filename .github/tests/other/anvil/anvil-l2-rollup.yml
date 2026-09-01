@@ -34,7 +34,7 @@ args:
   # Mandatory for sequencer_type: anvil (args_sanity_check rule V1).
   consensus_contract_type: ecdsa-multisig
 
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc7
   # "autoclaim" so destination network 1 gets an AutoClaim claimer -- see
   # aggkit_autoclaim_destinations below. "bridge" so this same process also
   # serves the bridge REST API (port 5577) -- there is no longer a separate
