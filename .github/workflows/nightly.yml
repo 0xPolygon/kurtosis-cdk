@@ -261,7 +261,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: 3fb8af01358583e8c6df167beac9c1d2b06961c1 # 2026-03-05
+          ref: 3a80868ae618a52cc98d70e5ef6d9484063fa9e5 # 2026-08-28, cast >= 1.8 --json envelope compat (agglayer/e2e#266)
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -625,9 +625,9 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          # test/upgrade-agglayer-060 HEAD: the agglayer 0.6.0 multi-chain suite
-          # (tests/aggkit/bridge-e2e-{2,3}-chains.bats + the multi-setup helpers).
-          ref: c63f991dbd77003cd3c28cb7142d15f066f55f18
+          # The agglayer 0.6.0 multi-chain suite (tests/aggkit/bridge-e2e-{2,3}-chains.bats +
+          # the multi-setup helpers), now merged into main.
+          ref: 3a80868ae618a52cc98d70e5ef6d9484063fa9e5 # 2026-08-28, cast >= 1.8 --json envelope compat (agglayer/e2e#266)
 
       # NOTE: no agglayer-registration step here. The l2-to-l2-all-pairs.bats setup intentionally
       # does not call the e2e add_network_to_agglayer helper: the attached rollups are already
