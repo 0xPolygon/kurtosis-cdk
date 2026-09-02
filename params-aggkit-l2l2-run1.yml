@@ -32,7 +32,7 @@ args:
   # https://github.com/agglayer/aggkit/pull/1784).
   # No kurtosis config change was required: this package already threads a
   # real, non-zero L1 GlobalExitRoot address into the tracker template.
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc7
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc8
   # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
   # destination network (1) gets an AutoClaim claimer -- see
   # aggkit_autoclaim_destinations below. "bridge" added so this same process
