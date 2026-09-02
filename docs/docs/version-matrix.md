@@ -147,7 +147,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 |-----------|-------------------------------|-----------------------|--------|
 | geth | [1.17.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.5) | [1.17.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.5) | ✅ matches stable |
 | lighthouse | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | ✅ matches stable |
-| reth | [2.5.1](https://github.com/paradigmxyz/reth/releases/tag/v2.5.1) | [2.5.1](https://github.com/paradigmxyz/reth/releases/tag/v2.5.1) | ✅ matches stable |
+| reth | [2.5.2](https://github.com/paradigmxyz/reth/releases/tag/v2.5.2) | [2.5.2](https://github.com/paradigmxyz/reth/releases/tag/v2.5.2) | ✅ matches stable |
 | status-checker | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | ✅ matches stable |
 
 ## Kurtosis Packages
