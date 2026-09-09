@@ -96,11 +96,11 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.1.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.9",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.10",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.8.0",
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.8.1",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
