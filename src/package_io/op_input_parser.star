@@ -220,9 +220,16 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
                 p[kk] = vv
         participants_with_defaults[k] = p
 
-    sorted_participants = {
-        k: _sort_dict_by_values(v) for k, v in participants_with_defaults.items()
-    }
+    # Emit sequencers first. Kurtosis sorts YAML mapping keys alphabetically, so an
+    # args-file that overrides participants would otherwise hand the optimism package
+    # "rpc1" before "sequencer1" and the RPC node would be launched as op-{el,cl}-1.
+    # L2_SEQUENCER_MAPPING/L2_RPC_MAPPING and the e2e tests both assume index 1 is the
+    # sequencer, so preserve the order _default_chain() declares literally.
+    sorted_participants = {}
+    for is_sequencer in [True, False]:
+        for k, v in participants_with_defaults.items():
+            if (v.get("sequencer") == True) == is_sequencer:
+                sorted_participants[k] = _sort_dict_by_values(v)
     return sorted_participants
 
 
