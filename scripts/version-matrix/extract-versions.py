@@ -37,7 +37,8 @@ class ComponentVersion:
 # (environment, component). These render as "pinned" instead of "behind stable"
 # so that genuine regressions stay visible in the matrix.
 #
-# Keep every reason in the same short form: "Only supports <component> <line> so far."
+# Keep every reason short: "Only supports <component> <line> so far." when we are just
+# waiting on support, or what blocks the bump when another pinned component forces it.
 PINNED_VERSIONS = {
     ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
@@ -46,9 +47,7 @@ PINNED_VERSIONS = {
     ("cdk-erigon-validium", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-erigon-zkrollup", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
-    ("cdk-opreth-sovereign-ecdsa-multisig", "op-node"): "Only supports op-node 1.19.5 so far.",
-    ("cdk-opreth-sovereign-pessimistic", "op-node"): "Only supports op-node 1.19.5 so far.",
-    ("cdk-opreth-zkrollup", "op-node"): "Only supports op-node 1.19.5 so far.",
+    ("cdk-opreth-zkrollup", "op-node"): "op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2).",
 }
 
 
