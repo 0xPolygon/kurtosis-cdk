@@ -119,7 +119,10 @@ DEFAULT_IMAGES = {
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.0",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
     "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.4.4",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.7",
+    # Pinned to v1.19.5: on newer releases the op-succinct proposer fails to deserialise
+    # optimism_outputAtBlock ("missing field `cross_unsafe_l2`", surfaced as "SafeDB is not
+    # activated"), so no range proof ever lands. Bump with op-succinct below.
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.5",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.4",
     # Pinned to v3.10.0: aggkit-prover 2.1.0 embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
