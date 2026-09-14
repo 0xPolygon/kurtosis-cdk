@@ -313,6 +313,24 @@ def test_parse_participants_with_partial_config(plan):
     )
 
 
+def test_parse_participants_orders_sequencers_first(plan):
+    # Kurtosis hands over YAML mapping keys alphabetically, so "rpc1" arrives before
+    # "sequencer1". The sequencer must still be emitted first: it becomes op-{el,cl}-1,
+    # which L2_SEQUENCER_MAPPING and the op e2e tests both target.
+    participants = {
+        "rpc1": {
+            "sequencer": "sequencer1",
+        },
+        "sequencer1": {
+            "sequencer": True,
+        },
+    }
+
+    result = op_input_parser._parse_participants(participants)
+    expect.eq(result.keys()[0], "sequencer1")
+    expect.eq(result.keys()[1], "rpc1")
+
+
 def test_get_l1_config(plan):
     # Should properly extract and format L1 configuration
     user_args = {

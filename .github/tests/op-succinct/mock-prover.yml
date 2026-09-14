@@ -37,3 +37,17 @@ optimism_package:
     "001":
       proposer_params:
         enabled: false
+      # Pin op-node to v1.19.5 here only: v1.19.6 dropped cross_unsafe_l2 from the sync
+      # status (optimism#22555) and op-succinct's Rust client still requires it, so every
+      # range proof fails with "missing field `cross_unsafe_l2`" (reported as "SafeDB is
+      # not activated"). No certificate is ever produced and this job times out. Drop the
+      # pin once op-succinct is bumped past v3.10.0.
+      participants:
+        sequencer1:
+          sequencer: true
+          cl:
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.5
+        rpc1:
+          sequencer: sequencer1
+          cl:
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.5
