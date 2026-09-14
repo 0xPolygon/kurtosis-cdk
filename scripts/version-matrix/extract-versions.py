@@ -46,6 +46,9 @@ PINNED_VERSIONS = {
     ("cdk-erigon-validium", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-erigon-zkrollup", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
+    ("cdk-opreth-sovereign-ecdsa-multisig", "op-node"): "Only supports op-node 1.19.5 so far.",
+    ("cdk-opreth-sovereign-pessimistic", "op-node"): "Only supports op-node 1.19.5 so far.",
+    ("cdk-opreth-zkrollup", "op-node"): "Only supports op-node 1.19.5 so far.",
 }
 
 
