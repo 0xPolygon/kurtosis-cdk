@@ -115,7 +115,7 @@ DEFAULT_IMAGES = {
     "geth_image": "ethereum/client-go:v1.17.5",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.5.2",
     "lighthouse_image": "sigp/lighthouse:v8.2.2",
-    "mitm_image": "mitmproxy/mitmproxy:11.1.3",
+    "mitm_image": "mitmproxy/mitmproxy:12.2.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.0",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
     "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.4.4",
