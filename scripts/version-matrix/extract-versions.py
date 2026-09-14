@@ -15,6 +15,8 @@ import re
 import json
 import yaml
 import requests
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict, replace
@@ -105,6 +107,13 @@ class VersionMatrixExtractor:
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
+        # Per-run response caches. Both are keyed by what identifies the request
+        # and hold None results too, so a failed lookup is not retried either.
+        self._latest_version_cache: Dict[str, Optional[str]] = {}
+        self._github_get_cache: Dict[str, object] = {}
+        self._url_cache: Dict[str, tuple] = {}
+        self._url_locks: Dict[str, threading.Lock] = {}
+        self._cache_lock = threading.Lock()
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
         self.kurtosis_yaml_path = repo_root / "kurtosis.yml"
 
@@ -216,6 +225,7 @@ class VersionMatrixExtractor:
                     "DEFAULT_IMAGES not found in constants.star")
 
             images_content = default_images_match.group(1)
+            self._prewarm_latest_versions(images_content)
 
             # Parse each image line
             for line in images_content.split('\n'):
@@ -249,6 +259,22 @@ class VersionMatrixExtractor:
         except Exception as e:
             print(f"Error extracting default images: {e}")
         return components
+
+    def _prewarm_latest_versions(self, images_content: str):
+        """Populate the latest-version cache concurrently.
+
+        The lookups are independent GETs, so the whole run is otherwise bound by
+        latency times the number of components rather than by GitHub.
+        """
+        components = {
+            self.component_mapping[key]
+            for key, _ in re.findall(r'"([^"]+)":\s*"([^"]+)"', images_content)
+            if key in self.component_mapping
+        }
+        if not components:
+            return
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            pool.map(self._get_latest_version, sorted(components))
 
     def filter_default_images(self, default_images: Dict[str, ComponentVersion]) -> Dict[str, ComponentVersion]:
         return {
@@ -313,6 +339,45 @@ class VersionMatrixExtractor:
         return re.search(r'-(alpha|beta|rc|test)', tag_name, re.IGNORECASE) is not None
 
     def _get_latest_version(self, component: str) -> Optional[str]:
+        """Latest upstream version for a component, fetched once per run.
+
+        Every test environment asks for the same components, so without the cache
+        the same endpoint is hit up to seven times.
+        """
+        with self._cache_lock:
+            if component in self._latest_version_cache:
+                return self._latest_version_cache[component]
+        version = self._fetch_latest_version(component)
+        with self._cache_lock:
+            self._latest_version_cache[component] = version
+        return version
+
+    def _get_json(self, url: str):
+        """GET a URL once per run, returning (status_code, parsed JSON).
+
+        Keyed by URL rather than by component because the op-* components all
+        read the same optimism/releases page, and the prewarm requests them
+        concurrently. The per-URL lock makes the losers of that race wait for
+        the winner's response instead of issuing their own.
+        """
+        with self._cache_lock:
+            if url in self._url_cache:
+                return self._url_cache[url]
+            url_lock = self._url_locks.setdefault(url, threading.Lock())
+
+        with url_lock:
+            with self._cache_lock:
+                if url in self._url_cache:
+                    return self._url_cache[url]
+            response = requests.get(url, timeout=10, headers={
+                'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+            result = (response.status_code,
+                      response.json() if response.status_code == 200 else None)
+            with self._cache_lock:
+                self._url_cache[url] = result
+            return result
+
+    def _fetch_latest_version(self, component: str) -> Optional[str]:
         """Fetch the latest version from GitHub releases."""
         repo = self.repos.get(component)
         if not repo:
@@ -321,11 +386,9 @@ class VersionMatrixExtractor:
         try:
             if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer', 'op-reth']:
                 url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
-                response = requests.get(url, timeout=10, headers={
-                    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+                status_code, releases = self._get_json(url)
 
-                if response.status_code == 200:
-                    releases = response.json()
+                if status_code == 200:
                     for release in releases:
                         if 'tag_name' in release:
                             tag_name = release['tag_name']
@@ -336,9 +399,12 @@ class VersionMatrixExtractor:
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
                                 return version
+                    print(f"No stable {component} release found in {url}")
                 else:
-                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
-                    return None
+                    print(f"Error fetching latest version for {component}: {status_code} from {url}")
+                # Never fall through to /releases/latest: these live in monorepos
+                # whose newest release belongs to some other component.
+                return None
 
             # These components don't have any release, thus we rely on tags
             if component in [
@@ -346,12 +412,8 @@ class VersionMatrixExtractor:
                 'zkevm-pool-manager', 'cdk-data-availability'
             ]:
                 url = f"https://api.github.com/repos/{repo}/tags"
-                response = requests.get(
-                    url, timeout=10,
-                    headers={'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'}
-                )
-                if response.status_code == 200:
-                    tags = response.json()
+                status_code, tags = self._get_json(url)
+                if status_code == 200:
                     for tag in tags:
                         if 'name' in tag:
                             tag_name = tag['name']
@@ -366,21 +428,21 @@ class VersionMatrixExtractor:
 
                             latest_version = re.sub(r'^v?', '', tag_name)
                             return latest_version
+                    print(f"No stable {component} tag found in {url}")
                 else:
-                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
-                    return None
+                    print(f"Error fetching latest version for {component}: {status_code} from {url}")
+                # These components have no releases, so /releases/latest cannot answer.
+                return None
 
             url = f"https://api.github.com/repos/{repo}/releases/latest"
-            response = requests.get(url, timeout=10, headers={
-                                    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+            status_code, release_data = self._get_json(url)
 
-            if response.status_code == 200:
-                release_data = response.json()
+            if status_code == 200:
                 tag = release_data['tag_name']
                 version = re.sub(r'^v?', '', tag)
                 return version
             else:
-                print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                print(f"Error fetching latest version for {component}: {status_code} from {url}")
                 return None
 
         except Exception as e:
@@ -824,46 +886,57 @@ class VersionMatrixExtractor:
             print("No `replace` block found in kurtosis.yml, skipping packages.")
             return packages
 
-        for package_locator, replacement in replace_options.items():
-            # A replacement may redirect to a different repo (e.g. a fork) and
-            # optionally append `@<tag|branch|commit>`. The pin is what actually
-            # gets resolved, so report against the replacement target.
-            target, _, pin = replacement.partition('@')
-            repo = self._repo_from_locator(target)
-            if not repo:
-                print(f"Could not derive a GitHub repo from '{target}', skipping.")
-                continue
-
-            pin = pin or 'HEAD'
-            pin_date = self._get_ref_date(repo, pin)
-            tracking_mode = PACKAGE_TRACKING_MODE.get(package_locator, 'release')
-
-            if tracking_mode == 'head':
-                latest_version, latest_version_date = self._get_head_version(repo)
-                status, commit_distance = self._determine_head_tracked_status(
-                    repo, pin, pin_date, latest_version)
-            else:
-                latest_version, latest_version_date = self._get_latest_package_version(repo)
-                status, commit_distance = self._determine_package_status(
-                    repo, pin, pin_date, latest_version, latest_version_date)
-
-            packages[package_locator] = PackageVersion(
-                pin=pin,
-                pin_date=pin_date,
-                pin_source_url=self._get_package_source_url(repo, pin),
-                latest_version=latest_version,
-                latest_version_date=latest_version_date,
-                latest_version_source_url=(
-                    self._get_package_source_url(repo, latest_version)
-                    if latest_version else None
-                ),
-                status=status,
-                commit_distance=commit_distance,
-                tracking_mode=tracking_mode,
-                pin_reason=PINNED_PACKAGES.get(package_locator),
+        # Each package needs several dependent lookups, but the packages are
+        # independent of one another, so resolve them concurrently.
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            resolved = pool.map(
+                lambda item: (item[0], self._resolve_package(*item)),
+                replace_options.items(),
             )
+        for package_locator, package in resolved:
+            if package:
+                packages[package_locator] = package
 
         return packages
+
+    def _resolve_package(self, package_locator: str, replacement: str) -> Optional[PackageVersion]:
+        # A replacement may redirect to a different repo (e.g. a fork) and
+        # optionally append `@<tag|branch|commit>`. The pin is what actually
+        # gets resolved, so report against the replacement target.
+        target, _, pin = replacement.partition('@')
+        repo = self._repo_from_locator(target)
+        if not repo:
+            print(f"Could not derive a GitHub repo from '{target}', skipping.")
+            return None
+
+        pin = pin or 'HEAD'
+        pin_date = self._get_ref_date(repo, pin)
+        tracking_mode = PACKAGE_TRACKING_MODE.get(package_locator, 'release')
+
+        if tracking_mode == 'head':
+            latest_version, latest_version_date = self._get_head_version(repo)
+            status, commit_distance = self._determine_head_tracked_status(
+                repo, pin, pin_date, latest_version)
+        else:
+            latest_version, latest_version_date = self._get_latest_package_version(repo)
+            status, commit_distance = self._determine_package_status(
+                repo, pin, pin_date, latest_version, latest_version_date)
+
+        return PackageVersion(
+            pin=pin,
+            pin_date=pin_date,
+            pin_source_url=self._get_package_source_url(repo, pin),
+            latest_version=latest_version,
+            latest_version_date=latest_version_date,
+            latest_version_source_url=(
+                self._get_package_source_url(repo, latest_version)
+                if latest_version else None
+            ),
+            status=status,
+            commit_distance=commit_distance,
+            tracking_mode=tracking_mode,
+            pin_reason=PINNED_PACKAGES.get(package_locator),
+        )
 
     def _repo_from_locator(self, locator: str) -> Optional[str]:
         """Turn a github.com/org/repo[/sub/path] locator into 'org/repo'."""
@@ -880,6 +953,15 @@ class VersionMatrixExtractor:
         rather than a failure — a repo that has never cut a release returns 404
         from /releases/latest, and logging that as an error is just noise.
         """
+        with self._cache_lock:
+            if path in self._github_get_cache:
+                return self._github_get_cache[path]
+        result = self._github_get_uncached(path, allow_missing)
+        with self._cache_lock:
+            self._github_get_cache[path] = result
+        return result
+
+    def _github_get_uncached(self, path: str, allow_missing: bool = False):
         try:
             response = requests.get(
                 f"https://api.github.com/{path}", timeout=10,
