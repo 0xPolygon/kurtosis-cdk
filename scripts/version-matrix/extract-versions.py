@@ -41,6 +41,10 @@ class ComponentVersion:
 #
 # Keep every reason short: "Only supports <component> <line> so far." when we are just
 # waiting on support, or what blocks the bump when another pinned component forces it.
+# Components whose upstream release tags carry no "v" prefix, so their release URL must not add
+# one (e.g. Besu tags 25.12.0, not v25.12.0).
+UNPREFIXED_RELEASE_TAGS = {'besu'}
+
 PINNED_VERSIONS = {
     ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
@@ -120,6 +124,7 @@ class VersionMatrixExtractor:
         cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
         op_reth_tests_path = repo_root / ".github" / "tests" / "op-reth"
         op_succinct_tests_path = repo_root / ".github" / "tests" / "op-succinct"
+        besu_tests_path = repo_root / ".github" / "tests" / "besu"
         self.test_files_paths = [
             # cdk-erigon
             ("cdk-erigon-zkrollup", cdk_erigon_tests_path / "rollup.yml"),
@@ -130,6 +135,8 @@ class VersionMatrixExtractor:
             ("cdk-opreth-sovereign-pessimistic", op_reth_tests_path / "sovereign-pessimistic.yml"),
             ("cdk-opreth-sovereign-ecdsa-multisig", op_reth_tests_path / "sovereign-ecdsa-multisig.yml"),
             ("cdk-opreth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
+            # besu
+            ("cdk-besu-sovereign-ecdsa-multisig", besu_tests_path / "sovereign-ecdsa-multisig.yml"),
         ]
 
         # Component mapping
@@ -138,6 +145,7 @@ class VersionMatrixExtractor:
             "aggkit_prover_image": "aggkit-prover",
             "agglayer_image": "agglayer",
             "agglayer_contracts_image": "agglayer-contracts",
+            "besu_image": "besu",
             "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
             "status_checker_image": "status-checker",
@@ -162,6 +170,7 @@ class VersionMatrixExtractor:
             "aggkit-prover", 
             "agglayer",
             "agglayer-contracts",
+            "besu",
             "cdk-erigon",
             "cdk-node",
             "op-batcher",
@@ -183,6 +192,7 @@ class VersionMatrixExtractor:
             "aggkit-prover": "agglayer/provers",
             "agglayer": "agglayer/agglayer",
             "agglayer-contracts": "agglayer/agglayer-contracts",
+            "besu": "hyperledger/besu",
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
             "status-checker": "0xPolygon/status-checker",
@@ -324,6 +334,9 @@ class VersionMatrixExtractor:
                     return f"https://github.com/{repo}/releases/tag/{comp_name}/v{version.lstrip('v')}"
 
                 if version not in ['latest', 'main', 'master']:
+                    # Besu tags its releases without the "v" prefix (e.g. 25.12.0).
+                    if comp_name in UNPREFIXED_RELEASE_TAGS:
+                        return f"https://github.com/{repo}/releases/tag/{version.lstrip('v')}"
                     return f"https://github.com/{repo}/releases/tag/v{version.lstrip('v')}"
                 else:
                     return f"https://github.com/{repo}/releases/latest"
@@ -674,6 +687,14 @@ class VersionMatrixExtractor:
                 'op-node',
                 'op-reth',
                 'op-succinct-proposer',  # different from cdk-opreth-sovereign
+                'zkevm-bridge-service',
+            ],
+            # besu
+            "cdk-besu-sovereign-ecdsa-multisig": [
+                'aggkit',
+                'agglayer',
+                'agglayer-contracts',
+                'besu',
                 'zkevm-bridge-service',
             ],
         }

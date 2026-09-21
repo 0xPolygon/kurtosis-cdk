@@ -417,9 +417,9 @@ def run(plan, args, deployment_stages, op_stack_args):
 
 
 def is_vanilla_client(args, deployment_stages):
-    if (
-        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
-        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig and (
+        args["sequencer_type"]
+        in [constants.SEQUENCER_TYPE.op_reth, constants.SEQUENCER_TYPE.besu]
     ):
         return True
     else:

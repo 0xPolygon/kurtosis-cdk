@@ -511,8 +511,9 @@ create_agglayer_rollup() {
     sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
 
-    # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
-    if [[ "{{.sequencer_type}}" != "op-reth" ]]; then
+    # Do not create another rollup in the case of a sovereign rollup (op-reth, besu). This will be
+    # done in run-sovereign-setup.sh
+    if [[ "{{.sequencer_type}}" != "op-reth" ]] && [[ "{{.sequencer_type}}" != "besu" ]]; then
         _echo_ts "Step 5: Creating Rollup/Validium/ECDSAMultisig"
         npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
         # Support for new output file format
@@ -801,9 +802,15 @@ initialize_rollup() {
     agglayer_manager=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
-    rpc_url="{{.op_el_rpc_url}}"
+    rpc_url="{{.l2_el_rpc_url}}"
+    # shellcheck disable=SC1054,SC1083,SC1056,SC1072,SC1073,SC1009
+    {{ if eq .sequencer_type "besu" }}
+    # The Besu genesis prefunds the L1 preallocated account on the L2 as well.
+    private_key="{{.l1_preallocated_private_key}}"
+    {{ else }}
     # This is the default prefunded account for the OP Network
     private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
+    {{ end }}
 
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_sovereignadmin_address}}"
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_aggoracle_address}}"
@@ -939,7 +946,7 @@ initialize_rollup() {
 
     # Check deployed contracts
     check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
-    check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
+    check_deployed_contracts "$l2_contract_addresses" "{{.l2_el_rpc_url}}"
 
     # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
     rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.l2_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
