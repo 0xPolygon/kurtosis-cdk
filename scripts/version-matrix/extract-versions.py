@@ -333,10 +333,13 @@ class VersionMatrixExtractor:
     def _is_prerelease(tag_name: str) -> bool:
         """Whether a tag looks like a prerelease rather than a stable version.
 
-        Covers the usual alpha/beta/rc markers plus test builds such as
-        op-deployer's "0.8.0-pcd-test.2", which must never be reported as stable.
+        Upstream publishes these as ordinary releases with prerelease=false
+        (op-deployer "0.8.0-pr.22965.1"), so the tag name is the only signal.
+        A build number is required: a bare "-<word>" suffix marks a *stable*
+        release here (agglayer-contracts "v8.0.0-fork.12").
         """
-        return re.search(r'-(alpha|beta|rc|test)', tag_name, re.IGNORECASE) is not None
+        return re.search(
+            r'-(alpha|beta|rc|test|pr)[.\-]?\d', tag_name, re.IGNORECASE) is not None
 
     def _get_latest_version(self, component: str) -> Optional[str]:
         """Latest upstream version for a component, fetched once per run.
