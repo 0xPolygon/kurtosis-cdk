@@ -112,7 +112,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.5",
+    "geth_image": "ethereum/client-go:v1.17.6",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.6.0",
     "lighthouse_image": "sigp/lighthouse:v8.2.2",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
