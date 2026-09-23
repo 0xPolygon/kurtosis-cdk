@@ -102,6 +102,9 @@ def create_agglayer_config_artifact(
                         "agglayer_prover_primary_prover"
                     ),
                     "sp1_cluster_endpoint": args.get("sp1_cluster_endpoint"),
+                    "agglayer_prover_proving_timeout": args.get(
+                        "agglayer_prover_proving_timeout"
+                    ),
                     "agglayer_admin_port": args["agglayer_admin_port"],
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
