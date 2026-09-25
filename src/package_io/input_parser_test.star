@@ -2,6 +2,20 @@ constants = import_module("./constants.star")
 input_parser = import_module("./input_parser.star")
 
 
+def test_validate_sequencer_type(plan):
+    for sequencer_type in [
+        constants.SEQUENCER_TYPE.cdk_erigon,
+        constants.SEQUENCER_TYPE.op_reth,
+        constants.SEQUENCER_TYPE.besu,
+    ]:
+        input_parser.validate_sequencer_type(sequencer_type)
+
+    expect.fails(
+        lambda: input_parser.validate_sequencer_type("geth"),
+        "Invalid sequencer type",
+    )
+
+
 def test_get_fork_id(plan):
     tests = [
         # rollup - supported forks
@@ -252,6 +266,23 @@ def test_get_fork_id(plan):
             constants.CONSENSUS_TYPE.pessimistic,
             constants.SEQUENCER_TYPE.op_reth,
             "image:v1.0.0-fork.12",
+            0,
+            "aggchain",
+            None,
+        ],
+        # besu - a vanilla sovereign chain has no fork id, like the other aggchains
+        [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.SEQUENCER_TYPE.besu,
+            "image:v1.0.0-fork.12",
+            0,
+            "aggchain",
+            None,
+        ],
+        [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.SEQUENCER_TYPE.besu,
+            "image:v1.0.0",
             0,
             "aggchain",
             None,

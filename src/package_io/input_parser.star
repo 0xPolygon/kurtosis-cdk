@@ -1,6 +1,7 @@
 constants = import_module("./constants.star")
 dict = import_module("./dict.star")
 op_input_parser = import_module("./op_input_parser.star")
+ports_package = import_module("../chain/shared/ports.star")
 
 
 # The deployment process is divided into various stages.
@@ -88,6 +89,8 @@ DEFAULT_STATIC_PORTS = {
         # CDK erigon (51700-51799).
         "cdk_erigon_sequencer_start_port": 51700,
         "cdk_erigon_rpc_start_port": 51710,
+        # Besu (51800-51899).
+        "besu_start_port": 51800,
         # L2 additional services (52000-52999).
         "arpeggio_start_port": 52000,
         "blutgang_start_port": 52010,
@@ -231,6 +234,22 @@ DEFAULT_L2_ARGS = {
     "sovereign_chain_name": "op-sovereign",
 }
 
+DEFAULT_BESU_ARGS = {
+    # Private key of the single QBFT validator. The matching address is derived at deploy time with
+    # `besu public-key export-address` and encoded into the genesis extraData, so the whole chain is
+    # reproducible from this key alone. Devnet key - do not reuse anywhere else.
+    "besu_validator_private_key": "0x2b1f2c4cba8dcbc8c6b46a1e7c8a15e5bc5c01ba9de5b1e0e18b6e46f0e78e5c",
+    # QBFT block period. Matches the default OP stack seconds_per_slot so certificate cadence and
+    # the bridge tests behave the same as on the op-reth sovereign chain.
+    "besu_block_period_seconds": 1,
+    # Number of blocks between QBFT epoch transitions.
+    "besu_epoch_length": 30000,
+    # QBFT round change timeout.
+    "besu_request_timeout_seconds": 4,
+    # Block gas limit of the L2.
+    "besu_gas_limit": "0x1c9c380",
+}
+
 DEFAULT_ROLLUP_ARGS = {
     # The keystore password.
     "l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
@@ -359,6 +378,8 @@ DEFAULT_ARGS = (
         # Options:
         # - 'cdk-erigon': Use the cdk-erigon sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
         # - 'op-reth': Use the OP stack sequencer (https://github.com/paradigmxyz/op-reth).
+        # - 'besu': Use a vanilla single-validator QBFT Hyperledger Besu chain
+        #   (https://github.com/hyperledger/besu). Only 'ecdsa-multisig' consensus is supported.
         "sequencer_type": constants.SEQUENCER_TYPE.op_reth,
         # The type of consensus contract to use.
         # Consensus Options:
@@ -401,6 +422,7 @@ DEFAULT_ARGS = (
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_L2_ARGS
+    | DEFAULT_BESU_ARGS
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
 
@@ -420,6 +442,21 @@ VALID_CONSENSUS_TYPES = [
 VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.cdk_erigon,
     constants.SEQUENCER_TYPE.op_reth,
+    constants.SEQUENCER_TYPE.besu,
+]
+
+# Consensus types a Besu sovereign chain can be attached to Agglayer with. Besu is a vanilla
+# execution client: it produces no validity proof and exposes no aggchain-specific interface, so
+# 'fep' is out, and the aggsender runs in PessimisticProof mode either way.
+#
+# 'pessimistic' is out for a version reason rather than a design one: it has to be pinned to aggkit
+# 0.5.4 (0.10.x reverts on cert submission without an on-chain multisig committee), and aggkit only
+# started reading block hashes from the JSON-RPC response in 0.9 (agglayer/aggkit#1397). Before
+# that it recomputed them with go-ethereum's RLP header hashing, which never matches a QBFT block
+# hash because QBFT strips the committed seals from extraData first, so the L2 bridge syncer
+# silently drops every block carrying events and no certificate is ever built.
+VALID_BESU_CONSENSUS_TYPES = [
+    constants.CONSENSUS_TYPE.ecdsa_multisig,
 ]
 
 VALID_L1_ENGINES = [
@@ -500,6 +537,18 @@ def parse_args(plan, user_args):
     sequencer_name = constants.L2_SEQUENCER_MAPPING[sequencer_type]
     l2_rpc_name = constants.L2_RPC_MAPPING[sequencer_type]
 
+    # URL of the L2 execution client, for the components and scripts that talk to the chain without
+    # caring which client runs it. op-reth keeps pointing at the sequencer node (op_el_rpc_url),
+    # which is a different service from its RPC replica.
+    if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+        l2_el_rpc_url = args["op_el_rpc_url"]
+    else:
+        l2_el_rpc_url = "http://{}{}:{}".format(
+            l2_rpc_name,
+            args["deployment_suffix"],
+            ports_package.HTTP_RPC_PORT_NUMBER,
+        )
+
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
         plan.print("Using static ports.")
@@ -524,6 +573,7 @@ def parse_args(plan, user_args):
 
     args = args | {
         "l2_rpc_name": l2_rpc_name,
+        "l2_el_rpc_url": l2_el_rpc_url,
         "sequencer_name": sequencer_name,
         "zkevm_fork_id": fork_id,
         "zkevm_fork_name": fork_name,
@@ -593,14 +643,13 @@ def validate_additional_services(additional_services):
 
 def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
     # If aggchain consensus is being used or optimism rollup is being deployed, return zero.
-    if (
-        consensus_contract_type
-        in [
-            constants.CONSENSUS_TYPE.ecdsa_multisig,
-            constants.CONSENSUS_TYPE.fep,
-        ]
-        or sequencer_type == constants.SEQUENCER_TYPE.op_reth
-    ):
+    if consensus_contract_type in [
+        constants.CONSENSUS_TYPE.ecdsa_multisig,
+        constants.CONSENSUS_TYPE.fep,
+    ] or sequencer_type in [
+        constants.SEQUENCER_TYPE.op_reth,
+        constants.SEQUENCER_TYPE.besu,
+    ]:
         return (0, "aggchain")
 
     # Otherwise, parse the fork id from the zkevm-prover image tag.
@@ -808,6 +857,24 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 )
                 # TODO: should this be AggchainFEP instead?
                 args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
+
+    # Besu is a vanilla execution client attached to Agglayer through aggkit and the sovereign
+    # bridge predeploys, so it only supports the pessimistic proof path.
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.besu:
+        if args["consensus_contract_type"] not in VALID_BESU_CONSENSUS_TYPES:
+            fail(
+                "Unsupported consensus_contract_type '{}' for the besu sequencer, please use one of: {}.".format(
+                    args["consensus_contract_type"], VALID_BESU_CONSENSUS_TYPES
+                )
+            )
+        if args["use_agg_oracle_committee"]:
+            fail("AggOracle Committee unsupported for Besu")
+        if args["besu_block_period_seconds"] < 1:
+            fail(
+                "besu_block_period_seconds ('{}') must be at least 1.".format(
+                    args["besu_block_period_seconds"]
+                )
+            )
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):

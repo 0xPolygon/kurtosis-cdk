@@ -29,6 +29,10 @@ This section lists all test environments with their configurations and component
 - [cdk-erigon-validium](#cdk-erigon-validium)
 - [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
 
+### CDK Besu
+
+- [cdk-besu-sovereign-ecdsa-multisig](#cdk-besu-sovereign-ecdsa-multisig)
+
 ## CDK OP Reth
 
 Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth) as the L2 execution client.
@@ -140,6 +144,22 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [7.0.4](https://github.com/0xPolygon/zkevm-prover/releases/tag/v7.0.4) | ⚡️ newer than stable |
+
+## CDK Besu
+
+Environments using [Besu](https://github.com/hyperledger/besu) as the L2 execution client.
+
+### cdk-besu-sovereign-ecdsa-multisig
+
+- File path: `.github/tests/besu/sovereign-ecdsa-multisig.yml`
+
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | ✅ matches stable |
+| agglayer | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| besu | [25.12.0](https://github.com/hyperledger/besu/releases/tag/25.12.0) | [26.8.1](https://github.com/hyperledger/besu/releases/tag/26.8.1) | 🚨 behind stable |
+| zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ## Default Images
 
