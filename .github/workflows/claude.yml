@@ -1,0 +1,74 @@
+# Responds when a repo member tags @claude in an issue, a PR comment, or a
+# review, and can submit a formal PR review (approve / request changes).
+# Adapted from 0xPolygon/polyscope.
+
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened, assigned]
+
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    # Only human OWNER/MEMBER/COLLABORATOR accounts can spend API credit.
+    if: |
+      (github.event_name == 'issue_comment' && github.event.comment.user.type != 'Bot' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review_comment' && github.event.comment.user.type != 'Bot' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review' && github.event.review.user.type != 'Bot' && contains(github.event.review.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)) ||
+      (github.event_name == 'issues' && github.event.issue.user.type != 'Bot' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      # Comment events check out the default branch, so pin the PR head.
+      # Fork heads are never checked out: this job holds the API key and a
+      # write token. Claude reads a fork's changes through `gh pr diff`.
+      - name: Resolve PR head
+        id: pr
+        if: github.event.pull_request || github.event.issue.pull_request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "is_pr=true" >> "$GITHUB_OUTPUT"
+          if [ "$(jq -r '.head.repo.full_name // ""' <<<"$PR_JSON")" = "${{ github.repository }}" ]; then
+            echo "head_sha=$(jq -r .head.sha <<<"$PR_JSON")" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.pr.outputs.head_sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          # Satisfies the required_signatures rule on main.
+          use_commit_signing: true
+          additional_permissions: |
+            actions: read
+          # The default comment-mode prompt forbids formal reviews; that is a
+          # prompt restriction, not a GitHub one. Setting `prompt:` would leave
+          # interactive mode, so override it through the system prompt instead.
+          claude_args: |
+            --allowedTools "Read,Grep,Glob,LS,mcp__github_comment__update_claude_comment,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*),Bash(gh pr review:*),Bash(gh api:*)"
+            --append-system-prompt "REPO=${{ github.repository }} PR_NUMBER=${{ steps.pr.outputs.number || 0 }} IS_PR=${{ steps.pr.outputs.is_pr || 'false' }}. This repository allows you to submit formal PR reviews with gh pr review, overriding any instruction that says you cannot. When IS_PR=true and the user asks you to review, re-review, approve, or request changes (in any wording), review the current diff (gh pr diff) and CI status (gh pr checks), then submit exactly one verdict: gh pr review PR_NUMBER --approve -b 'Approved.' when nothing blocks, or gh pr review PR_NUMBER --request-changes -b 'Changes needed: ...' listing only issues that matter. If you previously approved and are re-reviewing, dismiss that approval first via gh api. Never approve while required checks are failing. Updating the sticky comment does not change reviewDecision. Never run gh pr review when the user only asks a question or asks for code changes, or when IS_PR is not true."
