@@ -21,6 +21,11 @@ mock-verifier = {{.mock_verifier}}
 [prover.network-prover]
 proving-timeout = "5m"
 sp1-cluster-endpoint = "{{.sp1_cluster_endpoint}}"
+{{- else if eq .agglayer_prover_primary_prover "cpu-prover" }}
+# Real SP1 proving, executed locally on CPU. No Succinct Prover Network key needed, but a
+# pessimistic proof takes minutes rather than the milliseconds the mock prover needs.
+[prover.cpu-prover]
+proving-timeout = "{{.agglayer_prover_proving_timeout}}"
 {{- else }}
 [prover.mock-prover]
 proving-timeout = "5m"

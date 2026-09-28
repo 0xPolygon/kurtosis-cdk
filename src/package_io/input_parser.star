@@ -277,9 +277,17 @@ DEFAULT_ROLLUP_ARGS = {
     "sp1_prover_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "sp1_cluster_endpoint": "https://rpc.production.succinct.xyz",
-    # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
-    # agglayer-node will also be configured with a mock verifier
+    # The type of primary prover the agglayer node uses to generate pessimistic proofs.
+    # Valid values are: "mock-prover", "cpu-prover", "network-prover".
+    # - mock-prover:    no real proof; the node is also configured with a mock verifier.
+    # - cpu-prover:     real SP1 proof generated locally. Needs no prover network key, but costs
+    #                   minutes of CPU per certificate.
+    # - network-prover: real SP1 proof from the Succinct Prover Network. Requires a valid
+    #                   sp1_prover_key.
     "agglayer_prover_primary_prover": "mock-prover",
+    # Proving timeout for the agglayer node's pessimistic proof prover. Only applied to
+    # cpu-prover, whose local proving is far slower than the mock prover.
+    "agglayer_prover_proving_timeout": "30m",
     # The URL where the agglayer can be reached for gRPC
     "agglayer_grpc_url": "http://agglayer:"
     + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
@@ -420,6 +428,15 @@ VALID_CONSENSUS_TYPES = [
 VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.cdk_erigon,
     constants.SEQUENCER_TYPE.op_reth,
+]
+
+# Provers the agglayer node can use to generate pessimistic proofs. An unrecognised value used to
+# fall through to the mock prover silently, which is the one failure worth catching early: the
+# deployment would look fine and settle certificates that were never really proven.
+VALID_AGGLAYER_PROVERS = [
+    "mock-prover",
+    "cpu-prover",
+    "network-prover",
 ]
 
 VALID_L1_ENGINES = [
@@ -670,6 +687,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         and args["use_agg_oracle_committee"] == True
     ):
         fail("AggOracle Committee unsupported for CDK-Erigon")
+
+    if args["agglayer_prover_primary_prover"] not in VALID_AGGLAYER_PROVERS:
+        fail(
+            "Unsupported agglayer_prover_primary_prover: '{}', please use one of {}".format(
+                args["agglayer_prover_primary_prover"], VALID_AGGLAYER_PROVERS
+            )
+        )
 
     if args["trigger_cert_mode"] not in VALID_AGGKIT_TRIGGER_CERT_MODES:
         fail(

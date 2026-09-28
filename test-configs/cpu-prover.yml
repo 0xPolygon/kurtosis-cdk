@@ -1,0 +1,20 @@
+# Real pessimistic proofs, generated locally on CPU.
+#
+# Deliberately not under .github/tests/, because that directory feeds the PR matrix and a real
+# SP1 proof takes minutes per certificate, far beyond the 40 minute job timeout.
+#
+# kurtosis run --enclave cpu-prover --args-file test-configs/cpu-prover.yml .
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: ecdsa-multisig
+
+  # aggsender-validator related params
+  use_agg_sender_validator: True
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # Generate real SP1 pessimistic proofs locally. Needs no Succinct Prover Network key.
+  agglayer_prover_primary_prover: cpu-prover
+  agglayer_prover_proving_timeout: 30m
+  # With a real proof there is no reason to mock the on-chain verifier.
+  zkevm_use_real_verifier: true
