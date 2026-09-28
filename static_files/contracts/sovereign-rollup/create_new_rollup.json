@@ -7,7 +7,7 @@
     "consensusContract": "{{.consensus_contract}}",
     "consensusContractName": "{{.consensus_contract}}",
     "type":"EOA",
-    "trustedSequencerURL": "{{ .op_el_rpc_url }}",
+    "trustedSequencerURL": "{{ .l2_el_rpc_url }}",
     "networkName": "{{ .sovereign_chain_name }}",
     "trustedSequencer": "{{ .l2_sequencer_address }}",
     "chainID": "{{ .l2_chain_id }}",

@@ -48,16 +48,21 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_reth="op-reth",
+    besu="besu",
 )
 
+# The single-validator QBFT Besu node is both the sequencer (block proposer) and the RPC endpoint,
+# so both mappings resolve to the same service.
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
+    SEQUENCER_TYPE.besu: "besu",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
     SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
+    SEQUENCER_TYPE.besu: "besu",
 }
 
 FORK_ID_TO_NAME = {
@@ -101,6 +106,7 @@ DEFAULT_IMAGES = {
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.8.1",
+    "besu_image": "hyperledger/besu:25.12.0",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",

@@ -6,12 +6,20 @@ op_succinct_package = import_module("./src/chain/op-reth/op_succinct_proposer.st
 # Main service packages.
 additional_services_launcher = import_module("./src/additional_services/launcher.star")
 agglayer_package = "./src/agglayer.star"
+besu_package = import_module("./src/chain/besu/besu.star")
 l1_launcher = import_module("./src/l1/launcher.star")
 chain_launcher = import_module("./src/chain/launcher.star")
 databases_package = "./src/chain/shared/databases.star"
 agglayer_contracts_package = "./src/contracts/agglayer.star"
 sovereign_contracts_package = import_module("./src/contracts/sovereign.star")
 mitm_package = "./src/mitm.star"
+
+# Sequencer types whose L2 gets its bridge and global exit root contracts predeployed in the
+# genesis, and is then registered on L1 as a sovereign rollup.
+SOVEREIGN_SEQUENCER_TYPES = [
+    constants.SEQUENCER_TYPE.op_reth,
+    constants.SEQUENCER_TYPE.besu,
+]
 
 
 def run(plan, args={}):
@@ -77,7 +85,7 @@ def run(plan, args={}):
             plan, args, deployment_stages, op_stack_args
         )
 
-        if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+        if sequencer_type in SOVEREIGN_SEQUENCER_TYPES:
             # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
@@ -86,11 +94,13 @@ def run(plan, args={}):
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
-            # This is required to push an artifact for predeployed_allocs that will be used from optimism-package
+            # This is required to push an artifact for predeployed_allocs that will be used from
+            # optimism-package, or to build the Besu genesis.
             import_module(
                 agglayer_contracts_package
             ).create_sovereign_predeployed_genesis(plan, args)
 
+        if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
             optimism_package = op_stack_args["source"]
@@ -117,7 +127,22 @@ def run(plan, args={}):
                 contracts_util.get_l2_addresses_to_fund(args),
                 args["op_el_rpc_url"],
             )
+        elif sequencer_type == constants.SEQUENCER_TYPE.besu:
+            # Start the vanilla Besu chain on the genesis carrying the sovereign bridge/GER
+            # predeploys. It has to be live before the rollup is initialized, because that step
+            # funds accounts and checks the L2 bytecode over the L2 RPC.
+            plan.print("Deploying a single-validator QBFT Besu chain")
+            besu_package.run(plan, args)
 
+            # Fund Kurtosis addresses on the Besu L2
+            sovereign_contracts_package.fund_addresses(
+                plan,
+                args,
+                contracts_util.get_l2_addresses_to_fund(args),
+                args["l2_el_rpc_url"],
+            )
+
+        if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
             if deployment_stages.get("deploy_op_succinct", False):
                 # Extract genesis to feed into evm-sketch-genesis
                 op_succinct_package.create_evm_sketch_genesis(plan, args)
@@ -145,6 +170,7 @@ def run(plan, args={}):
                 l2oo_vars = contracts_util.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
+        if sequencer_type in SOVEREIGN_SEQUENCER_TYPES:
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
             sovereign_contracts_package.init_rollup(plan, args, deployment_stages)

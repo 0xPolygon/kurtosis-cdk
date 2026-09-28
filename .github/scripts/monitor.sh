@@ -63,6 +63,9 @@ case "${sequencer_type}" in
   "op-reth")
     rpc_name="op-el-1-op-reth-op-node${deployment_suffix}"
     ;;
+  "besu")
+    rpc_name="besu${deployment_suffix}"
+    ;;
   *)
     log_error "Unsupported sequencer type: ${sequencer_type}"
     exit 1
@@ -80,6 +83,9 @@ case "${sequencer_type}" in
     target=20 # batches
     ;;
   "op-reth")
+    target=50 # blocks
+    ;;
+  "besu")
     target=50 # blocks
     ;;
   *)
@@ -123,6 +129,16 @@ for step in $(seq 1 "${num_steps}"); do
           log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
           if [[ "${LATEST_BLOCK}" -ge "${target}" && "${SAFE_BLOCK}" -ge "${target}" && "${FINALIZED_BLOCK}" -ge "${target}" ]]; then
             log_info "Target blocks reached for all block types (latest, safe and finalized)"
+            exit 0
+          fi
+          ;;
+        "besu")
+          # QBFT finalises every block as it is produced and serves no "safe"/"finalized" tags,
+          # so the head is the only progress signal.
+          LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
+          log_info "Got blocks: latest=${LATEST_BLOCK}"
+          if [[ "${LATEST_BLOCK}" -ge "${target}" ]]; then
+            log_info "Target blocks reached for latest block type"
             exit 0
           fi
           ;;
@@ -183,6 +199,9 @@ case "${consensus_contract_type}" in
         ;;
       "op-reth")
         log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"
+        ;;
+      "besu")
+        log_error "Target blocks have not been reached for latest block type"
         ;;
       *)
         log_error "Unsupported sequencer type: ${sequencer_type}"

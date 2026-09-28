@@ -92,7 +92,10 @@ def _get_l2_bridge_address(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
 ):
-    if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+    if sequencer_type in [
+        constants.SEQUENCER_TYPE.op_reth,
+        constants.SEQUENCER_TYPE.besu,
+    ]:
         return sovereign_contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
     if "l2_bridge_address" in contract_setup_addresses:

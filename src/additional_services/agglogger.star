@@ -11,7 +11,11 @@ def run(
 ):
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args).http
 
-    if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+    # Besu is a sovereign chain like op-reth, so it uses the same sovereign GER address.
+    if sequencer_type in [
+        constants.SEQUENCER_TYPE.op_reth,
+        constants.SEQUENCER_TYPE.besu,
+    ]:
         agglogger_config_template_file = "op-config.json"
     else:
         agglogger_config_template_file = "zkevm-config.json"
