@@ -158,7 +158,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 | aggkit | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | ✅ matches stable |
 | agglayer | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | ✅ matches stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| besu | [25.12.0](https://github.com/hyperledger/besu/releases/tag/25.12.0) | [26.8.1](https://github.com/hyperledger/besu/releases/tag/26.8.1) | 🚨 behind stable |
+| besu | [26.9.0](https://github.com/hyperledger/besu/releases/tag/26.9.0) | [26.9.0](https://github.com/hyperledger/besu/releases/tag/26.9.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ## Default Images

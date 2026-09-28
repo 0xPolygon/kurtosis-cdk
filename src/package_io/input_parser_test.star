@@ -270,7 +270,8 @@ def test_get_fork_id(plan):
             "aggchain",
             None,
         ],
-        # besu - a vanilla sovereign chain has no fork id, like the other aggchains
+        # besu - a vanilla sovereign chain has no fork id, like the other aggchains. pessimistic is
+        # rejected for besu by args_sanity_check, but it proves the zero comes from the sequencer type.
         [
             constants.CONSENSUS_TYPE.pessimistic,
             constants.SEQUENCER_TYPE.besu,

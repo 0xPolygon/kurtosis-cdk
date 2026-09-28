@@ -35,16 +35,16 @@ class ComponentVersion:
     pin_reason: Optional[str] = None
 
 
+# Components whose upstream release tags carry no "v" prefix, so their release URL must not add
+# one (e.g. Besu tags 25.12.0, not v25.12.0).
+UNPREFIXED_RELEASE_TAGS = {'besu'}
+
 # Components deliberately held back from the latest stable release, keyed by
 # (environment, component). These render as "pinned" instead of "behind stable"
 # so that genuine regressions stay visible in the matrix.
 #
 # Keep every reason short: "Only supports <component> <line> so far." when we are just
 # waiting on support, or what blocks the bump when another pinned component forces it.
-# Components whose upstream release tags carry no "v" prefix, so their release URL must not add
-# one (e.g. Besu tags 25.12.0, not v25.12.0).
-UNPREFIXED_RELEASE_TAGS = {'besu'}
-
 PINNED_VERSIONS = {
     ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
