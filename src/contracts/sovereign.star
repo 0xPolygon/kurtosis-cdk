@@ -130,7 +130,7 @@ def fund_addresses(plan, args, contract_addresses, rpc_url):
     ]
 
     plan.exec(
-        description="Deploying sovereign contracts on OP Stack",
+        description="Funding sovereign addresses on L2",
         service_name="contracts" + args["deployment_suffix"],
         recipe=ExecRecipe(command=command),
     )

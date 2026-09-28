@@ -272,7 +272,7 @@ def test_get_fork_id(plan):
         ],
         # besu - a vanilla sovereign chain has no fork id, like the other aggchains
         [
-            constants.CONSENSUS_TYPE.pessimistic,
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
             constants.SEQUENCER_TYPE.besu,
             "image:v1.0.0-fork.12",
             0,
@@ -280,7 +280,7 @@ def test_get_fork_id(plan):
             None,
         ],
         [
-            constants.CONSENSUS_TYPE.pessimistic,
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
             constants.SEQUENCER_TYPE.besu,
             "image:v1.0.0",
             0,

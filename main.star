@@ -90,8 +90,13 @@ def run(plan, args={}):
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
             plan.print("Creating new rollup type and creating rollup on L1")
+            # Besu has no OP EL to fund accounts on and always builds its genesis from the
+            # predeployed allocs, whatever optimism_package.predeployed_contracts says.
             sovereign_contracts_package.run(
-                plan, args, op_stack_args["predeployed_contracts"]
+                plan,
+                args,
+                sequencer_type == constants.SEQUENCER_TYPE.besu
+                or op_stack_args["predeployed_contracts"],
             )
 
             # This is required to push an artifact for predeployed_allocs that will be used from
