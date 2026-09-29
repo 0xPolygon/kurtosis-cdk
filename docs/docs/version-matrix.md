@@ -167,7 +167,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 |-----------|-------------------------------|-----------------------|--------|
 | geth | [1.17.6](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.6) | [1.17.6](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.6) | ✅ matches stable |
 | lighthouse | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | [8.2.2](https://github.com/sigp/lighthouse/releases/tag/v8.2.2) | ✅ matches stable |
-| reth | [2.6.0](https://github.com/paradigmxyz/reth/releases/tag/v2.6.0) | [2.6.0](https://github.com/paradigmxyz/reth/releases/tag/v2.6.0) | ✅ matches stable |
+| reth | [2.7.0](https://github.com/paradigmxyz/reth/releases/tag/v2.7.0) | [2.7.0](https://github.com/paradigmxyz/reth/releases/tag/v2.7.0) | ✅ matches stable |
 | status-checker | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | ✅ matches stable |
 
 ## Kurtosis Packages
@@ -177,7 +177,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned Version | Latest Stable Version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | ✅ matches stable |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [c0db06b29b82](https://github.com/ethpandaops/ethereum-package/tree/c0db06b29b8266e65c9b80b64895e07058d28d0b) | [HEAD (c0db06b29b82)](https://github.com/ethpandaops/ethereum-package/tree/c0db06b29b82) | ✅ matches stable |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [6dd3f2613d1f](https://github.com/ethpandaops/ethereum-package/tree/6dd3f2613d1f9d1a9274864083c692726146c9db) | [HEAD (6dd3f2613d1f)](https://github.com/ethpandaops/ethereum-package/tree/6dd3f2613d1f) | ✅ matches stable |
 | [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [1.0.0](https://github.com/kurtosis-tech/grafana-package/releases/tag/1.0.0) | ⚡️ newer than stable — 2 commits ahead of 1.0.0 |
 | [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [1.1.0](https://github.com/kurtosis-tech/prometheus-package/releases/tag/1.1.0) | ⚡️ newer than stable — 2 commits ahead of 1.1.0 |
 | [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [HEAD (9de7765a6c98)](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98) | ✅ matches stable |
