@@ -40,7 +40,7 @@ jobs:
       # rather than as "up to date".
       outdated: ${{ steps.version-check.outputs.outdated }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check if job should be run
         id: check-run
@@ -63,7 +63,7 @@ jobs:
           echo "Running version matrix job."
           echo "skip=false" >> $GITHUB_OUTPUT
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v7
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
           python-version: 3.13
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -148,7 +148,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: set-matrix
         run: |
@@ -183,7 +183,7 @@ jobs:
       matrix:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -221,7 +221,7 @@ jobs:
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -240,12 +240,13 @@ jobs:
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep
 
       - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           support-path: "${{ github.workspace }}/lib/bats-support"
           assert-path: "${{ github.workspace }}/lib/bats-assert"
           detik-path: "${{ github.workspace }}/lib/bats-detik"
           file-path: "${{ github.workspace }}/lib/bats-file"
+          github-token: ${{ github.token }}
 
       - name: Install polycli
         run: |
@@ -257,7 +258,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
@@ -304,7 +305,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -378,7 +379,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -415,7 +416,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -506,7 +507,7 @@ jobs:
     # waits with margin. (num_chains=3 is a manual workflow_dispatch run; the nightly default is 2.)
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Resolve number of chains
         run: |
@@ -604,12 +605,13 @@ jobs:
           kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
 
       - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           support-path: "${{ github.workspace }}/lib/bats-support"
           assert-path: "${{ github.workspace }}/lib/bats-assert"
           detik-path: "${{ github.workspace }}/lib/bats-detik"
           file-path: "${{ github.workspace }}/lib/bats-file"
+          github-token: ${{ github.token }}
 
       - name: Install polycli
         run: |
@@ -621,7 +623,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
@@ -801,7 +803,7 @@ jobs:
       - run-with-pre-deployed-gas-token
       - run-with-multi-l2
     steps:
-      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+      - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           method: chat.postMessage

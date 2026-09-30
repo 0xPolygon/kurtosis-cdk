@@ -45,7 +45,7 @@ runs:
 
     - name: Upload enclave dump
       if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ steps.archive-name.outputs.ARCHIVE_NAME }}
         path: ./dump

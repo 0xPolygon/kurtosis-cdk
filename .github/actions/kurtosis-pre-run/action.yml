@@ -57,7 +57,7 @@ runs:
         yq --version
 
     - name: Install foundry
-      uses: foundry-rs/foundry-toolchain@de808b1eea699e761c404bda44ba8f21aba30b2c # v1.3.1
+      uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
       with:
         version: v1.8.0
         cache: false
@@ -65,13 +65,13 @@ runs:
     # Login to registries
     - name: Login to docker registry
       if: ${{ inputs.docker_username && inputs.docker_token }}
-      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
       with:
         username: ${{ inputs.docker_username }}
         password: ${{ inputs.docker_token }}
 
     - name: Login to github container registry
-      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -89,7 +89,7 @@ runs:
           echo "pull_gcr=${{ inputs.pull_images_from_gcr }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v7
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       with:
         python-version: 3.13
@@ -101,7 +101,7 @@ runs:
         script_path=$(realpath "${{ github.action_path }}/../../scripts/add-registry-prefix.py")
         python3 "${script_path}" --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
 
-    - uses: google-github-actions/auth@v2.0.0
+    - uses: google-github-actions/auth@v3
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       with:
         workload_identity_provider: "projects/337907489413/locations/global/workloadIdentityPools/github-wif/providers/github"
