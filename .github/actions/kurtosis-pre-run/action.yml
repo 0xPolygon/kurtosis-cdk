@@ -101,7 +101,7 @@ runs:
         script_path=$(realpath "${{ github.action_path }}/../../scripts/add-registry-prefix.py")
         python3 "${script_path}" --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
 
-    - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+    - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       with:
         workload_identity_provider: "projects/337907489413/locations/global/workloadIdentityPools/github-wif/providers/github"
