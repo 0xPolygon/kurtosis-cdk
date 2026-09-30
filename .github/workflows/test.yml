@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Install linters
       - name: Install kurtosis
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
         with:
           config: ${{ github.workspace }}/.github/scripts/typos.toml
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
         with:
           args: >
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install kurtosis-test
         run: |
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -161,7 +161,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: set-matrix
         run: |
@@ -194,7 +194,7 @@ jobs:
       matrix:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -233,7 +233,7 @@ jobs:
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -252,12 +252,13 @@ jobs:
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep
 
       - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           support-path: "${{ github.workspace }}/lib/bats-support"
           assert-path: "${{ github.workspace }}/lib/bats-assert"
           detik-path: "${{ github.workspace }}/lib/bats-detik"
           file-path: "${{ github.workspace }}/lib/bats-file"
+          github-token: ${{ github.token }}
 
       - name: Install polycli
         run: |
@@ -269,7 +270,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
@@ -317,7 +318,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -392,7 +393,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
