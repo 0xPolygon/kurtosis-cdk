@@ -20,8 +20,6 @@ jobs:
   bump:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    outputs:
-      pr_number: ${{ steps.pr.outputs.pull-request-number }}
     steps:
       - uses: actions/checkout@v7
 
@@ -85,24 +83,10 @@ jobs:
           title: ${{ fromJSON(steps.claude.outputs.structured_output).title }}
           body: ${{ fromJSON(steps.claude.outputs.structured_output).body }}
 
-  review:
-    needs: bump
-    if: needs.bump.outputs.pr_number != ''
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Review the bump PR
-        uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
-        with:
-          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
-          prompt: |
-            Review PR #${{ needs.bump.outputs.pr_number }} in ${{ github.repository }}, opened
-            automatically by the update-version-matrix skill. Check that each bump is a real
-            stable release, that every copy of the old image reference was updated, and that
-            docs/docs/version-matrix.md matches the new pins. Then submit exactly one review:
-            gh pr review ${{ needs.bump.outputs.pr_number }} --approve -b 'Approved.'
-            or gh pr review ${{ needs.bump.outputs.pr_number }} --request-changes -b 'Changes needed: ...'.
-          claude_args: |
-            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr review:*),Bash(gh release view:*),Bash(docker manifest inspect:*)"
+      # claude.yml answers this bot's @claude comments with a review.
+      - name: Ask Claude to review
+        if: contains(fromJSON('["created","updated"]'), steps.pr.outputs.pull-request-operation)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        run: gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body "@claude please review"

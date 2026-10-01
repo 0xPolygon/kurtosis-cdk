@@ -20,8 +20,10 @@ concurrency:
 
 jobs:
   claude:
-    # Only human OWNER/MEMBER/COLLABORATOR accounts can spend API credit.
+    # Only human OWNER/MEMBER/COLLABORATOR accounts can spend API credit, plus
+    # the bot that bump-version-matrix.yml uses to request a review.
     if: |
+      (github.event_name == 'issue_comment' && github.event.comment.user.login == 'polygon-semantic-release-bot[bot]' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'issue_comment' && github.event.comment.user.type != 'Bot' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
       (github.event_name == 'pull_request_review_comment' && github.event.comment.user.type != 'Bot' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
       (github.event_name == 'pull_request_review' && github.event.review.user.type != 'Bot' && contains(github.event.review.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)) ||
@@ -64,6 +66,7 @@ jobs:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           # Satisfies the required_signatures rule on main.
           use_commit_signing: true
+          allowed_bots: polygon-semantic-release-bot
           additional_permissions: |
             actions: read
           # The default comment-mode prompt forbids formal reviews; that is a
