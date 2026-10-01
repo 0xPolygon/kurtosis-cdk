@@ -6,6 +6,10 @@ name: bump-version-matrix
 
 on:
   workflow_call:
+    outputs:
+      pr-operation:
+        description: created, updated or none; empty when nothing was bumped.
+        value: ${{ jobs.bump.outputs.pr-operation }}
   workflow_dispatch:
 
 permissions:
@@ -22,6 +26,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      pr-operation: ${{ steps.pr.outputs.pull-request-operation }}
     steps:
       - uses: actions/checkout@v7
 
