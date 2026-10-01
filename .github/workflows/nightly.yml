@@ -804,6 +804,7 @@ jobs:
     if: ${{ always() && github.event_name == 'schedule' }}
     needs:
       - check-version-matrix
+      - bump-version-matrix
       - run-without-args
       - run-with-args
       - run-with-op-succinct
@@ -812,6 +813,19 @@ jobs:
       - run-with-pre-deployed-gas-token
       - run-with-multi-l2
     steps:
+      # bump-version-matrix is skipped whenever the matrix is up to date, so it is
+      # left out of the test status and reported with the matrix instead.
+      - name: Compute the test status
+        id: status
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          status=$(jq -r 'del(.["bump-version-matrix"]) | [.[].result]
+            | if index("failure") then "some tests failed ❌"
+              elif index("cancelled") or index("skipped") then "some tests were skipped ⚠️"
+              else "all tests passed ✅" end' <<< "$NEEDS")
+          echo "tests=$status" >> "$GITHUB_OUTPUT"
+
       - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -825,7 +839,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || (contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')) && 'some tests were skipped ⚠️' || 'all tests passed ✅' }} | version matrix is ${{ needs.check-version-matrix.outputs.outdated == 'true' && 'outdated ❌, see the bump-version-matrix job for the PR' || needs.check-version-matrix.outputs.outdated == 'false' && 'up to date ✅' || 'unknown ⚠️, the check failed before it could compare the matrix' }}"
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ steps.status.outputs.tests }} | version matrix is ${{ needs.check-version-matrix.outputs.outdated == 'true' && needs.bump-version-matrix.result == 'success' && 'outdated ❌, a bump PR is opened or refreshed on `chore/bump-version-matrix`' || needs.check-version-matrix.outputs.outdated == 'true' && 'outdated ❌, the bump-version-matrix job failed' || needs.check-version-matrix.outputs.outdated == 'false' && 'up to date ✅' || 'unknown ⚠️, the check failed before it could compare the matrix' }}"
                   }
                 }
               ]

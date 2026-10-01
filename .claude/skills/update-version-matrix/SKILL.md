@@ -56,10 +56,10 @@ since the nightly, bump it too rather than leaving a 🚨 row.
 
 ## 4. Checks
 
-In CI, only `kurtosis lint .`: the PR's own CI runs the rest.
-
-`kurtosis lint .` when a `.star` file changed. `rumdl` and `typos` already have
-findings on `main`: only act on new ones. The PR's CI deploys a devnet.
+- CI: only `kurtosis lint .`; the PR's own CI runs the rest.
+- Local: `kurtosis lint .` when a `.star` file changed. `rumdl` and `typos`
+  already have findings on `main`: only act on new ones. The PR's CI deploys a
+  devnet.
 
 ## 5. Open the PR
 

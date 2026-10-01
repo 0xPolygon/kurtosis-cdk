@@ -18,6 +18,8 @@ concurrency:
 
 jobs:
   bump:
+    # Off main, the bump PR would also carry the dispatching branch's commits.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
