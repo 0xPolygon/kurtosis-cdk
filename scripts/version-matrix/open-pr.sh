@@ -33,7 +33,8 @@ fi
 # Leftover branch from a merged or closed PR.
 gh api -X DELETE "repos/$repo/git/refs/heads/$BRANCH" >/dev/null 2>&1 || true
 
-base_sha="$(git rev-parse HEAD)"
+# Branch off main's tip, not HEAD: the checkout may be another branch.
+base_sha="$(gh api "repos/$repo/git/ref/heads/main" --jq .object.sha)"
 gh api "repos/$repo/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$base_sha" >/dev/null
 
 additions='[]'

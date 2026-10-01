@@ -10,6 +10,9 @@ name: bump-version-matrix
 on:
   workflow_call:
   workflow_dispatch:
+  # TEMPORARY: test run from the PR branch, remove before merge.
+  push:
+    branches: [ci/auto-bump-version-matrix]
 
 permissions:
   contents: read
