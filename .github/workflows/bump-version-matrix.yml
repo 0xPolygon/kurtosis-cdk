@@ -1,82 +1,97 @@
-# Opens a PR bumping the pins the version matrix flags as behind stable, then
-# asks Claude to review it. Called by the nightly when check-version-matrix
-# reports drift; merging stays manual.
-#
-# The PR is opened with the Claude GitHub App token (only valid during the
-# action run), not GITHUB_TOKEN, so that its CI runs.
+# Opens (or refreshes) a PR bumping the pins the version matrix flags as behind
+# stable, then asks Claude to review it. Called by the nightly when
+# check-version-matrix reports drift; merging stays manual.
 
 name: bump-version-matrix
 
 on:
   workflow_call:
   workflow_dispatch:
-  # TEMPORARY: test run from the PR branch, remove before merge.
-  push:
-    branches: [ci/auto-bump-version-matrix]
+  # TEMPORARY: test run from the PR, remove before merge.
+  pull_request:
+    paths: [.github/workflows/bump-version-matrix.yml]
 
 permissions:
   contents: read
-  pull-requests: read
   id-token: write
 
 concurrency:
   group: bump-version-matrix
   cancel-in-progress: false
 
-env:
-  BRANCH: chore/bump-version-matrix
-
 jobs:
   bump:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
-      pr_number: ${{ steps.claude.outputs.structured_output && fromJSON(steps.claude.outputs.structured_output).pr_number || 0 }}
+      pr_number: ${{ steps.pr.outputs.pull-request-number }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: main
 
-      # One bump PR at a time: drift keeps being reported until it is merged.
-      - name: Skip if a bump PR is already open
-        id: open-pr
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # TEMPORARY: the skill is not on main yet.
+      - name: Load the skill from the PR
+        if: github.event_name == 'pull_request'
         run: |
-          pr="$(gh pr list --repo "${{ github.repository }}" --head "$BRANCH" --state open --json url --jq '.[0].url // ""')"
-          if [[ -n "$pr" ]]; then
-            echo "::notice title=version-matrix::Bump PR already open: $pr"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+          git fetch --depth 1 origin "${{ github.sha }}"
+          mkdir -p .claude/skills/update-version-matrix
+          git show FETCH_HEAD:.claude/skills/update-version-matrix/SKILL.md > .claude/skills/update-version-matrix/SKILL.md
 
       - uses: actions/setup-python@v7
-        if: steps.open-pr.outputs.skip == 'false'
         with:
           python-version: 3.13
 
       - name: Install dependencies
-        if: steps.open-pr.outputs.skip == 'false'
         run: pip install -r scripts/version-matrix/requirements.txt
 
-      - name: Bump pins and open the PR
+      - name: Bump pins
         id: claude
-        if: steps.open-pr.outputs.skip == 'false'
         uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           prompt: |
             Read .claude/skills/update-version-matrix/SKILL.md and follow it in CI mode
-            for ${{ github.repository }}: regenerate the matrix to find the drift, bump
-            what is behind stable, then open the PR with scripts/version-matrix/open-pr.sh.
-            Return the PR number printed by the script, or 0 if no PR was opened.
+            for ${{ github.repository }}: regenerate the matrix to find the drift and bump
+            what is behind stable. Return the PR title and body, or an empty title if
+            nothing was bumped.
           claude_args: |
             --max-turns 60
-            --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*),Bash(scripts/version-matrix/open-pr.sh:*)"
-            --json-schema '{"type":"object","properties":{"pr_number":{"type":"integer"}},"required":["pr_number"]}'
+            --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*)"
+            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"}},"required":["title","body"]}'
+
+      # A GitHub App token, unlike GITHUB_TOKEN, lets the PR trigger CI.
+      - name: Get app token
+        id: app-token
+        if: fromJSON(steps.claude.outputs.structured_output).title != ''
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open or update the PR
+        id: pr
+        if: steps.app-token.outcome == 'success'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
+          base: main
+          branch: chore/bump-version-matrix
+          delete-branch: true
+          add-paths: |
+            .
+            :!.github/workflows
+            :!.claude
+          commit-message: ${{ fromJSON(steps.claude.outputs.structured_output).title }}
+          title: ${{ fromJSON(steps.claude.outputs.structured_output).title }}
+          body: ${{ fromJSON(steps.claude.outputs.structured_output).body }}
 
   review:
     needs: bump
-    if: needs.bump.outputs.pr_number != '0'
+    if: needs.bump.outputs.pr_number != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -88,10 +103,10 @@ jobs:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           prompt: |
             Review PR #${{ needs.bump.outputs.pr_number }} in ${{ github.repository }}, opened
-            automatically from .claude/skills/update-version-matrix/SKILL.md. Check that each
-            bump is a real stable release, that every copy of the old image reference was
-            updated, and that docs/docs/version-matrix.md matches the new pins. Then submit
-            exactly one review: gh pr review ${{ needs.bump.outputs.pr_number }} --approve -b 'Approved.'
+            automatically by the update-version-matrix skill. Check that each bump is a real
+            stable release, that every copy of the old image reference was updated, and that
+            docs/docs/version-matrix.md matches the new pins. Then submit exactly one review:
+            gh pr review ${{ needs.bump.outputs.pr_number }} --approve -b 'Approved.'
             or gh pr review ${{ needs.bump.outputs.pr_number }} --request-changes -b 'Changes needed: ...'.
           claude_args: |
             --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr review:*),Bash(gh release view:*),Bash(docker manifest inspect:*)"

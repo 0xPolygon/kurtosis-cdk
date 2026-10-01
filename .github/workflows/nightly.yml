@@ -113,7 +113,6 @@ jobs:
     if: needs.check-version-matrix.outputs.outdated == 'true'
     permissions:
       contents: read
-      pull-requests: read
       id-token: write
     uses: ./.github/workflows/bump-version-matrix.yml
     secrets: inherit

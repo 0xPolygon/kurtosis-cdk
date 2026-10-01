@@ -67,7 +67,7 @@ Body follows `.github/pull_request_template.md` (`## Description` /
 **Local**: work in a worktree off `origin/main`, commit, push, `gh pr create`, then
 `gh pr comment <n> --body "@claude please review"`.
 
-**CI** (run by `bump-version-matrix.yml`): do not commit or push. Write the body
-to `pr-body.md` at the repo root (the script leaves it out of the commit), then run
-`scripts/version-matrix/open-pr.sh "<title>" pr-body.md`. If nothing is left to
-bump (every drifted row is 📌, rc or unpublished), make no change and open no PR.
+**CI** (run by `bump-version-matrix.yml`): only edit files. Do not commit, push
+or open the PR: return the title and body, and the workflow opens or refreshes the
+PR. If nothing is left to bump (every drifted row is 📌, rc or unpublished), make
+no change and return an empty title.
