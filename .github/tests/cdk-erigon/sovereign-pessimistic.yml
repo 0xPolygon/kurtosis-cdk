@@ -9,6 +9,8 @@ args:
   # threshold) which the pessimistic consensus does not deploy, so cert submission reverts there.
   # Pessimistic must stay on 0.5.4 (validated with agglayer 0.6.0-rc.5 + the default reth L1).
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+  # aggkit 0.5.4 signs the V2/V3 certificate commitment, which agglayer 0.6.1 rejects (V5 only).
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
   cdk_erigon_image: ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC3
 
