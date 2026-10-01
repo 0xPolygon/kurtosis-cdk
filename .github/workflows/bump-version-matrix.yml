@@ -51,6 +51,8 @@ jobs:
             for ${{ github.repository }}: regenerate the matrix to find the drift and bump
             what is behind stable. Return the PR title and body, or an empty title if
             nothing was bumped.
+            Run each shell command as its own call, with no pipe, `;`, `&&`, `$(...)` or
+            env prefix: compound commands are denied.
           claude_args: |
             --max-turns 60
             --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*),Bash(kurtosis lint:*)"
