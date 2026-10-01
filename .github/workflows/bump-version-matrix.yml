@@ -50,6 +50,8 @@ jobs:
         uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          # Read-only: the PR is opened below with another app's token.
+          github_token: ${{ github.token }}
           prompt: |
             Read .claude/skills/update-version-matrix/SKILL.md and follow it in CI mode
             for ${{ github.repository }}: regenerate the matrix to find the drift and bump
@@ -63,7 +65,7 @@ jobs:
       # A GitHub App token, unlike GITHUB_TOKEN, lets the PR trigger CI.
       - name: Get app token
         id: app-token
-        if: fromJSON(steps.claude.outputs.structured_output).title != ''
+        if: fromJSON(steps.claude.outputs.structured_output || '{"title":""}').title != ''
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_ID }}
