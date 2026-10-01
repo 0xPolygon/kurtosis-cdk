@@ -48,6 +48,8 @@ UNPREFIXED_RELEASE_TAGS = {'besu'}
 PINNED_VERSIONS = {
     ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
+    ("cdk-erigon-sovereign-pessimistic", "agglayer"): "aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+.",
+    ("cdk-opreth-sovereign-pessimistic", "agglayer"): "aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+.",
     ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
     ("cdk-erigon-zkrollup", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
     ("cdk-erigon-validium", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
