@@ -32,6 +32,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r scripts/version-matrix/requirements.txt
 
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install -y kurtosis-cli=1.18.2
+          kurtosis analytics disable
+
       - name: Bump pins
         id: claude
         uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
@@ -46,7 +53,7 @@ jobs:
             nothing was bumped.
           claude_args: |
             --max-turns 60
-            --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*)"
+            --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*),Bash(kurtosis lint:*)"
             --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"}},"required":["title","body"]}'
 
       # A GitHub App token, unlike GITHUB_TOKEN, lets the PR trigger CI.
