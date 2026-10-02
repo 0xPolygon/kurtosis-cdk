@@ -10,11 +10,15 @@ on:
       pr-operation:
         description: created, updated or none; empty when nothing was bumped.
         value: ${{ jobs.bump.outputs.pr-operation }}
+      pr-url:
+        description: URL of the open bump PR, empty when there is none.
+        value: ${{ jobs.bump.outputs.pr-url }}
   workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
+  pull-requests: read
 
 concurrency:
   group: bump-version-matrix
@@ -28,6 +32,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       pr-operation: ${{ steps.pr.outputs.pull-request-operation }}
+      pr-url: ${{ steps.find-pr.outputs.url }}
     steps:
       - uses: actions/checkout@v7
 
@@ -102,3 +107,14 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
         run: gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body "@claude please review"
+
+      # Looked up rather than read from the step above, which is skipped when
+      # nothing new was bumped while an earlier bump PR is still open.
+      - name: Find the open bump PR
+        id: find-pr
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          url=$(gh pr list --repo "${{ github.repository }}" --head chore/bump-version-matrix --state open --json url --jq '.[0].url // ""')
+          echo "url=$url" >> "$GITHUB_OUTPUT"

@@ -114,6 +114,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      pull-requests: read
     uses: ./.github/workflows/bump-version-matrix.yml
     secrets: inherit
 
@@ -815,16 +816,56 @@ jobs:
     steps:
       # bump-version-matrix is skipped whenever the matrix is up to date, so it is
       # left out of the test status and reported with the matrix instead.
-      - name: Compute the test status
-        id: status
+      - name: Build the Slack message
+        id: message
         env:
+          GH_TOKEN: ${{ github.token }}
           NEEDS: ${{ toJSON(needs) }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
+          OUTDATED: ${{ needs.check-version-matrix.outputs.outdated }}
+          BUMP_RESULT: ${{ needs.bump-version-matrix.result }}
+          PR_OPERATION: ${{ needs.bump-version-matrix.outputs.pr-operation }}
+          PR_URL: ${{ needs.bump-version-matrix.outputs.pr-url }}
         run: |
-          status=$(jq -r 'del(.["bump-version-matrix"]) | [.[].result]
+          # Links are a bonus: an API error must not cost the Slack message.
+          jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || jobs=""
+
+          # Slack link to the first job whose name starts with $1, labelled $2.
+          job_link() {
+            local url
+            url=$(jq -rs --arg p "$1" 'map(select(.name | startswith($p)))[0].html_url // ""' <<< "$jobs")
+            if [[ -n "$url" ]]; then echo "<$url|$2>"; else echo "$2"; fi
+          }
+
+          tests=$(jq -r 'del(.["bump-version-matrix"]) | [.[].result]
             | if index("failure") then "some tests failed ❌"
               elif index("cancelled") or index("skipped") then "some tests were skipped ⚠️"
               else "all tests passed ✅" end' <<< "$NEEDS")
-          echo "tests=$status" >> "$GITHUB_OUTPUT"
+          # Per matrix leg, so the link lands on the leg that broke.
+          broken=$(jq -rs '[.[] | select(.conclusion == "failure" or .conclusion == "cancelled")
+            | select(.name | test("^(check|bump)-version-matrix") | not)
+            | "<\(.html_url)|\(.name)>"] | join(", ")' <<< "$jobs")
+          [[ -n "$broken" ]] && tests+=" ($broken)"
+
+          pr="<$PR_URL|#${PR_URL##*/}>"
+          if [[ "$OUTDATED" == false ]]; then
+            matrix="up to date ✅"
+          elif [[ "$OUTDATED" != true ]]; then
+            matrix="unknown ⚠️, the $(job_link check-version-matrix 'check job') failed before it could compare the matrix"
+          elif [[ "$PR_OPERATION" == created ]]; then
+            matrix="outdated ❌, bump PR opened: $pr"
+          elif [[ "$PR_OPERATION" == updated ]]; then
+            matrix="outdated ❌, bump PR refreshed: $pr"
+          elif [[ "$BUMP_RESULT" != success ]]; then
+            matrix="outdated ❌, the $(job_link bump-version-matrix 'bump job') failed"
+          elif [[ -n "$PR_URL" ]]; then
+            matrix="outdated ❌, nothing new to bump, $pr is still open"
+          else
+            matrix="outdated ❌, nothing to bump (pinned, pre-release or unpublished), see the $(job_link check-version-matrix drift)"
+          fi
+
+          echo "text=<$RUN_URL|Kurtosis CDK Nightly>: $tests | version matrix is $matrix" >> "$GITHUB_OUTPUT"
 
       - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
@@ -839,7 +880,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ steps.status.outputs.tests }} | version matrix is ${{ needs.check-version-matrix.outputs.outdated == 'true' && contains(fromJSON('["created","updated"]'), needs.bump-version-matrix.outputs.pr-operation) && 'outdated ❌, a bump PR is opened or refreshed on `chore/bump-version-matrix`' || needs.check-version-matrix.outputs.outdated == 'true' && needs.bump-version-matrix.outputs.pr-operation == 'none' && 'outdated ❌, the open bump PR is already up to date' || needs.check-version-matrix.outputs.outdated == 'true' && needs.bump-version-matrix.result == 'success' && 'outdated ❌, nothing to bump (pinned, pre-release or unpublished)' || needs.check-version-matrix.outputs.outdated == 'true' && 'outdated ❌, the bump-version-matrix job failed' || needs.check-version-matrix.outputs.outdated == 'false' && 'up to date ✅' || 'unknown ⚠️, the check failed before it could compare the matrix' }}"
+                    "text": ${{ toJSON(steps.message.outputs.text) }}
                   }
                 }
               ]
