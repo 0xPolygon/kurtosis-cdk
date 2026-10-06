@@ -87,26 +87,6 @@ class PackageVersion:
 # "behind stable" so real drift stays visible.
 PINNED_PACKAGES = {}
 
-# What "latest" means for each package, keyed by package locator.
-#
-# - "release" (default): compare the pin against the latest release/tag. Right
-#   for packages that tag every change worth consuming.
-# - "head": compare the pin against the default branch HEAD. Right for packages
-#   that release rarely and expect consumers to pin commits — ethereum-package
-#   last tagged 6.1.0 in April 2026 while continuing to ship daily, so measuring
-#   against that tag reports "newer than stable" forever and hides real drift.
-PACKAGE_TRACKING_MODE = {
-    "github.com/ethpandaops/ethereum-package": "head",
-    # Has never cut a release or tag, so HEAD is the only comparison point.
-    "github.com/xavier-romero/kurtosis-blockscout": "head",
-}
-
-# A head-tracked pin is always behind HEAD on an active upstream, so distance
-# alone is not a signal. Alarm once the pin is old enough that we are plausibly
-# missing fixes: these packages ship most days, so two weeks is already a
-# meaningful gap.
-HEAD_TRACKING_STALE_AFTER_DAYS = 14
-
 
 class VersionMatrixExtractor:
     """Extracts and manages version matrix information."""
@@ -937,12 +917,14 @@ class VersionMatrixExtractor:
 
         pin = pin or 'HEAD'
         pin_date = self._get_ref_date(repo, pin)
-        tracking_mode = PACKAGE_TRACKING_MODE.get(package_locator, 'release')
+        # A commit pin means upstream ships faster than it tags: follow its HEAD.
+        tracking_mode = ('head' if pin == 'HEAD' or self._is_commit_sha(pin)
+                         else 'release')
 
         if tracking_mode == 'head':
             latest_version, latest_version_date = self._get_head_version(repo)
             status, commit_distance = self._determine_head_tracked_status(
-                repo, pin, pin_date, latest_version)
+                repo, pin, latest_version)
         else:
             latest_version, latest_version_date = self._get_latest_package_version(repo)
             status, commit_distance = self._determine_package_status(
@@ -1021,12 +1003,7 @@ class VersionMatrixExtractor:
         return None
 
     def _get_latest_package_version(self, repo: str) -> tuple:
-        """Return (version, date) of the newest release, falling back to tags.
-
-        A repo with neither is not release-tracked at all; add it to
-        PACKAGE_TRACKING_MODE as "head" rather than silently comparing it
-        against its own branch tip, which would always look up to date.
-        """
+        """Return (version, date) of the newest release, falling back to tags."""
         # A 404 here just means the repo has never published a release.
         release = self._github_get(
             f"repos/{repo}/releases/latest", allow_missing=True)
@@ -1039,28 +1016,22 @@ class VersionMatrixExtractor:
             if tag_name:
                 return tag_name, self._get_ref_date(repo, tag_name)
 
-        print(f"No releases or tags found for {repo}; consider tracking it by "
-              f"head in PACKAGE_TRACKING_MODE.")
+        print(f"No releases or tags found for {repo}.")
         return None, None
 
     def _get_head_version(self, repo: str) -> tuple:
-        """Return (short_sha, date) of the default branch HEAD."""
+        """Return (sha, date) of the default branch HEAD."""
         commits = self._github_get(f"repos/{repo}/commits?per_page=1")
         if isinstance(commits, list) and commits:
             sha = commits[0].get('sha', '')
             date = commits[0].get('commit', {}).get('committer', {}).get('date')
-            return sha[:12] if sha else None, date[:10] if date else None
+            return sha or None, date[:10] if date else None
         return None, None
 
     def _determine_head_tracked_status(self, repo: str, pin: str,
-                                       pin_date: Optional[str],
                                        head_version: Optional[str]) -> tuple:
-        """Judge a pin that tracks HEAD rather than releases.
-
-        Being behind HEAD is the normal steady state for these packages, so
-        distance alone is not a signal. What matters is age: a pin only becomes
-        a problem once it is old enough that we are plausibly missing fixes.
-        """
+        """Judge a pin that tracks HEAD rather than releases: any pin short of
+        the branch tip is behind, so the nightly bump follows HEAD."""
         if not head_version:
             return None, None
 
@@ -1068,33 +1039,17 @@ class VersionMatrixExtractor:
             return "matches stable", None
 
         comparison = self._github_get(f"repos/{repo}/compare/{head_version}...{pin}")
-        distance = None
         if comparison:
             behind_by = comparison.get('behind_by', 0)
             if behind_by > 0:
-                distance = f"{behind_by} commits behind HEAD"
-            elif comparison.get('ahead_by', 0) > 0:
+                return "behind stable", f"{behind_by} commits behind HEAD"
+            if comparison.get('ahead_by', 0) > 0:
                 # Pinned to an unmerged or since-rewritten commit.
                 return "newer than stable", (
                     f"{comparison['ahead_by']} commits ahead of HEAD")
 
-        age_days = self._days_since(pin_date)
-        if age_days is not None and age_days > HEAD_TRACKING_STALE_AFTER_DAYS:
-            age_note = f"pinned commit is {age_days} days old"
-            return "behind stable", (
-                f"{distance}, {age_note}" if distance else age_note)
-
-        # Recent enough to be deliberate: report the drift without alarming.
-        return "tracking head", distance
-
-    def _days_since(self, date: Optional[str]) -> Optional[int]:
-        """Whole days between an ISO date (YYYY-MM-DD) and today."""
-        if not date:
-            return None
-        try:
-            return (datetime.now() - datetime.strptime(date, "%Y-%m-%d")).days
-        except ValueError:
-            return None
+        # Compare API unavailable: the pin differs from HEAD, and bumping to HEAD is safe.
+        return "behind stable", None
 
     def _get_package_source_url(self, repo: str, ref: str) -> Optional[str]:
         """Build a browsable URL for a package ref."""

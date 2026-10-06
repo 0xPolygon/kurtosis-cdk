@@ -181,7 +181,6 @@ sidebar_position: 3
                 'matches stable': '✅',
                 'behind stable': '🚨',
                 'pinned': '📌',
-                'tracking head': '⚠️',
             }.get(status, '❓')
 
             status_display = f"{status_emoji} {status}" if status else 'N/A'
@@ -200,7 +199,7 @@ sidebar_position: 3
             # than presenting a bare sha as a "stable version".
             latest_label = latest_version
             if latest_version and package.get('tracking_mode') == 'head':
-                latest_label = f"HEAD ({latest_version})"
+                latest_label = f"HEAD ({latest_version[:12]})"
             latest_display = (
                 f"[{latest_label}]({latest_version_source_url})"
                 if latest_version else 'N/A'
