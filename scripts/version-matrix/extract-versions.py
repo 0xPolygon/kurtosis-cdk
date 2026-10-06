@@ -1020,12 +1020,12 @@ class VersionMatrixExtractor:
         return None, None
 
     def _get_head_version(self, repo: str) -> tuple:
-        """Return (short_sha, date) of the default branch HEAD."""
+        """Return (sha, date) of the default branch HEAD."""
         commits = self._github_get(f"repos/{repo}/commits?per_page=1")
         if isinstance(commits, list) and commits:
             sha = commits[0].get('sha', '')
             date = commits[0].get('commit', {}).get('committer', {}).get('date')
-            return sha[:12] if sha else None, date[:10] if date else None
+            return sha or None, date[:10] if date else None
         return None, None
 
     def _determine_head_tracked_status(self, repo: str, pin: str,
