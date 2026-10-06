@@ -40,6 +40,8 @@ Before bumping, check the new image is published:
   reads the constants, so stale copies elsewhere are not caught by CI.
 - A `kurtosis.yml` package bump is a commit SHA + date comment; then run
   `python3 scripts/version-matrix/verify-package-pins.py`.
+- A head-tracked package (`Latest Stable` reads `HEAD (<sha>)`) is bumped to
+  the full branch-tip SHA: `gh api repos/<owner>/<repo>/commits/HEAD --jq .sha`.
 
 ## 3. Regenerate
 

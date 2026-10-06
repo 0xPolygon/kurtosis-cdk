@@ -181,7 +181,6 @@ sidebar_position: 3
                 'matches stable': '✅',
                 'behind stable': '🚨',
                 'pinned': '📌',
-                'tracking head': '⚠️',
             }.get(status, '❓')
 
             status_display = f"{status_emoji} {status}" if status else 'N/A'

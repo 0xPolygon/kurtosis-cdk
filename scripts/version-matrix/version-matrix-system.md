@@ -84,7 +84,6 @@ The system tracks status types for each component version:
 | **newer than stable** | ⚡️ | Newer than latest release, may be pre-release or beta |
 | **behind stable** | 🚨 | Older than latest release and should be bumped |
 | **pinned** | 📌 | Deliberately held back — see the reason in the matrix |
-| **tracking head** | ⚠️ | Head-tracked package drifting from upstream, but not yet stale |
 
 ### Pinned versions
 
@@ -171,17 +170,10 @@ Two kinds of package belong in `head`: those that ship faster than they tag
 repo against its own branch tip and always looks up to date; the extractor prints
 a hint when it finds a package with no releases *and* no tags.
 
-For a head-tracked package, being behind HEAD is the normal steady state, so
-distance alone cannot be the alarm. Age is: the pin reports `⚠️ tracking head`
-with its commit distance until the pinned commit is older than
-`HEAD_TRACKING_STALE_AFTER_DAYS` (14 days — these packages ship most days, so two
-weeks is already a meaningful gap), at which point it escalates to
-`🚨 behind stable`. If the compare API is unavailable, the age check still
-applies on its own rather than reporting nothing.
-
-Age is only consulted when the pin has actually fallen behind: a pin that still
-equals HEAD reports `✅ matches stable` however old it is, so a dormant upstream
-never raises a false alarm.
+A head-tracked pin reports `🚨 behind stable` with its commit distance as soon as
+HEAD moves past it, so the nightly bump PR follows the branch tip: one refreshed
+PR per upstream change rather than a pin drifting unnoticed. A pin ahead of HEAD
+(an unmerged or rewritten commit) reports `⚡️ newer than stable`.
 
 Add a package here when its upstream expects consumers to pin commits; remove it
 if the project starts tagging releases you can track instead.
