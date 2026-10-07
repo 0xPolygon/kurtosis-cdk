@@ -57,10 +57,24 @@ _wait_for_rpc_to_be_available() {
     done
 }
 
+# Amsterdam (EIP-8037) raises contract-creation gas, so the 1M gas limit of the
+# pre-signed keyless PolygonZkEVMDeployer tx runs out of gas. Raising it changes
+# the keyless sender, hence the deployer and every create2 address; L1 and L2
+# genesis must both be patched so the L2 bridge keeps the L1 bridge address.
+_patch_keyless_deployer_gas_limit() {
+    helpers="$contracts_dir/deployment/helpers/deployment-helpers.ts"
+    sed -i 's/const gasLimit = BigInt(1000000);/const gasLimit = BigInt(10000000);/' "$helpers"
+    if ! grep -q 'const gasLimit = BigInt(10000000);' "$helpers"; then
+        _echo_ts "Failed to patch the keyless deployer gas limit in $helpers"
+        exit 1
+    fi
+}
+
 # Internal function, used by create_agglayer_rollup
 _create_genesis() {
     _echo_ts "Step 4: Creating genesis"
     pushd "$contracts_dir" || exit 1
+    _patch_keyless_deployer_gas_limit
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then
         _echo_ts "The genesis file was not created after running createGenesis"
@@ -88,6 +102,7 @@ _deploy_agglayer_manager() {
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
 
     _echo_ts "Step 2: Deploying PolygonZKEVMDeployer"
+    _patch_keyless_deployer_gas_limit
     npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost 2>&1 | tee 03_zkevm_deployer.out
 
     _echo_ts "Step 3: Deploying contracts"
