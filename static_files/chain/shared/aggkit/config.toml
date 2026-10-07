@@ -183,7 +183,11 @@ Port = "{{.cdk_node_rpc_port}}"
 # |_| \_\_____|____/ |_|
 #
 # ------------------------------------------------------------------------------
+{{- if .aggkit_public_rest }}
+[PublicREST]
+{{- else }}
 [REST]
+{{- end }}
 # ------------------------------------------------------------------------------
 # Port will configure the port that the REST API HTTP server will
 # listen on
@@ -462,14 +466,14 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.l2_keyst
 # WaitTxToBeMined = "2s"
 
 # ------------------------------------------------------------------------------
-# GetReceiptMaxTime is the max time to wait to get the receipt of the mined transaction
+# WaitReceiptMaxTime is the max time to wait to get the receipt of the mined transaction
 # ------------------------------------------------------------------------------
-# GetReceiptMaxTime = "250ms"
+# WaitReceiptMaxTime = "250ms"
 
 # ------------------------------------------------------------------------------
-# GetReceiptWaitInterval is the time to sleep before trying to get the receipt of the mined transaction
+# WaitReceiptCheckInterval is the time to sleep before trying to get the receipt of the mined transaction
 # ------------------------------------------------------------------------------
-# GetReceiptWaitInterval = "1s"
+# WaitReceiptCheckInterval = "1s"
 
 # ------------------------------------------------------------------------------
 # ForcedGas is the amount of gas to be forced in case of gas estimation error
