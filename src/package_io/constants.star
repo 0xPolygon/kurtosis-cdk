@@ -99,7 +99,7 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0-rc13",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0-rc14",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.0-rc.3",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.1",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
@@ -122,10 +122,10 @@ DEFAULT_IMAGES = {
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.7.0",
     "lighthouse_image": "sigp/lighthouse:v8.2.3",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.1",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.2",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.5.0",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.8",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.0",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.9",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.6",
     # Pinned to v3.10.0: aggkit-prover 2.2.0-rc.3 embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
