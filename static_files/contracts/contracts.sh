@@ -70,6 +70,17 @@ _patch_keyless_deployer_gas_limit() {
     fi
 }
 
+# Under Amsterdam the bridge implementation deploy needs ~41M gas, above the
+# hardcoded 10.5M override. The gas limit is not part of the create2 address.
+_patch_bridge_implementation_gas_limit() {
+    deploy_script="$contracts_dir/deployment/v2/3_deployContracts.ts"
+    sed -i 's/const overrideGasLimit = 10500000n;/const overrideGasLimit = 60000000n;/' "$deploy_script"
+    if ! grep -q 'const overrideGasLimit = 60000000n;' "$deploy_script"; then
+        _echo_ts "Failed to patch the bridge implementation gas limit in $deploy_script"
+        exit 1
+    fi
+}
+
 # Internal function, used by create_agglayer_rollup
 _create_genesis() {
     _echo_ts "Step 4: Creating genesis"
@@ -106,6 +117,7 @@ _deploy_agglayer_manager() {
     npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost 2>&1 | tee 03_zkevm_deployer.out
 
     _echo_ts "Step 3: Deploying contracts"
+    _patch_bridge_implementation_gas_limit
     npx hardhat run deployment/v2/3_deployContracts.ts --network localhost 2>&1 | tee 04_deploy_contracts.out
     if [[ ! -e deployment/v2/deploy_output.json ]]; then
         _echo_ts "The deploy_output.json file was not created after running deployContracts"
