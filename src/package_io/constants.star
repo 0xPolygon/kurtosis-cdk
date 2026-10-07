@@ -120,7 +120,7 @@ DEFAULT_IMAGES = {
     "mongodb_image": "mongo:7.0.29",
     "geth_image": "ethereum/client-go:v1.17.7",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.7.0",
-    "lighthouse_image": "sigp/lighthouse:v8.2.3",
+    "lighthouse_image": "sigp/lighthouse:v8.3.0-rc.0",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.2",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
