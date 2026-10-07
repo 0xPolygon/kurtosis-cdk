@@ -76,7 +76,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | [0.10.0](https://github.com/agglayer/aggkit/releases/tag/v0.10.0) | ✅ matches stable |
-| aggkit-prover | [2.1.0](https://github.com/agglayer/provers/releases/tag/v2.1.0) | [2.1.0](https://github.com/agglayer/provers/releases/tag/v2.1.0) | ✅ matches stable |
+| aggkit-prover | [2.2.0-rc.3](https://github.com/agglayer/provers/releases/tag/v2.2.0-rc.3) | [2.1.0](https://github.com/agglayer/provers/releases/tag/v2.1.0) | ⚡️ newer than stable |
 | agglayer | [0.6.1](https://github.com/agglayer/agglayer/releases/tag/v0.6.1) | [0.6.1](https://github.com/agglayer/agglayer/releases/tag/v0.6.1) | ✅ matches stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | op-batcher | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.1) | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.1) | ✅ matches stable |
