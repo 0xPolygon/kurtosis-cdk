@@ -46,6 +46,8 @@ def run(plan, args):
     el_extra_params = {
         "reth": [
             "--rpc.eth-proof-window=1000000",
+            # Amsterdam (EIP-8037) deployments can exceed the default 50M eth_call cap.
+            "--rpc.gascap=1000000000",
         ],
         "geth": [
             "--log.format={}".format(
@@ -53,6 +55,7 @@ def run(plan, args):
             ),
             "--gcmode=archive",
             "--syncmode=full",
+            "--rpc.gascap=1000000000",
         ],
     }.get(el_type)
 
