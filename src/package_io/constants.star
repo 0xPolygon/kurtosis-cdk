@@ -115,7 +115,8 @@ DEFAULT_IMAGES = {
     # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
     # For example: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
     "cdk_erigon_sovereign_image": "ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC3",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
+    # cdk 0.5.4 patched to use node-reported L1 block hashes (go-ethereum 1.15 does not hash Amsterdam headers).
+    "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
     "geth_image": "ethereum/client-go:v1.17.7",
