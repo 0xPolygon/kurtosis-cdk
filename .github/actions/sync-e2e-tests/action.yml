@@ -29,9 +29,7 @@ runs:
       run: |
         set -euo pipefail
         for service in ${{ inputs.services }}; do
-          container=$(docker ps \
-            --filter "label=com.kurtosistech.enclave-name=${{ inputs.enclave_name }}" \
-            --filter "name=^${service}--" --format '{{.Names}}')
-          [[ -n "${container}" ]] || { echo "No container for ${service}"; exit 1; }
-          docker cp .agglayer-e2e-runner/. "${container}:/opt/e2e/"
+          uuid=$(kurtosis service inspect "${{ inputs.enclave_name }}" "${service}" --full-uuid | awk '/^UUID:/ {print $2}')
+          [[ -n "${uuid}" ]] || { echo "No service ${service} in ${{ inputs.enclave_name }}"; exit 1; }
+          docker cp .agglayer-e2e-runner/. "${service}--${uuid}:/opt/e2e/"
         done
