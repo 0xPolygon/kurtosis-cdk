@@ -63,13 +63,34 @@ jobs:
             Read .claude/skills/update-version-matrix/SKILL.md and follow it in CI mode
             for ${{ github.repository }}: regenerate the matrix to find the drift and bump
             what is behind stable. Return the PR title and body, or an empty title if
-            nothing was bumped.
+            nothing was bumped, and list every drifted row you did not bump in `skipped`.
             Run each shell command as its own call, with no pipe, `;`, `&&`, `$(...)` or
             env prefix: compound commands are denied.
           claude_args: |
             --max-turns 60
             --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*),Bash(kurtosis lint:*)"
-            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"}},"required":["title","body"]}'
+            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"},"skipped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"reason":{"enum":["pinned","pre-release","unpublished","other"]}},"required":["component","from","to","reason"],"additionalProperties":false}}},"required":["title","body","skipped"]}'
+
+      # The job log hides Claude's transcript, so this is the only trace of why
+      # a drifted row was not bumped. The run summary is public: re-check every
+      # field against the schema so only names, versions and an enum reach it.
+      - name: Report skipped bumps
+        if: steps.claude.outputs.structured_output != ''
+        env:
+          OUTPUT: ${{ steps.claude.outputs.structured_output }}
+        run: |
+          jq -r '
+            def ok($re): type == "string" and test($re);
+            [.skipped // [] | .[]
+              | select((.component | ok("^[A-Za-z0-9._-]{1,64}$"))
+                and (.from | ok("^[A-Za-z0-9._+-]{1,64}$"))
+                and (.to | ok("^[A-Za-z0-9._+-]{1,64}$"))
+                and (.reason | IN("pinned", "pre-release", "unpublished", "other")))]
+            | if length == 0 then empty else
+                "### Skipped bumps", "", "| Component | Current | Latest | Reason |", "| --- | --- | --- | --- |",
+                (.[] | "| \(.component) | \(.from) | \(.to) | \(.reason) |")
+              end
+          ' <<<"$OUTPUT" >> "$GITHUB_STEP_SUMMARY"
 
       # A GitHub App token, unlike GITHUB_TOKEN, lets the PR trigger CI.
       - name: Get app token
