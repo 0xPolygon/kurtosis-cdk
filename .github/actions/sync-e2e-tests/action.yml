@@ -12,7 +12,7 @@ inputs:
     default: test-runner-001
   ref:
     description: The agglayer/e2e ref to check out
-    default: 26b7537a65985597e6ada3a2d285f96e00564775 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
+    default: edc92d219bb8138850f670fa7e91bf88f026ed01 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
 
 runs:
   using: composite

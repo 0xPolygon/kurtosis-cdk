@@ -274,7 +274,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: 26b7537a65985597e6ada3a2d285f96e00564775 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
+          ref: edc92d219bb8138850f670fa7e91bf88f026ed01 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
