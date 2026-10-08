@@ -272,7 +272,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: 3a80868ae618a52cc98d70e5ef6d9484063fa9e5 # 2026-08-28, cast >= 1.8 --json envelope compat (agglayer/e2e#266)
+          ref: 26b7537a65985597e6ada3a2d285f96e00564775 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -639,7 +639,7 @@ jobs:
           path: agglayer-e2e
           # The agglayer 0.6.0 multi-chain suite (tests/aggkit/bridge-e2e-{2,3}-chains.bats +
           # the multi-setup helpers), now merged into main.
-          ref: 3a80868ae618a52cc98d70e5ef6d9484063fa9e5 # 2026-08-28, cast >= 1.8 --json envelope compat (agglayer/e2e#266)
+          ref: 26b7537a65985597e6ada3a2d285f96e00564775 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
 
       # NOTE: no agglayer-registration step here. The l2-to-l2-all-pairs.bats setup intentionally
       # does not call the e2e add_network_to_agglayer helper: the attached rollups are already
