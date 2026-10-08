@@ -6,9 +6,6 @@ constants = import_module("../package_io/constants.star")
 only_smc_genesis = "../../static_files/contracts/genesis/only-smc-deployed-genesis.json"
 op_rollup_created_genesis = "../../static_files/contracts/genesis/op-genesis.json"
 
-# Glamsterdam (Gloas on the CL, Amsterdam on the EL) is the last scheduled L1 fork.
-GLOAS_FORK_EPOCH = 4
-
 
 def run(plan, args):
     # Custom genesis configuration.
@@ -115,17 +112,16 @@ def run(plan, args):
             "altair_fork_epoch": 0,
             "bellatrix_fork_epoch": 0,
             "capella_fork_epoch": 0,
-            "deneb_fork_epoch": 1,
-            "electra_fork_epoch": 2,
-            "fulu_fork_epoch": 3,  # Requires a supernode or perfect PeerDAS to be enabled.
-            # Blob parameter only (BPO) forks bump the blob target/max. They require Fulu, so
-            # every bpo_*_epoch must be >= fulu_fork_epoch. The ethereum package defaults them
-            # to epoch 0, which is before our Fulu activation, so we schedule them explicitly.
+            "deneb_fork_epoch": 0,
+            "electra_fork_epoch": 0,
+            "fulu_fork_epoch": 0,  # Requires a supernode or perfect PeerDAS to be enabled.
+            # Blob parameter only (BPO) forks bump the blob target/max.
             # BPO 3 to 5 stay disabled, as in the ethereum package defaults.
-            "bpo_1_epoch": 3,
-            "bpo_2_epoch": 3,
+            "bpo_1_epoch": 0,
+            "bpo_2_epoch": 0,
+            # Glamsterdam: Gloas (CL) + Amsterdam (EL).
             # The ethereum package raises the L1 gas limit to 200M when Gloas is scheduled.
-            "gloas_fork_epoch": GLOAS_FORK_EPOCH,
+            "gloas_fork_epoch": 0,
         },
         "additional_services": args["l1_additional_services"],
     }
@@ -133,7 +129,6 @@ def run(plan, args):
 
     cl_rpc_url = result.all_participants[0].cl_context.beacon_http_url
     _wait_for_l1_startup(plan, cl_rpc_url)
-    _wait_for_l1_fork(plan, cl_rpc_url, GLOAS_FORK_EPOCH)
 
     return result
 
@@ -155,36 +150,6 @@ def _wait_for_l1_startup(plan, cl_rpc_url):
                 '    echo "✅ L1 Chain has started!";',
                 "    break;",
                 "  fi;",
-                "done",
-            ]
-        ),
-        wait="5m",
-    )
-
-
-# Deploying contracts across the Amsterdam boundary fails: gas is estimated against the
-# pending Amsterdam block (EIP-8037 repricing) but the tx pool still enforces the Osaka
-# per-tx gas cap (EIP-7825), so large deployments get rejected with "gas limit too high".
-def _wait_for_l1_fork(plan, cl_rpc_url, fork_epoch):
-    plan.run_sh(
-        name="wait-for-l1-fork",
-        description="Wait for L1 to reach the last scheduled fork (epoch {})".format(
-            fork_epoch
-        ),
-        env_vars={
-            "CL_RPC_URL": cl_rpc_url,
-            "FORK_EPOCH": str(fork_epoch),
-        },
-        run="\n".join(
-            [
-                "while true; do",
-                '  epoch=$(curl --silent $CL_RPC_URL/eth/v1/beacon/states/head/fork | jq --raw-output ".data.epoch");',
-                '  if [[ "$epoch" =~ ^[0-9]+$ ]] && [[ "$epoch" -ge "$FORK_EPOCH" ]]; then',
-                '    echo "✅ L1 reached the fork at epoch $FORK_EPOCH";',
-                "    break;",
-                "  fi;",
-                '  echo "Waiting for the L1 fork at epoch $FORK_EPOCH... Current fork epoch: $epoch";',
-                "  sleep 5;",
                 "done",
             ]
         ),
