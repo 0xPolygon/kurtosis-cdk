@@ -85,7 +85,10 @@ _patch_bridge_implementation_gas_limit() {
 _create_genesis() {
     _echo_ts "Step 4: Creating genesis"
     pushd "$contracts_dir" || exit 1
-    _patch_keyless_deployer_gas_limit
+    # The baked custom L1 genesis was built with the unpatched keyless deployer.
+    if [[ "{{ .l1_custom_genesis }}" != "true" ]]; then
+        _patch_keyless_deployer_gas_limit
+    fi
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then
         _echo_ts "The genesis file was not created after running createGenesis"

@@ -268,11 +268,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v7
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          ref: edc92d219bb8138850f670fa7e91bf88f026ed01 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
+        uses: ./.github/actions/checkout-e2e
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -639,13 +635,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v7
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          # The agglayer 0.6.0 multi-chain suite (tests/aggkit/bridge-e2e-{2,3}-chains.bats +
-          # the multi-setup helpers), now merged into main.
-          ref: edc92d219bb8138850f670fa7e91bf88f026ed01 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
+        uses: ./.github/actions/checkout-e2e
 
       # NOTE: no agglayer-registration step here. The l2-to-l2-all-pairs.bats setup intentionally
       # does not call the e2e add_network_to_agglayer helper: the attached rollups are already

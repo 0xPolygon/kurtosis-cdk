@@ -10,19 +10,16 @@ inputs:
   services:
     description: Space-separated test-runner service names
     default: test-runner-001
-  ref:
-    description: The agglayer/e2e ref to check out
-    default: edc92d219bb8138850f670fa7e91bf88f026ed01 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
 
 runs:
   using: composite
   steps:
     - name: Checkout agglayer-e2e
-      uses: actions/checkout@v7
+      uses: ./.github/actions/checkout-e2e
       with:
-        repository: agglayer/e2e
         path: .agglayer-e2e-runner
-        ref: ${{ inputs.ref }}
+        # The image ships lib/ populated and /opt/e2e is emptied before the copy.
+        submodules: 'true'
 
     - name: Copy tests into test runners
       shell: bash
@@ -31,5 +28,8 @@ runs:
         for service in ${{ inputs.services }}; do
           uuid=$(kurtosis service inspect "${{ inputs.enclave_name }}" "${service}" --full-uuid | awk '/^UUID:/ {print $2}')
           [[ -n "${uuid}" ]] || { echo "No service ${service} in ${{ inputs.enclave_name }}"; exit 1; }
-          docker cp .agglayer-e2e-runner/. "${service}--${uuid}:/opt/e2e/"
+          container="${service}--${uuid}"
+          # Empty it first so files the pinned ref dropped don't survive from the image.
+          docker exec "${container}" find /opt/e2e -mindepth 1 -delete
+          docker cp .agglayer-e2e-runner/. "${container}:/opt/e2e/"
         done
