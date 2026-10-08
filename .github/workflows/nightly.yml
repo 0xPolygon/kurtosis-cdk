@@ -566,6 +566,12 @@ jobs:
       # that rollup's in-enclave test-runner-00X (the same mechanism as ./.github/actions/bridge-tests,
       # extended per rollup). These tests guard the WETH lookup behind a native-gas-token check, so
       # they work on our native rollups.
+      - name: Sync agglayer/e2e tests
+        uses: ./.github/actions/sync-e2e-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          services: ${{ env.NUM_CHAINS == '3' && 'test-runner-001 test-runner-002 test-runner-003' || 'test-runner-001 test-runner-002' }}
+
       - name: Run L1<->L2 bridge tests (per rollup)
         run: |
           set -eo pipefail
