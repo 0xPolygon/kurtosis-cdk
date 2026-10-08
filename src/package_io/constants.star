@@ -119,7 +119,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.7",
+    "geth_image": "ethereum/client-go:v1.17.8",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.7.0",
     "lighthouse_image": "sigp/lighthouse:v8.3.0-rc.0",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
