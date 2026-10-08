@@ -69,7 +69,7 @@ jobs:
           claude_args: |
             --max-turns 60
             --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*),Bash(kurtosis lint:*)"
-            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"},"bumped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"}},"required":["component","from","to"],"additionalProperties":false}},"skipped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"reason":{"enum":["pinned","pre-release","unpublished","other"]}},"required":["component","from","to","reason"],"additionalProperties":false}}},"required":["title","body","bumped","skipped"]}'
+            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"},"bumped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._/-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"}},"required":["component","from","to"],"additionalProperties":false}},"skipped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._/-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"reason":{"enum":["pinned","pre-release","unpublished","other"]}},"required":["component","from","to","reason"],"additionalProperties":false}}},"required":["title","body"]}'
 
       # A GitHub App token, unlike GITHUB_TOKEN, lets the PR trigger CI.
       - name: Get app token
@@ -122,7 +122,8 @@ jobs:
       # The job log hides Claude's transcript, so the run summary is the only
       # record of what was bumped or skipped and why. It is public: it is built
       # from the schema-constrained fields only, re-checked here, never from
-      # Claude's free text.
+      # Claude's free text. Patterns end in \z: in jq, $ also matches before a
+      # trailing newline, which would break the table row.
       - name: Write the run summary
         if: ${{ !cancelled() }}
         env:
@@ -133,13 +134,15 @@ jobs:
         run: |
           jq -nr --arg outcome "$CLAUDE_OUTCOME" --arg op "$PR_OPERATION" --arg url "$PR_URL" '
             def ok($re): type == "string" and test($re);
-            def valid: (.component | ok("^[A-Za-z0-9._-]{1,64}$"))
-              and (.from | ok("^[A-Za-z0-9._+-]{1,64}$"))
-              and (.to | ok("^[A-Za-z0-9._+-]{1,64}$"));
-            (env.OUTPUT | try fromjson catch {}) as $out
-            | [$out.bumped // [] | .[] | select(valid)] as $bumped
-            | [$out.skipped // [] | .[]
+            def valid: (.component | ok("^[A-Za-z0-9._/-]{1,64}\\z"))
+              and (.from | ok("^[A-Za-z0-9._+-]{1,64}\\z"))
+              and (.to | ok("^[A-Za-z0-9._+-]{1,64}\\z"));
+            (((env.OUTPUT | try fromjson catch null) | objects) // {}) as $out
+            | def rows($k): [$out[$k] | arrays | .[]];
+            [rows("bumped")[] | objects | select(valid)] as $bumped
+            | [rows("skipped")[] | objects
                 | select(valid and (.reason | IN("pinned", "pre-release", "unpublished", "other")))] as $skipped
+            | ((rows("bumped") + rows("skipped") | length) - ($bumped + $skipped | length)) as $dropped
             | "## Version matrix bump", "",
               (if $outcome != "success" then
                 "Claude did not finish (step \($outcome)): nothing was bumped."
@@ -161,5 +164,6 @@ jobs:
               (if ($skipped | length) == 0 then "None." else
                 "| Component | Current | Latest | Reason |", "| --- | --- | --- | --- |",
                 ($skipped[] | "| \(.component) | \(.from) | \(.to) | \(.reason) |")
-              end)
+              end),
+              (if $dropped > 0 then "", "\($dropped) row(s) dropped: not in the expected format." else empty end)
           ' >> "$GITHUB_STEP_SUMMARY"
