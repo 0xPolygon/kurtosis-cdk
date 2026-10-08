@@ -76,4 +76,7 @@ Body follows `.github/pull_request_template.md` (`## Description` /
 **CI** (run by `bump-version-matrix.yml`): only edit files. Do not commit, push
 or open the PR: return the title and body, and the workflow opens or refreshes the
 PR. If nothing is left to bump (every drifted row is 📌, rc or unpublished), make
-no change and return an empty title.
+no change and return an empty title. Either way, list every drifted row in
+`bumped` (component, old and new version) or `skipped` (component, current and
+latest version, reason: `pinned` for 📌, `pre-release` for rc, `unpublished`, or
+`other`): the workflow writes both to the run summary.
