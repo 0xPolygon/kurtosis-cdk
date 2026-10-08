@@ -63,34 +63,13 @@ jobs:
             Read .claude/skills/update-version-matrix/SKILL.md and follow it in CI mode
             for ${{ github.repository }}: regenerate the matrix to find the drift and bump
             what is behind stable. Return the PR title and body, or an empty title if
-            nothing was bumped, and list every drifted row you did not bump in `skipped`.
+            nothing was bumped. List every drifted row in `bumped` or `skipped`.
             Run each shell command as its own call, with no pipe, `;`, `&&`, `$(...)` or
             env prefix: compound commands are denied.
           claude_args: |
             --max-turns 60
             --allowedTools "Read,Edit,Write,Grep,Glob,Bash(python3 scripts/version-matrix/*),Bash(docker manifest inspect:*),Bash(git diff:*),Bash(git status:*),Bash(kurtosis lint:*)"
-            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"},"skipped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"reason":{"enum":["pinned","pre-release","unpublished","other"]}},"required":["component","from","to","reason"],"additionalProperties":false}}},"required":["title","body","skipped"]}'
-
-      # The job log hides Claude's transcript, so this is the only trace of why
-      # a drifted row was not bumped. The run summary is public: re-check every
-      # field against the schema so only names, versions and an enum reach it.
-      - name: Report skipped bumps
-        if: steps.claude.outputs.structured_output != ''
-        env:
-          OUTPUT: ${{ steps.claude.outputs.structured_output }}
-        run: |
-          jq -r '
-            def ok($re): type == "string" and test($re);
-            [.skipped // [] | .[]
-              | select((.component | ok("^[A-Za-z0-9._-]{1,64}$"))
-                and (.from | ok("^[A-Za-z0-9._+-]{1,64}$"))
-                and (.to | ok("^[A-Za-z0-9._+-]{1,64}$"))
-                and (.reason | IN("pinned", "pre-release", "unpublished", "other")))]
-            | if length == 0 then empty else
-                "### Skipped bumps", "", "| Component | Current | Latest | Reason |", "| --- | --- | --- | --- |",
-                (.[] | "| \(.component) | \(.from) | \(.to) | \(.reason) |")
-              end
-          ' <<<"$OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+            --json-schema '{"type":"object","properties":{"title":{"type":"string"},"body":{"type":"string"},"bumped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"}},"required":["component","from","to"],"additionalProperties":false}},"skipped":{"type":"array","items":{"type":"object","properties":{"component":{"type":"string","pattern":"^[A-Za-z0-9._-]{1,64}$"},"from":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"to":{"type":"string","pattern":"^[A-Za-z0-9._+-]{1,64}$"},"reason":{"enum":["pinned","pre-release","unpublished","other"]}},"required":["component","from","to","reason"],"additionalProperties":false}}},"required":["title","body","bumped","skipped"]}'
 
       # A GitHub App token, unlike GITHUB_TOKEN, lets the PR trigger CI.
       - name: Get app token
@@ -139,3 +118,48 @@ jobs:
         run: |
           url=$(gh pr list --repo "${{ github.repository }}" --head chore/bump-version-matrix --state open --json url --jq '.[0].url // ""')
           echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # The job log hides Claude's transcript, so the run summary is the only
+      # record of what was bumped or skipped and why. It is public: it is built
+      # from the schema-constrained fields only, re-checked here, never from
+      # Claude's free text.
+      - name: Write the run summary
+        if: ${{ !cancelled() }}
+        env:
+          OUTPUT: ${{ steps.claude.outputs.structured_output }}
+          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
+          PR_OPERATION: ${{ steps.pr.outputs.pull-request-operation }}
+          PR_URL: ${{ steps.find-pr.outputs.url }}
+        run: |
+          jq -nr --arg outcome "$CLAUDE_OUTCOME" --arg op "$PR_OPERATION" --arg url "$PR_URL" '
+            def ok($re): type == "string" and test($re);
+            def valid: (.component | ok("^[A-Za-z0-9._-]{1,64}$"))
+              and (.from | ok("^[A-Za-z0-9._+-]{1,64}$"))
+              and (.to | ok("^[A-Za-z0-9._+-]{1,64}$"));
+            (env.OUTPUT | try fromjson catch {}) as $out
+            | [$out.bumped // [] | .[] | select(valid)] as $bumped
+            | [$out.skipped // [] | .[]
+                | select(valid and (.reason | IN("pinned", "pre-release", "unpublished", "other")))] as $skipped
+            | "## Version matrix bump", "",
+              (if $outcome != "success" then
+                "Claude did not finish (step \($outcome)): nothing was bumped."
+              elif ($bumped | length) == 0 then
+                "Nothing bumped." + (if $url != "" then " A previous bump PR is still open: \($url)" else "" end)
+              elif $op == "created" or $op == "updated" then
+                "Bump PR \($op): \($url)"
+              else
+                "Bumps match the open PR, left unchanged: \($url)"
+              end),
+              "",
+              "### Bumped", "",
+              (if ($bumped | length) == 0 then "None." else
+                "| Component | From | To |", "| --- | --- | --- |",
+                ($bumped[] | "| \(.component) | \(.from) | \(.to) |")
+              end),
+              "",
+              "### Skipped", "",
+              (if ($skipped | length) == 0 then "None." else
+                "| Component | Current | Latest | Reason |", "| --- | --- | --- | --- |",
+                ($skipped[] | "| \(.component) | \(.from) | \(.to) | \(.reason) |")
+              end)
+          ' >> "$GITHUB_STEP_SUMMARY"
