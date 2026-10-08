@@ -290,12 +290,11 @@ class VersionMatrixExtractor:
             tag = tag.split('-fork')[0]
 
         # Specific handling for zkevm-prover images
-        if 'zkevm-prover' in image and tag.find('-fork.'):
+        if 'zkevm-prover' in image and '-fork.' in tag:
             tag = tag.split('-fork.')[0]
         
-        # Specific handling for op-deployer images
-        if 'op-deployer' in image and tag.find('-cdk'):
-            tag = tag.split('-cdk')[0]
+        # Our patched builds (e.g. op-deployer v0.8.0-cdk, cdk v0.5.4-cdk-amsterdam) have no upstream release tag
+        tag = tag.split('-cdk')[0]
 
         # Remove common prefixes
         version = re.sub(r'^v?', '', tag)

@@ -115,15 +115,16 @@ DEFAULT_IMAGES = {
     # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
     # For example: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
     "cdk_erigon_sovereign_image": "ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC3",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
+    # cdk 0.5.4 patched to use node-reported L1 block hashes (go-ethereum 1.15 does not hash Amsterdam headers).
+    "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.7",
+    "geth_image": "ethereum/client-go:v1.17.8",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.7.0",
-    "lighthouse_image": "sigp/lighthouse:v8.2.3",
+    "lighthouse_image": "sigp/lighthouse:v8.3.0-rc.0",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.2",
-    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
+    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.8.0-cdk",
     "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.0",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.9",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.6",

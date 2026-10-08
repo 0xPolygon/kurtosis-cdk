@@ -1,0 +1,35 @@
+name: sync-e2e-tests
+description: Copy an agglayer/e2e checkout into the enclave's test-runner containers.
+
+# agglayer/e2e no longer publishes images, so test_runner_image is frozen; overwriting its
+# /opt/e2e keeps the tests current while the runner keeps the env vars set by the package.
+inputs:
+  enclave_name:
+    description: The name of the kurtosis enclave
+    required: true
+  services:
+    description: Space-separated test-runner service names
+    default: test-runner-001
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout agglayer-e2e
+      uses: ./.github/actions/checkout-e2e
+      with:
+        path: .agglayer-e2e-runner
+        # The image ships lib/ populated and /opt/e2e is emptied before the copy.
+        submodules: 'true'
+
+    - name: Copy tests into test runners
+      shell: bash
+      run: |
+        set -euo pipefail
+        for service in ${{ inputs.services }}; do
+          uuid=$(kurtosis service inspect "${{ inputs.enclave_name }}" "${service}" --full-uuid | awk '/^UUID:/ {print $2}')
+          [[ -n "${uuid}" ]] || { echo "No service ${service} in ${{ inputs.enclave_name }}"; exit 1; }
+          container="${service}--${uuid}"
+          # Empty it first so files the pinned ref dropped don't survive from the image.
+          docker exec "${container}" find /opt/e2e -mindepth 1 -delete
+          docker cp .agglayer-e2e-runner/. "${container}:/opt/e2e/"
+        done

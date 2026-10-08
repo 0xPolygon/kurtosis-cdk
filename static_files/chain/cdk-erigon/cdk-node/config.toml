@@ -58,6 +58,11 @@ Environment = "{{.environment}}"
                 EnableLog = false
                 MaxConns = 200
 
+[SequenceSender]
+        # A verification landing between estimate and inclusion raises the cost by ~100k under EIP-8037,
+        # above the 80k default, and the failed tx is then resent with the same gas forever.
+        GasOffset = 300000
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"

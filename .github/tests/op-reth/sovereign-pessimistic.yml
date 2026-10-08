@@ -4,6 +4,8 @@ args:
   # aggkit 0.10.x requires an on-chain validator/multisig committee (it queries the signature
   # threshold) which the pessimistic consensus does not deploy, so cert submission reverts there.
   # Pessimistic must stay on 0.5.4 (validated with agglayer 0.6.0-rc.5 + the default reth L1).
-  aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+  # 0.5.4 rebuilt on go-ethereum 1.17.7: upstream 0.5.4 cannot hash Amsterdam L1 headers, so
+  # its L1 syncers drop every event on a block hash mismatch.
+  aggkit_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/aggkit:v0.5.4-cdk-amsterdam
   # aggkit 0.5.4 signs the V2/V3 certificate commitment, which agglayer 0.6.1 rejects (V5 only).
   agglayer_image: ghcr.io/agglayer/agglayer:0.6.0

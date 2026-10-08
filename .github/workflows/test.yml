@@ -270,11 +270,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v7
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          ref: 3a80868ae618a52cc98d70e5ef6d9484063fa9e5 # 2026-08-28, cast >= 1.8 --json envelope compat (agglayer/e2e#266)
+        uses: ./.github/actions/checkout-e2e
 
       - name: Run bridge tests and op optimistic mode tests
         run: |

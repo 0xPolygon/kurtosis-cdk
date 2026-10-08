@@ -43,6 +43,8 @@ def run(plan, args):
     el_extra_params = {
         "reth": [
             "--rpc.eth-proof-window=1000000",
+            # Amsterdam (EIP-8037) deployments can exceed the default 50M eth_call cap.
+            "--rpc.gascap=1000000000",
         ],
         "geth": [
             "--log.format={}".format(
@@ -50,6 +52,7 @@ def run(plan, args):
             ),
             "--gcmode=archive",
             "--syncmode=full",
+            "--rpc.gascap=1000000000",
         ],
     }.get(el_type)
 
@@ -109,15 +112,16 @@ def run(plan, args):
             "altair_fork_epoch": 0,
             "bellatrix_fork_epoch": 0,
             "capella_fork_epoch": 0,
-            "deneb_fork_epoch": 1,
-            "electra_fork_epoch": 2,
-            "fulu_fork_epoch": 3,  # Requires a supernode or perfect PeerDAS to be enabled.
-            # Blob parameter only (BPO) forks bump the blob target/max. They require Fulu, so
-            # every bpo_*_epoch must be >= fulu_fork_epoch. The ethereum package defaults them
-            # to epoch 0, which is before our Fulu activation, so we schedule them explicitly.
+            "deneb_fork_epoch": 0,
+            "electra_fork_epoch": 0,
+            "fulu_fork_epoch": 0,  # Requires a supernode or perfect PeerDAS to be enabled.
+            # Blob parameter only (BPO) forks bump the blob target/max.
             # BPO 3 to 5 stay disabled, as in the ethereum package defaults.
-            "bpo_1_epoch": 3,
-            "bpo_2_epoch": 3,
+            "bpo_1_epoch": 0,
+            "bpo_2_epoch": 0,
+            # Glamsterdam: Gloas (CL) + Amsterdam (EL).
+            # The ethereum package raises the L1 gas limit to 200M when Gloas is scheduled.
+            "gloas_fork_epoch": 0,
         },
         "additional_services": args["l1_additional_services"],
     }
