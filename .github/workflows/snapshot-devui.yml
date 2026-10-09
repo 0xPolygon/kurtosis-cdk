@@ -201,6 +201,15 @@ jobs:
             --flavor anvil-aggkit \
             --tag "${{ steps.tag.outputs.base_tag }}"
 
+      - name: Print snapshot log on failure
+        if: failure()
+        run: |
+          for f in snapshots/*/snapshot.log; do
+            echo "::group::$f"
+            tail -n 300 "$f" || true
+            echo "::endgroup::"
+          done
+
       - name: Locate snapshot output directory
         id: snap
         run: |
