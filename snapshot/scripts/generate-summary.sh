@@ -265,7 +265,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 },
                 aggkit: {
                     service: $aggkit,
-                    components: "aggsender,aggoracle,autoclaim,bridge",
+                    components: "aggsender,aggoracle,bridge",
                     rpc: {
                         internal: ("http://" + $aggkit + ":5576"),
                         external: ("http://127.0.0.1:" + $aggkit_rpc_port)
@@ -347,7 +347,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         add_keystore "$OUTPUT_DIR/config/$SVC/sequencer.keystore" "$SVC" \
             "/etc/aggkit/sequencer.keystore" "sequencer / aggsender signer"
         add_keystore "$OUTPUT_DIR/config/$SVC/aggoracle.keystore" "$SVC" \
-            "/etc/aggkit/aggoracle.keystore" "aggoracle + autoclaim signer"
+            "/etc/aggkit/aggoracle.keystore" "aggoracle signer"
         add_keystore "$OUTPUT_DIR/config/$SVC/sovereignadmin.keystore" "$SVC" \
             "/etc/aggkit/sovereignadmin.keystore" "sovereign admin"
     done

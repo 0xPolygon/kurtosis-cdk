@@ -17,8 +17,8 @@
 # endpoint, haproxy CORS preflight on every route, dev-ui /config.json, the
 # the S9b historical-state invariant (aggkit config baked verbatim + the
 # restored L1 answering state reads at pre-snapshot heights), and
-# a full scripted bridge round trip (L1->L2 autoclaimed, L2->L1 parked at
-# "ready to claim" and then manually claimed via cast).
+# a full scripted bridge round trip (L1->L2 manually claimed via cast,
+# L2->L1 parked at "ready to claim" and then manually claimed via cast).
 #
 # Hard-won context baked in (see plan S1/S4b/S6/S8 outcomes -- do not
 # rediscover):
@@ -607,13 +607,13 @@ run_anvil_aggkit_verification() {
 }
 
 # ============================================================================
-# Bridge round trip: L1->L2 (autoclaimed) then L2->L1 (ready-to-claim, then
-# manually claimed via cast). See module doc for the F1 / leaf_index traps.
+# Bridge round trip: L1->L2 (manually claimed via cast) then L2->L1
+# (ready-to-claim, then manually claimed via cast). See module doc for the F1 / leaf_index traps.
 # ============================================================================
 _anvil_aggkit_bridge_roundtrip() {
     local SUMMARY_JSON="$1" PROXY_BASE="$2" L1_BRIDGE="$3" WALLET="$4" KEY="$5" SETTLEMENT_FREE="$6" L1_NETWORK_ID="$7"
 
-    log_step "TEST 12: Bridge Round Trip (L1->L2 autoclaim, L2->L1 manual claim)"
+    log_step "TEST 12: Bridge Round Trip (L1->L2 manual claim, L2->L1 manual claim)"
 
     if [ -z "$WALLET" ] || [ -z "$KEY" ]; then
         log_error "  E2E wallet/key not present in summary.json -- cannot run the round trip"
@@ -622,8 +622,8 @@ _anvil_aggkit_bridge_roundtrip() {
     fi
 
     # The first L2 (by prefix) is used as the source/destination for both
-    # legs; any autoclaim-destination network from the contract table works
-    # (1 or 2), so this deliberately does not hardcode "001".
+    # legs; any L2 network from the contract table works (1 or 2), so this
+    # deliberately does not hardcode "001".
     local PREFIX
     PREFIX=$(jq -r '.networks.l2 | keys | sort | first' "$SUMMARY_JSON")
     local L1_URL="${PROXY_BASE}/l1rpc"
@@ -633,7 +633,7 @@ _anvil_aggkit_bridge_roundtrip() {
     local L2_BRIDGE
     L2_BRIDGE=$(jq -r --arg p "$PREFIX" '.networks.l2[$p].contracts.sovereign_bridge' "$SUMMARY_JSON")
 
-    # ---- Leg 1: L1 -> L2 (must autoclaim) ----
+    # ---- Leg 1: L1 -> L2 (manual claim on L2) ----
     log "  Leg 1: L1 -> L2-$PREFIX (network $NETWORK_ID), 0.01 native ETH"
     local SEND1 TX1 RC1
     SEND1=$(_verify_cast send --json --rpc-url "$L1_URL" --private-key "$KEY" "$L1_BRIDGE" \
@@ -650,14 +650,17 @@ _anvil_aggkit_bridge_roundtrip() {
     log_info "  tx: $TX1"
     anvil_test_result "Bridge round trip: L1->L2 deposit sent" "pass"
 
-    local L1L2_STATE
-    L1L2_STATE=$(_poll_tracker "$PROXY_BASE" "$L1_NETWORK_ID" "$TX1" 90 "L1->L2")
-    local L1L2_STATUS L1L2_LAST_STEP
-    L1L2_STATUS=$(echo "$L1L2_STATE" | jq -r '.tracking_status // "?"')
-    L1L2_LAST_STEP=$(echo "$L1L2_STATE" | jq -r '.all_steps[-1].step_name // "?"')
-    log_info "  tracker terminal: tracking_status=$L1L2_STATUS last_step=$L1L2_LAST_STEP"
-    anvil_test_result "Bridge round trip: L1->L2 autoclaimed (tracker finished/Claimed)" \
-        "$([ "$L1L2_STATUS" = "finished" ] && [ "$L1L2_LAST_STEP" = "Claimed" ] && echo pass || echo fail)"
+    # No autoclaimer runs (aggkit >= 0.11.0-rc17 dropped the autoclaim
+    # component), so this leg is claimed manually on the L2 bridge, sourced
+    # from the bridges listing + claim-proof of the L1 (network $L1_NETWORK_ID)
+    # side. Same recipe/traps as the Leg 2 manual claim below (F1: asset
+    # origin_network, L1-info-tree leaf_index, fresh claim-proof).
+    if _anvil_aggkit_manual_claim "L1->L2" "$PROXY_BASE" "$L1_NETWORK_ID" "$TX1" "$L2_URL" "$L2_BRIDGE" "$KEY" 240; then
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast (isClaimed == true)" "pass"
+    else
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast (isClaimed == true)" "fail"
+        return
+    fi
 
     # ---- Leg 2: L2-001 -> L1 (must stay manual: parks at WaitingClaim) ----
     log "  Leg 2: L2-$PREFIX -> L1 (network $L1_NETWORK_ID), 0.001 native ETH (uses the balance Leg 1 just claimed in)"
@@ -742,8 +745,8 @@ _anvil_aggkit_bridge_roundtrip() {
         return
     fi
 
-    # Confirm it PERSISTS at ready-to-claim rather than autoclaiming (network
-    # 0 must stay manual -- manual-claim.spec.ts:110-114's 60s assertion).
+    # Confirm it PERSISTS at ready-to-claim (nothing claims it for us --
+    # manual-claim.spec.ts:110-114's 60s assertion).
     sleep 15
     local STILL_WAITING
     # Assert POSITIVELY. `[ "$STILL_WAITING" != "done" ]` alone can never fail:
@@ -752,7 +755,7 @@ _anvil_aggkit_bridge_roundtrip() {
     STILL_WAITING=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/tracker/v1/network/${NETWORK_ID}/tx/${TX2}" \
         | jq -r '[.all_steps[]? | select(.step_name=="WaitingClaim") | .status] | last // ""')
     log_info "  WaitingClaim step status after 15s: '${STILL_WAITING}'"
-    anvil_test_result "Bridge round trip: L2->L1 does NOT autoclaim (still WaitingClaim after 15s)" \
+    anvil_test_result "Bridge round trip: L2->L1 stays at ready-to-claim (still WaitingClaim after 15s)" \
         "$([ -n "$STILL_WAITING" ] && [ "$STILL_WAITING" != "done" ] && echo pass || echo fail)"
 
     # ---- Manual claim via cast, sourced entirely from the bridges REST
@@ -835,6 +838,89 @@ _anvil_aggkit_bridge_roundtrip() {
     log_info "  isClaimed($DEPOSIT_COUNT, $ORIGIN_NETWORK) = $IS_CLAIMED"
     anvil_test_result "Bridge round trip: L2->L1 manual claim via cast (isClaimed == true)" \
         "$([ "$IS_CLAIMED" = "true" ] && echo pass || echo fail)"
+}
+
+# _anvil_aggkit_manual_claim <label> <proxy_base> <src_network_id> <deposit_tx> \
+#     <dest_rpc_url> <dest_bridge> <key> <timeout_s>
+# Claims a bridge deposit made on <src_network_id> (tx <deposit_tx>) on the
+# destination bridge, using only the bridge REST API (bridges listing,
+# l1-info-tree-index, claim-proof) and cast. Returns 0 iff isClaimed == true.
+# Used for the L1->L2 leg now that no autoclaimer runs; the L2->L1 leg in
+# _anvil_aggkit_bridge_roundtrip does the equivalent inline.
+_anvil_aggkit_manual_claim() {
+    local label="$1" proxy_base="$2" src_net="$3" tx="$4" dest_rpc="$5" dest_bridge="$6" key="$7" timeout_s="$8"
+    local deadline=$(( $(date +%s) + timeout_s ))
+
+    # Wait for the deposit to appear in the bridge service listing.
+    local deposit="" bridges_json
+    while [ "$(date +%s)" -lt "$deadline" ]; do
+        bridges_json=$(curl -s -m 10 "${proxy_base}/aggkitapi/bridge/v1/bridges?network_id=${src_net}")
+        deposit=$(echo "$bridges_json" | jq -c --arg h "$tx" '.bridges[]? | select(.tx_hash == $h)' 2>/dev/null)
+        [ -n "$deposit" ] && break
+        sleep 5
+    done
+    if [ -z "$deposit" ]; then
+        log_error "  [$label] deposit $tx never appeared in bridges?network_id=$src_net: $bridges_json"
+        return 1
+    fi
+
+    local origin_network origin_address dest_network dest_address amount metadata deposit_count global_index
+    origin_network=$(echo "$deposit" | jq -r '.origin_network')
+    origin_address=$(echo "$deposit" | jq -r '.origin_address')
+    dest_network=$(echo "$deposit" | jq -r '.destination_network')
+    dest_address=$(echo "$deposit" | jq -r '.destination_address')
+    amount=$(echo "$deposit" | jq -r '.amount')
+    metadata=$(echo "$deposit" | jq -r '.metadata')
+    deposit_count=$(echo "$deposit" | jq -r '.deposit_count')
+    global_index=$(echo "$deposit" | jq -r '.global_index')
+    log_info "  [$label] deposit: deposit_count=$deposit_count global_index=$global_index origin_network=$origin_network"
+
+    # Both lookups are retried: the L1 info tree index / claim-proof only
+    # exist once the deposit is included in a synced L1 info tree leaf.
+    local leaf_index="" claim_proof=""
+    while [ "$(date +%s)" -lt "$deadline" ]; do
+        leaf_index=$(curl -s -m 10 "${proxy_base}/aggkitapi/bridge/v1/l1-info-tree-index?network_id=${src_net}&deposit_count=${deposit_count}")
+        if [[ "$leaf_index" =~ ^[0-9]+$ ]]; then
+            claim_proof=$(curl -s -m 10 "${proxy_base}/aggkitapi/bridge/v1/claim-proof?network_id=${src_net}&leaf_index=${leaf_index}&deposit_count=${deposit_count}")
+            if echo "$claim_proof" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
+                break
+            fi
+        fi
+        claim_proof=""
+        sleep 5
+    done
+    if [ -z "$claim_proof" ]; then
+        log_error "  [$label] claim-proof never became available (leaf_index='$leaf_index')"
+        return 1
+    fi
+    log_info "  [$label] leaf_index (L1 info tree) = $leaf_index"
+
+    local local_proof rollup_proof mainnet_exit_root rollup_exit_root
+    local_proof=$(echo "$claim_proof" | jq -c '.proof_local_exit_root | "[" + join(",") + "]"' | tr -d '"')
+    rollup_proof=$(echo "$claim_proof" | jq -c '.proof_rollup_exit_root | "[" + join(",") + "]"' | tr -d '"')
+    mainnet_exit_root=$(echo "$claim_proof" | jq -r '.l1_info_tree_leaf.mainnet_exit_root')
+    rollup_exit_root=$(echo "$claim_proof" | jq -r '.l1_info_tree_leaf.rollup_exit_root')
+
+    local send claim_tx claim_rc
+    send=$(_verify_cast send --json --rpc-url "$dest_rpc" --private-key "$key" "$dest_bridge" \
+        'claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)' \
+        "$local_proof" "$rollup_proof" "$global_index" "$mainnet_exit_root" "$rollup_exit_root" \
+        "$origin_network" "$origin_address" "$dest_network" "$dest_address" "$amount" "$metadata" 2>&1)
+    claim_tx=$(echo "$send" | tail -1 | jq -r '.transactionHash // empty' 2>/dev/null)
+    claim_rc=$(echo "$send" | tail -1 | jq -r '.status // empty' 2>/dev/null)
+    log_info "  [$label] claimAsset -> tx=$claim_tx status=$claim_rc"
+    if [ -z "$claim_tx" ] || [ "$claim_rc" != "0x1" ]; then
+        log_error "  [$label] claimAsset send failed: $send"
+        return 1
+    fi
+
+    # isClaimed(leafIndex, sourceBridgeNetwork): leaf = deposit_count on the
+    # source network's tree, source = the network the deposit was made on.
+    local is_claimed
+    is_claimed=$(_verify_cast call --rpc-url "$dest_rpc" "$dest_bridge" \
+        'isClaimed(uint32,uint32)(bool)' "$deposit_count" "$src_net" 2>&1 | tail -1)
+    log_info "  [$label] isClaimed($deposit_count, $src_net) = $is_claimed"
+    [ "$is_claimed" = "true" ]
 }
 
 # _poll_tracker <proxy_base> <network_id> <tx_hash> <timeout_s> <label>
