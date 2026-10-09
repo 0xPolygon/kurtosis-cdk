@@ -901,11 +901,22 @@ _anvil_aggkit_manual_claim() {
     mainnet_exit_root=$(echo "$claim_proof" | jq -r '.l1_info_tree_leaf.mainnet_exit_root')
     rollup_exit_root=$(echo "$claim_proof" | jq -r '.l1_info_tree_leaf.rollup_exit_root')
 
+    # GlobalExitRootInvalid means the aggoracle has not injected the GER
+    # (keccak(mainnet_exit_root, rollup_exit_root)) on the destination yet;
+    # the proof stays valid, so retry the send until the deadline.
     local send claim_tx claim_rc
-    send=$(_verify_cast send --json --rpc-url "$dest_rpc" --private-key "$key" "$dest_bridge" \
-        'claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)' \
-        "$local_proof" "$rollup_proof" "$global_index" "$mainnet_exit_root" "$rollup_exit_root" \
-        "$origin_network" "$origin_address" "$dest_network" "$dest_address" "$amount" "$metadata" 2>&1)
+    while :; do
+        send=$(_verify_cast send --json --rpc-url "$dest_rpc" --private-key "$key" "$dest_bridge" \
+            'claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)' \
+            "$local_proof" "$rollup_proof" "$global_index" "$mainnet_exit_root" "$rollup_exit_root" \
+            "$origin_network" "$origin_address" "$dest_network" "$dest_address" "$amount" "$metadata" 2>&1)
+        if [[ "$send" == *GlobalExitRootInvalid* ]] && [ "$(date +%s)" -lt "$deadline" ]; then
+            log_info "  [$label] GER not yet injected on destination; retrying claimAsset"
+            sleep 5
+            continue
+        fi
+        break
+    done
     claim_tx=$(echo "$send" | tail -1 | jq -r '.transactionHash // empty' 2>/dev/null)
     claim_rc=$(echo "$send" | tail -1 | jq -r '.status // empty' 2>/dev/null)
     log_info "  [$label] claimAsset -> tx=$claim_tx status=$claim_rc"
