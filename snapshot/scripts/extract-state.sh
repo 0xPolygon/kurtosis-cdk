@@ -480,7 +480,25 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         l2_service=$(jq -r ".l2_chains[\"$prefix\"].anvil.service_name" "$DISCOVERY_JSON")
         cfg="$CONFIG_DIR/$service/config.toml"
         if [ -f "$cfg" ]; then
-            network_id=$(grep -m1 -E '^[[:space:]]*NetworkID[[:space:]]*=' "$cfg" | grep -oE '[0-9]+' | head -1)
+            # `NetworkID` only appeared in the [AutoClaim] block, which aggkit
+            # >= 0.11.0-rc17 no longer has; `|| true` keeps a miss from killing
+            # the run under `set -eo pipefail`.
+            network_id=$(grep -m1 -E '^[[:space:]]*NetworkID[[:space:]]*=' "$cfg" | grep -oE '[0-9]+' | head -1 || true)
+            if [ -z "$network_id" ]; then
+                # Fall back to the L2 bridge contract's own networkID()
+                # (selector 0xbab161bf): try each BridgeAddr in the config; the
+                # L1 bridge has no code on the L2 anvil and returns 0x.
+                l2_port=$(jq -r ".l2_chains[\"$prefix\"].anvil.ports[\"8545\"] // empty" "$DISCOVERY_JSON")
+                for addr in $(grep -E '^[[:space:]]*BridgeAddr[[:space:]]*=' "$cfg" | grep -oE '0x[0-9a-fA-F]{40}' | sort -u); do
+                    res=$(curl -s --max-time 15 "http://127.0.0.1:$l2_port" -X POST -H 'Content-Type: application/json' \
+                        --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_call\",\"params\":[{\"to\":\"$addr\",\"data\":\"0xbab161bf\"},\"latest\"],\"id\":1}" \
+                        | jq -r '.result // empty' || true)
+                    if [ -n "$res" ] && [ "$res" != "0x" ]; then
+                        network_id=$((res))
+                        break
+                    fi
+                done
+            fi
             if [ -n "$network_id" ]; then
                 CHAINS_META=$(echo "$CHAINS_META" | jq \
                     --arg service "$l2_service" --argjson network_id "$network_id" \
