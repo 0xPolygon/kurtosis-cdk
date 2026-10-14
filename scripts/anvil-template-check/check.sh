@@ -117,17 +117,14 @@ assert_present_nonempty "${aggkit_out}" "GlobalExitRootAddr"
 assert_present_nonempty "${aggkit_out}" "BridgeAddr"
 assert_present_nonempty "${aggkit_out}" "GlobalExitRootL2"
 assert_present_nonempty "${aggkit_out}" "SovereignRollupAddr"
-# aggkit_autoclaim_enabled=true in the fixture -> [AutoClaim] must render.
-assert_contains "${aggkit_out}" '^\[AutoClaim\]$' "[AutoClaim] section present (aggkit_autoclaim_enabled fixture=true)"
 # aggkit_legacy_bridge_addr=false in the fixture -> the deprecated
 # polygonBridgeAddr key must NOT render.
 assert_not_contains "${aggkit_out}" '^polygonBridgeAddr = ' "deprecated polygonBridgeAddr key (aggkit_legacy_bridge_addr fixture=false)"
 # K1 (aggkit merge): the bridge REST API now runs in-process inside each
 # aggkit-00X container -- there is no more standalone "aggkit-00X-bridge"
-# sidecar to route AutoClaim's BridgeServiceFinder at. The fixture's
-# aggkit_autoclaim_bridge_urls used to carry a stale pre-merge "-bridge"
-# hostname; assert it never comes back.
-assert_not_contains "${aggkit_out}" 'aggkit-[0-9]{3}-bridge' "stale pre-merge '-bridge' sidecar hostname in [AutoClaim.BridgeServiceFinder.BridgeURLs] (K1 merged the bridge REST API into the main aggkit container)"
+# sidecar; assert that stale pre-merge "-bridge" hostname never comes back
+# in any rendered URL.
+assert_not_contains "${aggkit_out}" 'aggkit-[0-9]{3}-bridge' "stale pre-merge '-bridge' sidecar hostname (K1 merged the bridge REST API into the main aggkit container)"
 
 echo
 echo "=== agglayer/config.toml ==="

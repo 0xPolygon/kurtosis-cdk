@@ -15,8 +15,7 @@
 # on-chain regardless), so every participating network's bridge service and
 # RPC URL must be listed statically via aggkit_proxy_bridge_urls /
 # aggkit_proxy_rpc_urls (see input_parser.star) -- same deterministic
-# ahead-of-time pattern used for agglayer_extra_rollups and
-# aggkit_autoclaim_bridge_urls.
+# ahead-of-time pattern used for agglayer_extra_rollups.
 
 AGGKIT_PROXY_REST_PORT = 8080
 AGGKIT_PROXY_CONFIG_TEMPLATE = (

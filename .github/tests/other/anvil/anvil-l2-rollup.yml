@@ -35,11 +35,9 @@ args:
   consensus_contract_type: ecdsa-multisig
 
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc8
-  # "autoclaim" so destination network 1 gets an AutoClaim claimer -- see
-  # aggkit_autoclaim_destinations below. "bridge" so this same process also
-  # serves the bridge REST API (port 5577) -- there is no longer a separate
-  # aggkit-001-bridge service.
-  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
+  # "bridge" so this same process also serves the bridge REST API (port
+  # 5577) -- there is no longer a separate aggkit-001-bridge service.
+  aggkit_components: "aggsender,aggoracle,bridge"
 
   # aggsender multisig committee: 1 validator, threshold 1.
   use_agg_sender_validator: true
@@ -53,11 +51,6 @@ args:
 
   l2_chain_id: 20201
   l2_network_id: 1
-
-  aggkit_autoclaim_destinations: [1]
-  aggkit_autoclaim_bridge_urls:
-    - network_id: 1
-      bridge_url: "http://aggkit-001:5577"
 
 # NOTE: deliberately NO optimism_package: block -- sequencer_type: anvil
 # rejects one entirely (args_sanity_check rule V4: "sequencer_type 'anvil'

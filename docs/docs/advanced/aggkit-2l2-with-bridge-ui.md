@@ -6,7 +6,7 @@ sidebar_position: 5
 
 ## Introduction
 
-This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, automated claim routing (autoclaim), and the [Agglayer Dev UI](https://github.com/agglayer/agglayer-dev-ui) for browser-based bridging between L1 and both L2s, as well as between the two L2s themselves.
+This guide sets up a **two-rollup L2 enclave** with AggKit bridge services and the [Agglayer Dev UI](https://github.com/agglayer/agglayer-dev-ui) for browser-based bridging between L1 and both L2s, as well as between the two L2s themselves.
 
 ### What's Deployed?
 
@@ -29,7 +29,6 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services, auto
   - `/l2rpc-001` → L2-1 RPC
   - `/l2rpc-002` → L2-2 RPC
   - `/aggkitapi` → AggKit proxy (all networks, selected via `?network_id=`; also fronts `/aggkitapi/tracker/v1/...`)
-- **Automated claim routing** (autoclaim) on both L2s, with configurable destinations
 - **UI and supporting services**:
   - [Agglayer Dev UI](https://github.com/agglayer/agglayer-dev-ui) for browser-based bridging
 
@@ -63,18 +62,10 @@ args:
   # bridge-tracker (see Image Version below)
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
 
-  # AggKit components: aggsender and aggoracle on the main service, plus autoclaim
-  # and bridge (the bridge REST API is served by this SAME process/container --
+  # AggKit components: aggsender, aggoracle and bridge on the main service
+  # (the bridge REST API is served by this SAME process/container --
   # there is no separate aggkit-001-bridge service)
-  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
-  # Enable autoclaim on L2-1 (network_id = 1)
-  aggkit_autoclaim_destinations: [1]
-  # Static bridge service URLs for autoclaim discovery
-  aggkit_autoclaim_bridge_urls:
-    - network_id: 1
-      bridge_url: "http://aggkit-001:5577"
-    - network_id: 2
-      bridge_url: "http://aggkit-002:5577"
+  aggkit_components: "aggsender,aggoracle,bridge"
 
   # Declare rollup-2 to agglayer so it accepts rollup-2 certificates
   # (both RPC URL and sequencer address are deterministic)
@@ -111,15 +102,9 @@ args:
   l2_chain_id: 20202
   network_id: 2
 
-  # Rollup-2's aggkit instance: same autoclaim config as rollup-1, plus bridge
+  # Rollup-2's aggkit instance: same component list as rollup-1
   # (see run1's comment above -- no separate aggkit-002-bridge service)
-  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
-  aggkit_autoclaim_destinations: [2]    # Claim on L2-2 (its own destination)
-  aggkit_autoclaim_bridge_urls:
-    - network_id: 1
-      bridge_url: "http://aggkit-001:5577"
-    - network_id: 2
-      bridge_url: "http://aggkit-002:5577"
+  aggkit_components: "aggsender,aggoracle,bridge"
 
   # AggKit proxy (fronts all networks for the bridge UI)
   additional_services:
@@ -213,28 +198,6 @@ The UI will display:
 - Activity list showing bridge and claim transactions across all chains
 
 ## Configuration Details
-
-### Autoclaim Configuration
-
-Autoclaim is enabled per-chain via two parameters:
-
-1. **`aggkit_autoclaim_destinations`** — List of destination network IDs this instance should claim on.
-   - `[1]` on L2-1 (run1)
-   - `[2]` on L2-2 (run2)
-   - Never include `0` (L1), as this setup intentionally makes L2→L1 claims manual-only
-
-2. **`aggkit_autoclaim_bridge_urls`** — Static map of network_id → bridge REST URL.
-   - Required because on-chain `BRIDGE_SERVICE_URL` metadata is not registered in this devnet
-   - Identical on both L2 instances (they see the same L1 bridge state and both L2 bridges)
-
-**Current autoclaim latencies** (from S12 enclave results):
-- L1→L2 auto-claim: ~67 seconds
-- L2→L2 auto-claim: Request detected within ~7 minutes (certificate settlement + L1 info tree sync); submission may be blocked by an upstream aggkit bug in networks where L2 block height exceeds L1 (see notes below)
-- L2→L1: Always manual-only; proof ready within ~9-10 minutes
-
-**Grace timeout in the UI** (`app/constants/e2e.ts`):
-- `E2E_L1_TO_L2_CLAIM_TIMEOUT_MS: 180000` (3 minutes) — covers the ~67s latency with margin
-- `E2E_L2_TO_L2_CLAIM_TIMEOUT_MS: 300000` (5 minutes) — **has no margin against certificate cadence** (see notes)
 
 ### AggKit Proxy Configuration
 
@@ -372,8 +335,9 @@ docker run --rm --entrypoint /usr/local/bin/aggkit-proxy \
 ```
 
 **Why not `develop`:** an earlier iteration of this guide pinned a locally-built patched image
-because L2→L2 autoclaim never fired on the `develop` image at the time — the claimer compared an
-L1 info-tree leaf's L1 block number against the source rollup's own L2 block number, so on a
+because L2→L2 claim submission never fired on the `develop` image at the time — the claimer
+compared an L1 info-tree leaf's L1 block number against the source rollup's own L2 block
+number, so on a
 devnet whose L2 height exceeds L1's the readiness gate never opened and requests stayed queued
 indefinitely (`proof not ready for request constraints`, retrying forever). That fix
 (agglayer/aggkit [#1761](https://github.com/agglayer/aggkit/pull/1761)) has been upstream since
@@ -453,8 +417,6 @@ pnpm run test:e2e
 ```
 
 The suite includes:
-- **claim-autoclaim.spec.ts** — L1→L2-1 auto-claim (L1ToL2BridgeDetector)
-- **l2-to-l2.spec.ts** — L2-1→L2-2 auto-claim (L2ToLxBridgeDetector), *may timeout per certificate cadence note above*
 - **manual-claim.spec.ts** — L2-1→L1 (manual-only), funds its own top-up then tests withdrawal
 - Other tests: smoke, token selector, ERC20, native bridge, partial-failure notice
 

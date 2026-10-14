@@ -5,17 +5,7 @@
   "agg_oracle_committee_total_members": 1,
   "agg_sender_multisig_threshold": 1,
   "agg_sender_validator_total_number": 1,
-  "aggkit_autoclaim_bridge_urls": [
-    {
-      "bridge_url": "http://aggkit-001:5577",
-      "network_id": 1
-    }
-  ],
-  "aggkit_autoclaim_destinations": [
-    1
-  ],
-  "aggkit_autoclaim_enabled": true,
-  "aggkit_components": "aggsender,aggoracle,autoclaim",
+  "aggkit_components": "aggsender,aggoracle",
   "aggkit_deploy_dev_ui": false,
   "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0-rc5",
   "aggkit_legacy_bridge_addr": false,

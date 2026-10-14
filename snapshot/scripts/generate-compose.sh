@@ -625,7 +625,7 @@ EOF
 
     # ------------------------------------------------------------------
     # aggkit x N -- each process serves both the main aggkit components
-    # (aggsender/aggoracle/autoclaim) AND the bridge REST API in one
+    # (aggsender/aggoracle) AND the bridge REST API in one
     # container (--components=...,bridge). There is no separate -bridge
     # sibling service (merged in K1); the healthcheck below proves both the
     # process booted AND the bridge REST API is synced.

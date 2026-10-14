@@ -20,7 +20,7 @@ ADDITIONAL_SERVICES = struct(
 # Which backend the "bridge_ui" additional service should use to source
 # bridge/claim data:
 # - bridge_hub: deploy the full bridge-hub stack (mongo + L1/L2 consumers +
-#   api + autoclaimer) fronted by the haproxy proxy. This is the legacy
+#   api) fronted by the haproxy proxy. This is the legacy
 #   default.
 # - aggkit: skip the bridge-hub stack entirely and have the haproxy proxy
 #   forward directly to the aggkit bridge REST API.

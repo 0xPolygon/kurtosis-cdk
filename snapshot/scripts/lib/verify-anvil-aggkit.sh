@@ -17,7 +17,7 @@
 # endpoint, haproxy CORS preflight on every route, dev-ui /config.json, the
 # the S9b historical-state invariant (aggkit config baked verbatim + the
 # restored L1 answering state reads at pre-snapshot heights), and
-# a full scripted bridge round trip (L1->L2 autoclaimed, L2->L1 parked at
+# a full scripted bridge round trip (L1->L2, L2->L1 parked at
 # "ready to claim" and then manually claimed via cast).
 #
 # Hard-won context baked in (see plan S1/S4b/S6/S8 outcomes -- do not
@@ -607,13 +607,13 @@ run_anvil_aggkit_verification() {
 }
 
 # ============================================================================
-# Bridge round trip: L1->L2 (autoclaimed) then L2->L1 (ready-to-claim, then
+# Bridge round trip: L1->L2 then L2->L1 (ready-to-claim, then
 # manually claimed via cast). See module doc for the F1 / leaf_index traps.
 # ============================================================================
 _anvil_aggkit_bridge_roundtrip() {
     local SUMMARY_JSON="$1" PROXY_BASE="$2" L1_BRIDGE="$3" WALLET="$4" KEY="$5" SETTLEMENT_FREE="$6" L1_NETWORK_ID="$7"
 
-    log_step "TEST 12: Bridge Round Trip (L1->L2 autoclaim, L2->L1 manual claim)"
+    log_step "TEST 12: Bridge Round Trip (L1->L2, L2->L1 manual claim)"
 
     if [ -z "$WALLET" ] || [ -z "$KEY" ]; then
         log_error "  E2E wallet/key not present in summary.json -- cannot run the round trip"
@@ -622,7 +622,7 @@ _anvil_aggkit_bridge_roundtrip() {
     fi
 
     # The first L2 (by prefix) is used as the source/destination for both
-    # legs; any autoclaim-destination network from the contract table works
+    # legs; any L2 network from the contract table works
     # (1 or 2), so this deliberately does not hardcode "001".
     local PREFIX
     PREFIX=$(jq -r '.networks.l2 | keys | sort | first' "$SUMMARY_JSON")
@@ -633,7 +633,7 @@ _anvil_aggkit_bridge_roundtrip() {
     local L2_BRIDGE
     L2_BRIDGE=$(jq -r --arg p "$PREFIX" '.networks.l2[$p].contracts.sovereign_bridge' "$SUMMARY_JSON")
 
-    # ---- Leg 1: L1 -> L2 (must autoclaim) ----
+    # ---- Leg 1: L1 -> L2 ----
     log "  Leg 1: L1 -> L2-$PREFIX (network $NETWORK_ID), 0.01 native ETH"
     local SEND1 TX1 RC1
     SEND1=$(_verify_cast send --json --rpc-url "$L1_URL" --private-key "$KEY" "$L1_BRIDGE" \
@@ -656,7 +656,7 @@ _anvil_aggkit_bridge_roundtrip() {
     L1L2_STATUS=$(echo "$L1L2_STATE" | jq -r '.tracking_status // "?"')
     L1L2_LAST_STEP=$(echo "$L1L2_STATE" | jq -r '.all_steps[-1].step_name // "?"')
     log_info "  tracker terminal: tracking_status=$L1L2_STATUS last_step=$L1L2_LAST_STEP"
-    anvil_test_result "Bridge round trip: L1->L2 autoclaimed (tracker finished/Claimed)" \
+    anvil_test_result "Bridge round trip: L1->L2 tracker finished/Claimed" \
         "$([ "$L1L2_STATUS" = "finished" ] && [ "$L1L2_LAST_STEP" = "Claimed" ] && echo pass || echo fail)"
 
     # ---- Leg 2: L2-001 -> L1 (must stay manual: parks at WaitingClaim) ----
@@ -742,7 +742,7 @@ _anvil_aggkit_bridge_roundtrip() {
         return
     fi
 
-    # Confirm it PERSISTS at ready-to-claim rather than autoclaiming (network
+    # Confirm it PERSISTS at ready-to-claim rather than being claimed (network
     # 0 must stay manual -- manual-claim.spec.ts:110-114's 60s assertion).
     sleep 15
     local STILL_WAITING
@@ -752,7 +752,7 @@ _anvil_aggkit_bridge_roundtrip() {
     STILL_WAITING=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/tracker/v1/network/${NETWORK_ID}/tx/${TX2}" \
         | jq -r '[.all_steps[]? | select(.step_name=="WaitingClaim") | .status] | last // ""')
     log_info "  WaitingClaim step status after 15s: '${STILL_WAITING}'"
-    anvil_test_result "Bridge round trip: L2->L1 does NOT autoclaim (still WaitingClaim after 15s)" \
+    anvil_test_result "Bridge round trip: L2->L1 not yet claimed (still WaitingClaim after 15s)" \
         "$([ -n "$STILL_WAITING" ] && [ "$STILL_WAITING" != "done" ] && echo pass || echo fail)"
 
     # ---- Manual claim via cast, sourced entirely from the bridges REST

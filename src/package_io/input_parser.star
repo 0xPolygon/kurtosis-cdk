@@ -335,28 +335,10 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
-    # List of destination network IDs for which THIS aggkit instance's Auto
-    # Claim component should run a claimer targeting itself (this run's own
-    # l2_network_id). "autoclaim" must ALSO be included in aggkit_components,
-    # or the section is rendered but the process never runs it. NEVER include
-    # 0 (L1) here -- deposits destined to L1 must stay manual-claim-only for
-    # the bridge UI's manual claim path; only network IDs of L2 destinations
-    # belong in this list.
-    "aggkit_autoclaim_destinations": [],
-    # Static network_id -> bridge service base URL map for AutoClaim's
-    # BridgeServiceFinder (used both to resolve claim-candidate sources for
-    # the L2ToLx detector and as each L2-destination claimer's own
-    # GER-injection readiness gate). On-chain resolution isn't set up in this
-    # package (no AggchainMetadataSet BRIDGE_SERVICE_URL registration), so
-    # every participating network's bridge service must be listed here
-    # explicitly, on every instance that enables autoclaim -- same
-    # deterministic-ahead-of-time pattern as agglayer_extra_rollups above.
-    # Each entry: {"network_id": <int>, "bridge_url": <str>}.
-    "aggkit_autoclaim_bridge_urls": [],
     # Static network_id -> bridge service base URL map for the standalone
     # aggkit-proxy service's BridgeServiceFinder (additional service
-    # "aggkit_proxy"). Same rationale/pattern as aggkit_autoclaim_bridge_urls:
-    # no on-chain BRIDGE_SERVICE_URL registration in this package, and network
+    # "aggkit_proxy"). There is no on-chain BRIDGE_SERVICE_URL registration in
+    # this package, and network
     # 0 (L1) is never enumerated on-chain at all, so every network the proxy
     # should route (including 0) must be listed here explicitly.
     # Each entry: {"network_id": <int>, "bridge_url": <str>}.
@@ -451,7 +433,7 @@ DEFAULT_ARGS = (
         # additional_services.
         # Options:
         # - 'bridge_hub': deploy the full bridge-hub stack (mongo + L1/L2
-        #   consumers + api + autoclaimer) fronted by the haproxy proxy.
+        #   consumers + api) fronted by the haproxy proxy.
         # - 'aggkit': skip the bridge-hub stack and have the haproxy proxy
         #   forward directly to the aggkit bridge REST API.
         "bridge_ui_backend": constants.BRIDGE_UI_BACKEND.bridge_hub,

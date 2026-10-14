@@ -70,7 +70,7 @@ rewriting is near-zero:
 | `l2-anvil-001` | L2 rollup 1 (network_id 1, chain_id 20201) | 8545 |
 | `l2-anvil-002` | L2 rollup 2 (network_id 2, chain_id 20202) | 8545 |
 | `agglayer` | Settlement / certificate pipeline | 4443 (grpc), 4444 (readrpc), 4446 (admin), 9092 (prometheus) |
-| `aggkit-001` / `aggkit-002` | aggsender + aggoracle + autoclaim + bridge per rollup (one process/container serves both the main components and the bridge REST API) | 5576 (rpc), 5577 (rest) |
+| `aggkit-001` / `aggkit-002` | aggsender + aggoracle + bridge per rollup (one process/container serves both the main components and the bridge REST API) | 5576 (rpc), 5577 (rest) |
 | `aggkit-proxy-001` | `--components=proxy,tracker`; multiplexes all 3 networks by `network_id` | 8080 |
 | `agglayer-dev-ui-proxy-002` (haproxy) | Single CORS-enabled origin: `/l1rpc`, `/l2rpc-001`, `/l2rpc-002`, `/l2rpc` (alias), `/aggkitapi` | 80 |
 | `agglayer-dev-ui-002` | `agglayer_dev_ui_aggkit_image`, opt-in | 80 |
@@ -514,7 +514,7 @@ Confirmed live: `docker inspect` on the running `aggkit-001` container reports e
 that image string (`K6-evidence/07-image-override-confirmation.log`).
 
 **`aggkit_components`** — which aggkit sub-processes run in the same container. This
-flavor sets `"aggsender,aggoracle,autoclaim,bridge"` on both L2s (`run1.yml`/`run2.yml`)
+flavor sets `"aggsender,aggoracle,bridge"` on both L2s (`run1.yml`/`run2.yml`)
 — note **`bridge` is in the main process's own component list**, not a separate
 service: there is no `aggkit-00X-bridge` sidecar (merged in K1). Confirmed live: with
 this exact component list, `curl http://<aggkit-001>:5577/bridge/v1/bridges?network_id=1`
@@ -839,7 +839,7 @@ restore use the wall clock. The seam at the boundary therefore equals the snapsh
 age at restore time — measured at 63 seconds for a ~1-minute-old snapshot and 1139
 seconds (~19 minutes) for a ~19-minute-old one. **Settlement still works across this
 seam** — deliberately exercised on a snapshot cold-restored after a full unshortened
-10+ minute wait, with both an L1→L2 autoclaim and a full L2→L1 certificate settlement +
+10+ minute wait, with both an L1→L2 claim and a full L2→L1 certificate settlement +
 manual claim succeeding.
 
 ### `--init` and `--dump-state` are mutually exclusive

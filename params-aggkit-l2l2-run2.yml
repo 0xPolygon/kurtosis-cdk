@@ -18,18 +18,15 @@ args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
   # S2 (bridge-tracker plan): bumped to the upstream rc4 release image, same
-  # as run1 -- the L2->L2 autoclaim readiness bug (upstream fix:
+  # as run1 -- the L2->L2 claim readiness bug (upstream fix:
   # https://github.com/agglayer/aggkit/pull/1761) is fixed in rc4, so the
   # locally-built patched image is no longer needed.
   # S2 (bridge-tracker-rc5 plan): bumped to rc5, same as run1 -- see
   # https://github.com/agglayer/aggkit/pull/1784 for the rc4->rc5 delta.
   aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc8
-  # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
-  # destination network (2) gets an AutoClaim claimer -- see
-  # aggkit_autoclaim_destinations below. "bridge" added so this same process
-  # also serves the bridge REST API (port 5577) -- there is no longer a
-  # separate aggkit-002-bridge service.
-  aggkit_components: "aggsender,aggoracle,autoclaim,bridge"
+  # "bridge" so this same process serves the bridge REST API (port 5577) --
+  # there is no longer a separate aggkit-002-bridge service.
+  aggkit_components: "aggsender,aggoracle,bridge"
 
   use_agg_sender_validator: true
   agg_sender_validator_total_number: 1
@@ -91,17 +88,6 @@ args:
   deployment_suffix: "-002"
   l2_chain_id: 20202
   l2_network_id: 2
-
-  # S3 (aggkit-proxy-l2l2 plan): autoclaim on destinations 1 & 2 only, NEVER
-  # 0 (L1). This run's own l2_network_id is 2, so this instance's claimer
-  # targets network 2 (L1->L2-2 and L2-1->L2-2 deposits). Same static
-  # BridgeServiceFinder URL map as run1 -- see params-aggkit-l2l2-run1.yml.
-  aggkit_autoclaim_destinations: [2]
-  aggkit_autoclaim_bridge_urls:
-    - network_id: 1
-      bridge_url: "http://aggkit-001:5577"
-    - network_id: 2
-      bridge_url: "http://aggkit-002:5577"
 
   # NOTE: do NOT override l2_admin_address / l2_sequencer_address / other
   # l2_* role keys here. A first attempt at "distinct prefunded keys per
