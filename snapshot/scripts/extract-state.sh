@@ -475,19 +475,53 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     fi
 
     # ---- network ids (authoritative, straight out of the aggkit configs) ---
+    # agglayer/issues#55: the autoclaim strip (c2ca894d) removed the
+    # AutoClaim.Claimers block that carried the ONLY `NetworkID =` line the
+    # rendered aggkit config had, so the bare grep below now finds nothing --
+    # and under set -euo pipefail a no-match grep kills STEP 3 SILENTLY (no
+    # stderr), which is exactly what broke snapshot-devui run 38611070673
+    # twice with no error visible anywhere in the CI log. The extraction now
+    # falls back to the dev-ui config.json per-chain `networkId` table (the
+    # same source the dev-ui itself uses), matched by chain id, and when
+    # neither source yields a value the failure is LOUD (real message +
+    # exit 1) instead of a silent pipeline death.
+    DEV_UI_CFG=""
+    if [ "$(jq -r '.dev_ui.found // false' "$DISCOVERY_JSON")" = "true" ] \
+        && [ -n "${DEV_UI_SERVICE:-}" ] \
+        && [ -f "$CONFIG_DIR/$DEV_UI_SERVICE/config.json" ]; then
+        DEV_UI_CFG="$CONFIG_DIR/$DEV_UI_SERVICE/config.json"
+    fi
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
         service=$(jq -r ".l2_chains[\"$prefix\"].aggkit.service_name" "$DISCOVERY_JSON")
         l2_service=$(jq -r ".l2_chains[\"$prefix\"].anvil.service_name" "$DISCOVERY_JSON")
         cfg="$CONFIG_DIR/$service/config.toml"
+        network_id=""
         if [ -f "$cfg" ]; then
-            network_id=$(grep -m1 -E '^[[:space:]]*NetworkID[[:space:]]*=' "$cfg" | grep -oE '[0-9]+' | head -1)
-            if [ -n "$network_id" ]; then
-                CHAINS_META=$(echo "$CHAINS_META" | jq \
-                    --arg service "$l2_service" --argjson network_id "$network_id" \
-                    'map(if .service == $service then . + {network_id: $network_id} else . end)')
-                log "  Network id for $l2_service: $network_id (from $service config.toml)"
+            network_id=$(grep -m1 -E '^[[:space:]]*NetworkID[[:space:]]*=' "$cfg" \
+                | grep -oE '[0-9]+' | head -1 || true)
+        fi
+        net_src="config.toml"
+        if [ -z "$network_id" ] && [ -n "$DEV_UI_CFG" ]; then
+            chain_id=$(jq -r ".l2_chains[\"$prefix\"].anvil.chain_id // empty" "$DISCOVERY_JSON")
+            if [ -n "$chain_id" ]; then
+                network_id=$(jq -r --argjson cid "$chain_id" \
+                    '[.chains[] | select(.id == $cid) | .networkId] | first // empty' \
+                    "$DEV_UI_CFG" || true)
+                net_src="dev-ui config.json (chain id $chain_id)"
             fi
         fi
+        if [ -z "$network_id" ]; then
+            log "ERROR: could not determine the network id for $l2_service (prefix $prefix)"
+            log "       No 'NetworkID =' line in $cfg and no matching chain in ${DEV_UI_CFG:-<no dev-ui config extracted>}."
+            log "       state-metadata.json network_id, the settlement probe and"
+            log "       generate-summary/generate-compose all need it; failing loudly instead of"
+            log "       dying silently on a grep pipeline (see the comment above)."
+            exit 1
+        fi
+        CHAINS_META=$(echo "$CHAINS_META" | jq \
+            --arg service "$l2_service" --argjson network_id "$network_id" \
+            'map(if .service == $service then . + {network_id: $network_id} else . end)')
+        log "  Network id for $l2_service: $network_id (from $net_src)"
     done
 
     # ---- settlement-freeness probe ----------------------------------------
