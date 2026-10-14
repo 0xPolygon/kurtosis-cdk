@@ -71,6 +71,22 @@ jobs:
       - name: Run hadolint
         run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.github/scripts/.hadolint.yml {}
 
+      - name: No aggkit autoclaim option (agglayer/issues#55)
+        shell: bash
+        # aggkit PR #1901 removed the autoclaim service from aggkit, so our
+        # deployment tooling must not re-expose it: no aggkit autoclaim args,
+        # no AutoClaim config section, no autoclaim in any components list or
+        # in any --components flag. Character classes such as "[a]" prevent
+        # the pattern from matching this workflow file itself.
+        # (bridge-hub-autoclaim in the bridge UI and the legacy bridge-service
+        # claimer are different services and are intentionally allowed.)
+        run: |
+          if grep -rInE "aggkit_[a]utoclaim|\[\s*AutoClaim\b|aggkit_components[\"':= ]+[^\"']*autoclaim|--components[= ][^ \"']*autoclaim" \
+               --exclude-dir=.git .; then
+            echo "::error Found aggkit autoclaim option left in deployment tooling (agglayer/issues#55)"
+            exit 1
+          fi
+
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
