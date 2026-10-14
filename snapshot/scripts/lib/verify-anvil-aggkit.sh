@@ -17,8 +17,8 @@
 # endpoint, haproxy CORS preflight on every route, dev-ui /config.json, the
 # the S9b historical-state invariant (aggkit config baked verbatim + the
 # restored L1 answering state reads at pre-snapshot heights), and
-# a full scripted bridge round trip (L1->L2, L2->L1 parked at
-# "ready to claim" and then manually claimed via cast).
+# a full scripted bridge round trip (both legs manually claimed via cast --
+# since agglayer/issues#55 no automated claimer runs in the enclave).
 #
 # Hard-won context baked in (see plan S1/S4b/S6/S8 outcomes -- do not
 # rediscover):
@@ -607,13 +607,14 @@ run_anvil_aggkit_verification() {
 }
 
 # ============================================================================
-# Bridge round trip: L1->L2 then L2->L1 (ready-to-claim, then
-# manually claimed via cast). See module doc for the F1 / leaf_index traps.
+# Bridge round trip: L1->L2 then L2->L1 (both legs manually claimed via
+# cast -- no automated claimer remains in the enclave, agglayer/issues#55).
+# See module doc for the F1 / leaf_index traps.
 # ============================================================================
 _anvil_aggkit_bridge_roundtrip() {
     local SUMMARY_JSON="$1" PROXY_BASE="$2" L1_BRIDGE="$3" WALLET="$4" KEY="$5" SETTLEMENT_FREE="$6" L1_NETWORK_ID="$7"
 
-    log_step "TEST 12: Bridge Round Trip (L1->L2, L2->L1 manual claim)"
+    log_step "TEST 12: Bridge Round Trip (L1->L2 + L2->L1, both manual claim)"
 
     if [ -z "$WALLET" ] || [ -z "$KEY" ]; then
         log_error "  E2E wallet/key not present in summary.json -- cannot run the round trip"
@@ -633,7 +634,13 @@ _anvil_aggkit_bridge_roundtrip() {
     local L2_BRIDGE
     L2_BRIDGE=$(jq -r --arg p "$PREFIX" '.networks.l2[$p].contracts.sovereign_bridge' "$SUMMARY_JSON")
 
-    # ---- Leg 1: L1 -> L2 ----
+    # ---- Leg 1: L1 -> L2 (manual claim) ----
+    # agglayer/issues#55: aggkit's autoclaim service was removed upstream
+    # (aggkit PR #1901), and this enclave runs the bridge UI in "aggkit" mode,
+    # which deploys no bridge-hub autoclaimer either -- nothing claims L1->L2
+    # deposits automatically any more, so the deposit is claimed manually
+    # below, mirroring Leg 2's recipe with the roles swapped (origin network
+    # 0, claim executed on the L2 bridge).
     log "  Leg 1: L1 -> L2-$PREFIX (network $NETWORK_ID), 0.01 native ETH"
     local SEND1 TX1 RC1
     SEND1=$(_verify_cast send --json --rpc-url "$L1_URL" --private-key "$KEY" "$L1_BRIDGE" \
@@ -650,14 +657,127 @@ _anvil_aggkit_bridge_roundtrip() {
     log_info "  tx: $TX1"
     anvil_test_result "Bridge round trip: L1->L2 deposit sent" "pass"
 
-    local L1L2_STATE
-    L1L2_STATE=$(_poll_tracker "$PROXY_BASE" "$L1_NETWORK_ID" "$TX1" 90 "L1->L2")
-    local L1L2_STATUS L1L2_LAST_STEP
-    L1L2_STATUS=$(echo "$L1L2_STATE" | jq -r '.tracking_status // "?"')
-    L1L2_LAST_STEP=$(echo "$L1L2_STATE" | jq -r '.all_steps[-1].step_name // "?"')
-    log_info "  tracker terminal: tracking_status=$L1L2_STATUS last_step=$L1L2_LAST_STEP"
+    # Poll to ready-to-claim (WaitingClaim appears and leaves "pending").
+    # Readiness needs only the GER/L1-info-leaf propagation that TEST 6/7
+    # already saw sync, so 90s is generous (the readiness poll itself was
+    # observed to clear on the first poll).
+    local L1L2_READY=false L1L2_STATE L1L2_WC
+    local WC1_DEADLINE=$(( $(date +%s) + 90 ))
+    while [ "$(date +%s)" -lt "$WC1_DEADLINE" ]; do
+        L1L2_STATE=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/tracker/v1/network/${L1_NETWORK_ID}/tx/${TX1}" || echo '{}')
+        L1L2_WC=$(echo "$L1L2_STATE" | jq -r '[.all_steps[]? | select(.step_name=="WaitingClaim") | .status] | last // ""')
+        log_info "  poll: WaitingClaim=$L1L2_WC"
+        if [ -n "$L1L2_WC" ] && [ "$L1L2_WC" != "pending" ]; then
+            L1L2_READY=true
+            break
+        fi
+        sleep 5
+    done
+    anvil_test_result "Bridge round trip: L1->L2 reaches ready-to-claim (WaitingClaim)" \
+        "$([ "$L1L2_READY" = true ] && echo pass || echo fail)"
+    if [ "$L1L2_READY" != true ]; then
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast" "fail"
+        return
+    fi
+
+    # ---- Manual claim via cast, sourced entirely from the bridges REST
+    # listing + claim-proof, exactly mirroring Leg 2's recipe below with the
+    # roles swapped: the deposit is looked up with the ORIGIN network id
+    # (0 = L1) and the claim executes on the DESTINATION (L2) bridge. ----
+    local BRIDGES1_JSON DEPOSIT1
+    BRIDGES1_JSON=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/bridges?network_id=${L1_NETWORK_ID}")
+    DEPOSIT1=$(echo "$BRIDGES1_JSON" | jq -c --arg h "$TX1" '.bridges[] | select(.tx_hash == $h)')
+    if [ -z "$DEPOSIT1" ]; then
+        log_error "  Could not find deposit $TX1 in bridges?network_id=$L1_NETWORK_ID: $BRIDGES1_JSON"
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast" "fail"
+        return
+    fi
+    local ORIGIN_NETWORK1 ORIGIN_ADDRESS1 DEST_NETWORK1 DEST_ADDRESS1 AMOUNT1 METADATA1 DEPOSIT_COUNT1
+    ORIGIN_NETWORK1=$(echo "$DEPOSIT1" | jq -r '.origin_network')
+    ORIGIN_ADDRESS1=$(echo "$DEPOSIT1" | jq -r '.origin_address')
+    DEST_NETWORK1=$(echo "$DEPOSIT1" | jq -r '.destination_network')
+    DEST_ADDRESS1=$(echo "$DEPOSIT1" | jq -r '.destination_address')
+    AMOUNT1=$(echo "$DEPOSIT1" | jq -r '.amount')
+    METADATA1=$(echo "$DEPOSIT1" | jq -r '.metadata')
+    DEPOSIT_COUNT1=$(echo "$DEPOSIT1" | jq -r '.deposit_count')
+    # NOTE: global_index CANNOT be jq-extracted here (unlike Leg 2): an
+    # L1-origin deposit's index carries the 2^64 L1 offset (observed:
+    # 18446744073709551618), which jq's float64 parsing silently mangles to
+    # 18446744073709552000 -- a wrong index reverts the claim. Extract the
+    # exact digits with python3 (arbitrary-precision integers) from the RAW
+    # listing instead.
+    local GLOBAL_INDEX1
+    GLOBAL_INDEX1=$(python3 -c '
+import json, sys
+listing = json.load(sys.stdin)
+deps = [b for b in listing.get("bridges", []) if b.get("tx_hash") == sys.argv[1]]
+print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
+    log_info "  deposit: deposit_count=$DEPOSIT_COUNT1 global_index=$GLOBAL_INDEX1 origin_network=$ORIGIN_NETWORK1 (asset origin, NOT $NETWORK_ID)"
+
+    # leaf_index for claim-proof is the L1-INFO-TREE index, not deposit_count
+    # (same S4b trap as Leg 2); fetched fresh every time rather than guessed.
+    local LEAF_INDEX1
+    LEAF_INDEX1=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/l1-info-tree-index?network_id=${L1_NETWORK_ID}&deposit_count=${DEPOSIT_COUNT1}")
+    if ! [[ "$LEAF_INDEX1" =~ ^[0-9]+$ ]]; then
+        log_error "  l1-info-tree-index did not return a plain integer: $LEAF_INDEX1"
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast" "fail"
+        return
+    fi
+    log_info "  leaf_index (L1 info tree) = $LEAF_INDEX1"
+
+    local CLAIM_PROOF1
+    local CP1_DEADLINE=$(( $(date +%s) + 120 ))
+    while [ "$(date +%s)" -lt "$CP1_DEADLINE" ]; do
+        CLAIM_PROOF1=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/claim-proof?network_id=${L1_NETWORK_ID}&leaf_index=${LEAF_INDEX1}&deposit_count=${DEPOSIT_COUNT1}")
+        if [ -n "$CLAIM_PROOF1" ] && echo "$CLAIM_PROOF1" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
+            break
+        fi
+        sleep 5
+    done
+    if [ -z "$CLAIM_PROOF1" ] || ! echo "$CLAIM_PROOF1" | jq -e '.proof_local_exit_root and .proof_rollup_exit_root and .l1_info_tree_leaf' > /dev/null 2>&1; then
+        log_error "  claim-proof never became available: $CLAIM_PROOF1"
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast" "fail"
+        return
+    fi
+
+    local LOCAL_PROOF1 ROLLUP_PROOF1 MAINNET_EXIT_ROOT1 ROLLUP_EXIT_ROOT1
+    LOCAL_PROOF1=$(echo "$CLAIM_PROOF1" | jq -c '.proof_local_exit_root | "[" + join(",") + "]"' | tr -d '"')
+    ROLLUP_PROOF1=$(echo "$CLAIM_PROOF1" | jq -c '.proof_rollup_exit_root | "[" + join(",") + "]"' | tr -d '"')
+    MAINNET_EXIT_ROOT1=$(echo "$CLAIM_PROOF1" | jq -r '.l1_info_tree_leaf.mainnet_exit_root')
+    ROLLUP_EXIT_ROOT1=$(echo "$CLAIM_PROOF1" | jq -r '.l1_info_tree_leaf.rollup_exit_root')
+
+    local CLAIM_SEND1 CLAIM_TX1 CLAIM_RC1
+    CLAIM_SEND1=$(_verify_cast send --json --rpc-url "$L2_URL" --private-key "$KEY" "$L2_BRIDGE" \
+        'claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)' \
+        "$LOCAL_PROOF1" "$ROLLUP_PROOF1" "$GLOBAL_INDEX1" "$MAINNET_EXIT_ROOT1" "$ROLLUP_EXIT_ROOT1" \
+        "$ORIGIN_NETWORK1" "$ORIGIN_ADDRESS1" "$DEST_NETWORK1" "$DEST_ADDRESS1" "$AMOUNT1" "$METADATA1" 2>&1)
+    CLAIM_TX1=$(echo "$CLAIM_SEND1" | tail -1 | jq -r '.transactionHash // empty' 2>/dev/null)
+    CLAIM_RC1=$(echo "$CLAIM_SEND1" | tail -1 | jq -r '.status // empty' 2>/dev/null)
+    log_info "  claimAsset -> tx=$CLAIM_TX1 status=$CLAIM_RC1"
+    if [ -z "$CLAIM_TX1" ] || [ "$CLAIM_RC1" != "0x1" ]; then
+        log_error "  L1->L2 claimAsset send failed: $CLAIM_SEND1"
+        anvil_test_result "Bridge round trip: L1->L2 manual claim via cast" "fail"
+        return
+    fi
+
+    local IS_CLAIMED1
+    IS_CLAIMED1=$(_verify_cast call --rpc-url "$L2_URL" "$L2_BRIDGE" \
+        'isClaimed(uint32,uint32)(bool)' "$DEPOSIT_COUNT1" "$ORIGIN_NETWORK1" 2>&1 | tail -1)
+    log_info "  isClaimed($DEPOSIT_COUNT1, $ORIGIN_NETWORK1) on L2 = $IS_CLAIMED1"
+    anvil_test_result "Bridge round trip: L1->L2 manual claim via cast (isClaimed == true)" \
+        "$([ "$IS_CLAIMED1" = "true" ] && echo pass || echo fail)"
+
+    # Tracker reaches the terminal state AFTER the manual claim (same
+    # assertion the pre-#55 code made, now satisfied by the claim above).
+    # `|| true` so a poll timeout is reported as a failed TEST (with the
+    # payload logged) rather than killing the script under set -e.
+    local CLAIMED_STATE CLAIMED_STATUS CLAIMED_DONE
+    CLAIMED_STATE=$(_poll_tracker "$PROXY_BASE" "$L1_NETWORK_ID" "$TX1" 90 "L1->L2 claim") || true
+    CLAIMED_STATUS=$(echo "$CLAIMED_STATE" | jq -r '.tracking_status // "?"')
+    CLAIMED_DONE=$(echo "$CLAIMED_STATE" | jq -r '[.all_steps[]? | select(.step_name=="Claimed") | .status] | last // "?"')
+    log_info "  tracker terminal: tracking_status=$CLAIMED_STATUS Claimed=$CLAIMED_DONE"
     anvil_test_result "Bridge round trip: L1->L2 tracker finished/Claimed" \
-        "$([ "$L1L2_STATUS" = "finished" ] && [ "$L1L2_LAST_STEP" = "Claimed" ] && echo pass || echo fail)"
+        "$([ "$CLAIMED_STATUS" = "finished" ] && [ "$CLAIMED_DONE" = "done" ] && echo pass || echo fail)"
 
     # ---- Leg 2: L2-001 -> L1 (must stay manual: parks at WaitingClaim) ----
     log "  Leg 2: L2-$PREFIX -> L1 (network $L1_NETWORK_ID), 0.001 native ETH (uses the balance Leg 1 just claimed in)"
