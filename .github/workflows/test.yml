@@ -525,12 +525,20 @@ jobs:
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }} anvil ecdsa-multisig
 
       - name: Verify sovereign bridge/GER bytecode at the deterministic addresses
+        # The bridge proxy is create2-derived through the keyless PolygonZkEVMDeployer,
+        # whose pre-signed tx gasLimit static_files/contracts/contracts.sh raises
+        # 1M -> 10M for Amsterdam (EIP-8037); that changes the keyless sender and
+        # every derived address, so this value must be re-derived whenever those
+        # patches change (current value from run 38786521994's deployment output;
+        # the L2 bridge is mirrored at the L1 bridge address, so one value covers
+        # both). The GER manager is predeployed at its legacy fixed address, which
+        # did not move.
         run: |
           l2_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} l2-anvil-001 rpc)
-          bridge_code=$(cast code 0xC8cbEBf950B9Df44d987c8619f092beA980fF038 --rpc-url "${l2_rpc_url}")
+          bridge_code=$(cast code 0x3854429dCbccDd8a1a7afA2e066Ba029fb866628 --rpc-url "${l2_rpc_url}")
           ger_code=$(cast code 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa --rpc-url "${l2_rpc_url}")
           if [ "${bridge_code}" = "0x" ]; then
-            echo "❌ sovereign bridge has no bytecode at 0xC8cbEBf950B9Df44d987c8619f092beA980fF038"
+            echo "❌ sovereign bridge has no bytecode at 0x3854429dCbccDd8a1a7afA2e066Ba029fb866628"
             exit 1
           fi
           if [ "${ger_code}" = "0x" ]; then

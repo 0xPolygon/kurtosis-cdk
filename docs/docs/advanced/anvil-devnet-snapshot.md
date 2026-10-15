@@ -770,7 +770,10 @@ ambiguous by ±1 block** in T2's own testing, so treat "stay several blocks clea
 deployment block" as the operative rule, not a precise cutoff — and expect the
 deployment block to differ per capture. If you need the exact number for a specific
 bundle, bisect it with `eth_getCode` against the deterministic bridge address
-(`0xC8cbEBf950B9Df44d987c8619f092beA980fF038`).
+(`0x3854429dCbccDd8a1a7afA2e066Ba029fb866628` for captures made since the
+Amsterdam keyless-deployer gas-limit patches in `contracts.sh`;
+`0xC8cbEBf950B9Df44d987c8619f092beA980fF038` for older bundles captured before
+them).
 
 ## Restore constraints and hazards
 
