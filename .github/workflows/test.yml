@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Install linters
       - name: Install kurtosis
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
         with:
           config: ${{ github.workspace }}/.github/scripts/typos.toml
@@ -109,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
         with:
           args: >
@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install kurtosis-test
         run: |
@@ -175,7 +175,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -211,11 +211,11 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/other/anvil/anvil-rollup.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/besu/*.yml ./.github/tests/other/anvil/anvil-rollup.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -223,7 +223,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]] || [[ "${folder_name}" == "besu" ]]; then
               job_name="${folder_name}-${file_name}"
             elif [[ "${folder_name}" == "anvil" ]]; then
               # file_name is already "anvil-rollup" -- prefixing with the
@@ -250,7 +250,7 @@ jobs:
       matrix:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -289,7 +289,7 @@ jobs:
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -308,12 +308,13 @@ jobs:
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep
 
       - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           support-path: "${{ github.workspace }}/lib/bats-support"
           assert-path: "${{ github.workspace }}/lib/bats-assert"
           detik-path: "${{ github.workspace }}/lib/bats-detik"
           file-path: "${{ github.workspace }}/lib/bats-file"
+          github-token: ${{ github.token }}
 
       - name: Install polycli
         run: |
@@ -325,11 +326,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          ref: 3fb8af01358583e8c6df167beac9c1d2b06961c1 # 2026-03-05
+        uses: ./.github/actions/checkout-e2e
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -373,7 +370,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -448,7 +445,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run

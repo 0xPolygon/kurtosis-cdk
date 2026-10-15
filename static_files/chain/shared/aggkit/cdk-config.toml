@@ -33,7 +33,11 @@ Level = "{{.log_level}}"
 Outputs = ["stderr"]
 Environment = "{{.environment}}"
 
+{{- if .aggkit_public_rest }}
+[PublicREST]
+{{- else }}
 [REST]
+{{- end }}
 Port = "{{.aggkit_node_rest_api_port}}"
 
 [AggSender]

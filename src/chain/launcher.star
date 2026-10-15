@@ -1,4 +1,5 @@
 anvil_launcher = import_module("./anvil/launcher.star")
+besu_launcher = import_module("./besu/launcher.star")
 cdk_erigon_launcher = import_module("./cdk-erigon/launcher.star")
 constants = import_module("../package_io/constants.star")
 input_parser = import_module("../package_io/input_parser.star")
@@ -42,6 +43,15 @@ def launch(
         # The anvil node itself was already started from main.star (it must be
         # live before initialize_rollup runs). This only adds the aggkit stack.
         context = anvil_launcher.launch(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            deployment_stages,
+        )
+    elif sequencer_type == constants.SEQUENCER_TYPE.besu:
+        plan.print("Deploying aggkit for the besu chain")
+        context = besu_launcher.launch(
             plan,
             args,
             contract_setup_addresses,

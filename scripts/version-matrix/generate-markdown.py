@@ -70,12 +70,15 @@ sidebar_position: 3
         # Categorize environments by execution client
         op_reth_envs = {}
         cdk_erigon_envs = {}
-        
+        besu_envs = {}
+
         for env_key, environment in test_environments.items():
             if 'cdk-opreth' in env_key:
                 op_reth_envs[env_key] = environment
             elif 'cdk-erigon' in env_key:
                 cdk_erigon_envs[env_key] = environment
+            elif 'cdk-besu' in env_key:
+                besu_envs[env_key] = environment
 
         # Generate table of contents
         if op_reth_envs:
@@ -88,6 +91,13 @@ sidebar_position: 3
         if cdk_erigon_envs:
             md += "### CDK Erigon\n\n"
             for env_key, environment in sorted(cdk_erigon_envs.items()):
+                environment_type = environment.get('type')
+                md += f"- [{environment_type}](#{environment_type})\n"
+            md += "\n"
+
+        if besu_envs:
+            md += "### CDK Besu\n\n"
+            for env_key, environment in sorted(besu_envs.items()):
                 environment_type = environment.get('type')
                 md += f"- [{environment_type}](#{environment_type})\n"
             md += "\n"
@@ -113,6 +123,21 @@ sidebar_position: 3
             md += "Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the L2 execution client.\n\n"
             
             for env_key, environment in sorted(cdk_erigon_envs.items()):
+                environment_type = environment.get('type', 'unknown')
+                config_file_path = environment.get('config_file_path', '')
+                components = environment.get('components', {})
+
+                md += f"### {environment_type}\n\n"
+                md += f"- File path: `{config_file_path}`\n\n"
+                md += self._generate_component_table(components)
+                md += "\n"
+
+        # Generate CDK Besu section
+        if besu_envs:
+            md += "## CDK Besu\n\n"
+            md += "Environments using [Besu](https://github.com/hyperledger/besu) as the L2 execution client.\n\n"
+
+            for env_key, environment in sorted(besu_envs.items()):
                 environment_type = environment.get('type', 'unknown')
                 config_file_path = environment.get('config_file_path', '')
                 components = environment.get('components', {})
@@ -156,7 +181,6 @@ sidebar_position: 3
                 'matches stable': '✅',
                 'behind stable': '🚨',
                 'pinned': '📌',
-                'tracking head': '⚠️',
             }.get(status, '❓')
 
             status_display = f"{status_emoji} {status}" if status else 'N/A'
@@ -175,7 +199,7 @@ sidebar_position: 3
             # than presenting a bare sha as a "stable version".
             latest_label = latest_version
             if latest_version and package.get('tracking_mode') == 'head':
-                latest_label = f"HEAD ({latest_version})"
+                latest_label = f"HEAD ({latest_version[:12]})"
             latest_display = (
                 f"[{latest_label}]({latest_version_source_url})"
                 if latest_version else 'N/A'

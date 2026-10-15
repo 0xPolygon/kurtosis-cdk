@@ -15,6 +15,8 @@ import re
 import json
 import yaml
 import requests
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict, replace
@@ -33,17 +35,27 @@ class ComponentVersion:
     pin_reason: Optional[str] = None
 
 
+# Components whose upstream release tags carry no "v" prefix, so their release URL must not add
+# one (e.g. Besu tags 25.12.0, not v25.12.0).
+UNPREFIXED_RELEASE_TAGS = {'besu'}
+
 # Components deliberately held back from the latest stable release, keyed by
 # (environment, component). These render as "pinned" instead of "behind stable"
 # so that genuine regressions stay visible in the matrix.
 #
-# Keep every reason in the same short form: "Only supports <component> <line> so far."
+# Keep every reason short: "Only supports <component> <line> so far." when we are just
+# waiting on support, or what blocks the bump when another pinned component forces it.
 PINNED_VERSIONS = {
     ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
+    ("cdk-erigon-sovereign-pessimistic", "agglayer"): "aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+.",
+    ("cdk-opreth-sovereign-pessimistic", "agglayer"): "aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+.",
     ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
     ("cdk-erigon-zkrollup", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+    ("cdk-erigon-validium", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
+    ("cdk-erigon-zkrollup", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
+    ("cdk-opreth-zkrollup", "op-node"): "op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2).",
 }
 
 
@@ -75,38 +87,26 @@ class PackageVersion:
 # "behind stable" so real drift stays visible.
 PINNED_PACKAGES = {}
 
-# What "latest" means for each package, keyed by package locator.
-#
-# - "release" (default): compare the pin against the latest release/tag. Right
-#   for packages that tag every change worth consuming.
-# - "head": compare the pin against the default branch HEAD. Right for packages
-#   that release rarely and expect consumers to pin commits — ethereum-package
-#   last tagged 6.1.0 in April 2026 while continuing to ship daily, so measuring
-#   against that tag reports "newer than stable" forever and hides real drift.
-PACKAGE_TRACKING_MODE = {
-    "github.com/ethpandaops/ethereum-package": "head",
-    # Has never cut a release or tag, so HEAD is the only comparison point.
-    "github.com/xavier-romero/kurtosis-blockscout": "head",
-}
-
-# A head-tracked pin is always behind HEAD on an active upstream, so distance
-# alone is not a signal. Alarm once the pin is old enough that we are plausibly
-# missing fixes: these packages ship most days, so two weeks is already a
-# meaningful gap.
-HEAD_TRACKING_STALE_AFTER_DAYS = 14
-
 
 class VersionMatrixExtractor:
     """Extracts and manages version matrix information."""
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
+        # Per-run response caches. Both are keyed by what identifies the request
+        # and hold None results too, so a failed lookup is not retried either.
+        self._latest_version_cache: Dict[str, Optional[str]] = {}
+        self._github_get_cache: Dict[str, object] = {}
+        self._url_cache: Dict[str, tuple] = {}
+        self._url_locks: Dict[str, threading.Lock] = {}
+        self._cache_lock = threading.Lock()
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
         self.kurtosis_yaml_path = repo_root / "kurtosis.yml"
 
         cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
         op_reth_tests_path = repo_root / ".github" / "tests" / "op-reth"
         op_succinct_tests_path = repo_root / ".github" / "tests" / "op-succinct"
+        besu_tests_path = repo_root / ".github" / "tests" / "besu"
         self.test_files_paths = [
             # cdk-erigon
             ("cdk-erigon-zkrollup", cdk_erigon_tests_path / "rollup.yml"),
@@ -117,6 +117,8 @@ class VersionMatrixExtractor:
             ("cdk-opreth-sovereign-pessimistic", op_reth_tests_path / "sovereign-pessimistic.yml"),
             ("cdk-opreth-sovereign-ecdsa-multisig", op_reth_tests_path / "sovereign-ecdsa-multisig.yml"),
             ("cdk-opreth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
+            # besu
+            ("cdk-besu-sovereign-ecdsa-multisig", besu_tests_path / "sovereign-ecdsa-multisig.yml"),
         ]
 
         # Component mapping
@@ -125,6 +127,7 @@ class VersionMatrixExtractor:
             "aggkit_prover_image": "aggkit-prover",
             "agglayer_image": "agglayer",
             "agglayer_contracts_image": "agglayer-contracts",
+            "besu_image": "besu",
             "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
             "status_checker_image": "status-checker",
@@ -149,6 +152,7 @@ class VersionMatrixExtractor:
             "aggkit-prover", 
             "agglayer",
             "agglayer-contracts",
+            "besu",
             "cdk-erigon",
             "cdk-node",
             "op-batcher",
@@ -170,6 +174,7 @@ class VersionMatrixExtractor:
             "aggkit-prover": "agglayer/provers",
             "agglayer": "agglayer/agglayer",
             "agglayer-contracts": "agglayer/agglayer-contracts",
+            "besu": "hyperledger/besu",
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
             "status-checker": "0xPolygon/status-checker",
@@ -212,6 +217,7 @@ class VersionMatrixExtractor:
                     "DEFAULT_IMAGES not found in constants.star")
 
             images_content = default_images_match.group(1)
+            self._prewarm_latest_versions(images_content)
 
             # Parse each image line
             for line in images_content.split('\n'):
@@ -246,6 +252,22 @@ class VersionMatrixExtractor:
             print(f"Error extracting default images: {e}")
         return components
 
+    def _prewarm_latest_versions(self, images_content: str):
+        """Populate the latest-version cache concurrently.
+
+        The lookups are independent GETs, so the whole run is otherwise bound by
+        latency times the number of components rather than by GitHub.
+        """
+        components = {
+            self.component_mapping[key]
+            for key, _ in re.findall(r'"([^"]+)":\s*"([^"]+)"', images_content)
+            if key in self.component_mapping
+        }
+        if not components:
+            return
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            pool.map(self._get_latest_version, sorted(components))
+
     def filter_default_images(self, default_images: Dict[str, ComponentVersion]) -> Dict[str, ComponentVersion]:
         return {
             name: component for name, component in default_images.items()
@@ -268,12 +290,11 @@ class VersionMatrixExtractor:
             tag = tag.split('-fork')[0]
 
         # Specific handling for zkevm-prover images
-        if 'zkevm-prover' in image and tag.find('-fork.'):
+        if 'zkevm-prover' in image and '-fork.' in tag:
             tag = tag.split('-fork.')[0]
         
-        # Specific handling for op-deployer images
-        if 'op-deployer' in image and tag.find('-cdk'):
-            tag = tag.split('-cdk')[0]
+        # Our patched builds (e.g. op-deployer v0.8.0-cdk, cdk v0.5.4-cdk-amsterdam) have no upstream release tag
+        tag = tag.split('-cdk')[0]
 
         # Remove common prefixes
         version = re.sub(r'^v?', '', tag)
@@ -294,6 +315,9 @@ class VersionMatrixExtractor:
                     return f"https://github.com/{repo}/releases/tag/{comp_name}/v{version.lstrip('v')}"
 
                 if version not in ['latest', 'main', 'master']:
+                    # Besu tags its releases without the "v" prefix (e.g. 25.12.0).
+                    if comp_name in UNPREFIXED_RELEASE_TAGS:
+                        return f"https://github.com/{repo}/releases/tag/{version.lstrip('v')}"
                     return f"https://github.com/{repo}/releases/tag/v{version.lstrip('v')}"
                 else:
                     return f"https://github.com/{repo}/releases/latest"
@@ -303,12 +327,54 @@ class VersionMatrixExtractor:
     def _is_prerelease(tag_name: str) -> bool:
         """Whether a tag looks like a prerelease rather than a stable version.
 
-        Covers the usual alpha/beta/rc markers plus test builds such as
-        op-deployer's "0.8.0-pcd-test.2", which must never be reported as stable.
+        Upstream publishes these as ordinary releases with prerelease=false
+        (op-deployer "0.8.0-pr.22965.1"), so the tag name is the only signal.
+        A build number is required: a bare "-<word>" suffix marks a *stable*
+        release here (agglayer-contracts "v8.0.0-fork.12").
         """
-        return re.search(r'-(alpha|beta|rc|test)', tag_name, re.IGNORECASE) is not None
+        return re.search(
+            r'-(alpha|beta|rc|test|pr)[.\-]?\d', tag_name, re.IGNORECASE) is not None
 
     def _get_latest_version(self, component: str) -> Optional[str]:
+        """Latest upstream version for a component, fetched once per run.
+
+        Every test environment asks for the same components, so without the cache
+        the same endpoint is hit up to seven times.
+        """
+        with self._cache_lock:
+            if component in self._latest_version_cache:
+                return self._latest_version_cache[component]
+        version = self._fetch_latest_version(component)
+        with self._cache_lock:
+            self._latest_version_cache[component] = version
+        return version
+
+    def _get_json(self, url: str):
+        """GET a URL once per run, returning (status_code, parsed JSON).
+
+        Keyed by URL rather than by component because the op-* components all
+        read the same optimism/releases page, and the prewarm requests them
+        concurrently. The per-URL lock makes the losers of that race wait for
+        the winner's response instead of issuing their own.
+        """
+        with self._cache_lock:
+            if url in self._url_cache:
+                return self._url_cache[url]
+            url_lock = self._url_locks.setdefault(url, threading.Lock())
+
+        with url_lock:
+            with self._cache_lock:
+                if url in self._url_cache:
+                    return self._url_cache[url]
+            response = requests.get(url, timeout=10, headers={
+                'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+            result = (response.status_code,
+                      response.json() if response.status_code == 200 else None)
+            with self._cache_lock:
+                self._url_cache[url] = result
+            return result
+
+    def _fetch_latest_version(self, component: str) -> Optional[str]:
         """Fetch the latest version from GitHub releases."""
         repo = self.repos.get(component)
         if not repo:
@@ -317,11 +383,9 @@ class VersionMatrixExtractor:
         try:
             if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer', 'op-reth']:
                 url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
-                response = requests.get(url, timeout=10, headers={
-                    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+                status_code, releases = self._get_json(url)
 
-                if response.status_code == 200:
-                    releases = response.json()
+                if status_code == 200:
                     for release in releases:
                         if 'tag_name' in release:
                             tag_name = release['tag_name']
@@ -332,9 +396,12 @@ class VersionMatrixExtractor:
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
                                 return version
+                    print(f"No stable {component} release found in {url}")
                 else:
-                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
-                    return None
+                    print(f"Error fetching latest version for {component}: {status_code} from {url}")
+                # Never fall through to /releases/latest: these live in monorepos
+                # whose newest release belongs to some other component.
+                return None
 
             # These components don't have any release, thus we rely on tags
             if component in [
@@ -342,12 +409,8 @@ class VersionMatrixExtractor:
                 'zkevm-pool-manager', 'cdk-data-availability'
             ]:
                 url = f"https://api.github.com/repos/{repo}/tags"
-                response = requests.get(
-                    url, timeout=10,
-                    headers={'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'}
-                )
-                if response.status_code == 200:
-                    tags = response.json()
+                status_code, tags = self._get_json(url)
+                if status_code == 200:
                     for tag in tags:
                         if 'name' in tag:
                             tag_name = tag['name']
@@ -362,21 +425,21 @@ class VersionMatrixExtractor:
 
                             latest_version = re.sub(r'^v?', '', tag_name)
                             return latest_version
+                    print(f"No stable {component} tag found in {url}")
                 else:
-                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
-                    return None
+                    print(f"Error fetching latest version for {component}: {status_code} from {url}")
+                # These components have no releases, so /releases/latest cannot answer.
+                return None
 
             url = f"https://api.github.com/repos/{repo}/releases/latest"
-            response = requests.get(url, timeout=10, headers={
-                                    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+            status_code, release_data = self._get_json(url)
 
-            if response.status_code == 200:
-                release_data = response.json()
+            if status_code == 200:
                 tag = release_data['tag_name']
                 version = re.sub(r'^v?', '', tag)
                 return version
             else:
-                print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                print(f"Error fetching latest version for {component}: {status_code} from {url}")
                 return None
 
         except Exception as e:
@@ -510,13 +573,23 @@ class VersionMatrixExtractor:
     def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion]):
         """Re-label deliberately held-back components as pinned.
 
-        Only downgrades a "behind stable" status: if a pinned component ever
-        catches up with (or overtakes) stable, the real status is kept so that
-        the pin can be retired.
+        Downgrades a "behind stable" status: if a pinned component ever catches
+        up with (or overtakes) stable, the real status is kept so that the pin
+        can be retired.
+
+        Also covers components held back to an older *pre-release* while the
+        default moved ahead (e.g. agglayer pinned to 0.6.0-rc.5 for cdk-node
+        environments). Those still read "newer than stable" against the latest
+        stable tag, so the pin would otherwise stay invisible in the matrix.
         """
         for name, component in components.items():
             reason = PINNED_VERSIONS.get((environment_name, name))
-            if reason and component.status == "behind stable":
+            if not reason:
+                continue
+            if component.status == "behind stable":
+                component.status = "pinned"
+                component.pin_reason = reason
+            elif component.status == "newer than stable" and component.version in reason:
                 component.status = "pinned"
                 component.pin_reason = reason
 
@@ -595,6 +668,14 @@ class VersionMatrixExtractor:
                 'op-node',
                 'op-reth',
                 'op-succinct-proposer',  # different from cdk-opreth-sovereign
+                'zkevm-bridge-service',
+            ],
+            # besu
+            "cdk-besu-sovereign-ecdsa-multisig": [
+                'aggkit',
+                'agglayer',
+                'agglayer-contracts',
+                'besu',
                 'zkevm-bridge-service',
             ],
         }
@@ -810,46 +891,59 @@ class VersionMatrixExtractor:
             print("No `replace` block found in kurtosis.yml, skipping packages.")
             return packages
 
-        for package_locator, replacement in replace_options.items():
-            # A replacement may redirect to a different repo (e.g. a fork) and
-            # optionally append `@<tag|branch|commit>`. The pin is what actually
-            # gets resolved, so report against the replacement target.
-            target, _, pin = replacement.partition('@')
-            repo = self._repo_from_locator(target)
-            if not repo:
-                print(f"Could not derive a GitHub repo from '{target}', skipping.")
-                continue
-
-            pin = pin or 'HEAD'
-            pin_date = self._get_ref_date(repo, pin)
-            tracking_mode = PACKAGE_TRACKING_MODE.get(package_locator, 'release')
-
-            if tracking_mode == 'head':
-                latest_version, latest_version_date = self._get_head_version(repo)
-                status, commit_distance = self._determine_head_tracked_status(
-                    repo, pin, pin_date, latest_version)
-            else:
-                latest_version, latest_version_date = self._get_latest_package_version(repo)
-                status, commit_distance = self._determine_package_status(
-                    repo, pin, pin_date, latest_version, latest_version_date)
-
-            packages[package_locator] = PackageVersion(
-                pin=pin,
-                pin_date=pin_date,
-                pin_source_url=self._get_package_source_url(repo, pin),
-                latest_version=latest_version,
-                latest_version_date=latest_version_date,
-                latest_version_source_url=(
-                    self._get_package_source_url(repo, latest_version)
-                    if latest_version else None
-                ),
-                status=status,
-                commit_distance=commit_distance,
-                tracking_mode=tracking_mode,
-                pin_reason=PINNED_PACKAGES.get(package_locator),
+        # Each package needs several dependent lookups, but the packages are
+        # independent of one another, so resolve them concurrently.
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            resolved = pool.map(
+                lambda item: (item[0], self._resolve_package(*item)),
+                replace_options.items(),
             )
+        for package_locator, package in resolved:
+            if package:
+                packages[package_locator] = package
 
         return packages
+
+    def _resolve_package(self, package_locator: str, replacement: str) -> Optional[PackageVersion]:
+        # A replacement may redirect to a different repo (e.g. a fork) and
+        # optionally append `@<tag|branch|commit>`. The pin is what actually
+        # gets resolved, so report against the replacement target.
+        target, _, pin = replacement.partition('@')
+        repo = self._repo_from_locator(target)
+        if not repo:
+            print(f"Could not derive a GitHub repo from '{target}', skipping.")
+            return None
+
+        pin = pin or 'HEAD'
+        pin_date = self._get_ref_date(repo, pin)
+        # A commit pin means upstream ships faster than it tags: follow its HEAD.
+        tracking_mode = ('head' if pin == 'HEAD' or self._is_commit_sha(pin)
+                         else 'release')
+
+        if tracking_mode == 'head':
+            latest_version, latest_version_date = self._get_head_version(repo)
+            status, commit_distance = self._determine_head_tracked_status(
+                repo, pin, latest_version)
+        else:
+            latest_version, latest_version_date = self._get_latest_package_version(repo)
+            status, commit_distance = self._determine_package_status(
+                repo, pin, pin_date, latest_version, latest_version_date)
+
+        return PackageVersion(
+            pin=pin,
+            pin_date=pin_date,
+            pin_source_url=self._get_package_source_url(repo, pin),
+            latest_version=latest_version,
+            latest_version_date=latest_version_date,
+            latest_version_source_url=(
+                self._get_package_source_url(repo, latest_version)
+                if latest_version else None
+            ),
+            status=status,
+            commit_distance=commit_distance,
+            tracking_mode=tracking_mode,
+            pin_reason=PINNED_PACKAGES.get(package_locator),
+        )
 
     def _repo_from_locator(self, locator: str) -> Optional[str]:
         """Turn a github.com/org/repo[/sub/path] locator into 'org/repo'."""
@@ -866,6 +960,15 @@ class VersionMatrixExtractor:
         rather than a failure — a repo that has never cut a release returns 404
         from /releases/latest, and logging that as an error is just noise.
         """
+        with self._cache_lock:
+            if path in self._github_get_cache:
+                return self._github_get_cache[path]
+        result = self._github_get_uncached(path, allow_missing)
+        with self._cache_lock:
+            self._github_get_cache[path] = result
+        return result
+
+    def _github_get_uncached(self, path: str, allow_missing: bool = False):
         try:
             response = requests.get(
                 f"https://api.github.com/{path}", timeout=10,
@@ -899,12 +1002,7 @@ class VersionMatrixExtractor:
         return None
 
     def _get_latest_package_version(self, repo: str) -> tuple:
-        """Return (version, date) of the newest release, falling back to tags.
-
-        A repo with neither is not release-tracked at all; add it to
-        PACKAGE_TRACKING_MODE as "head" rather than silently comparing it
-        against its own branch tip, which would always look up to date.
-        """
+        """Return (version, date) of the newest release, falling back to tags."""
         # A 404 here just means the repo has never published a release.
         release = self._github_get(
             f"repos/{repo}/releases/latest", allow_missing=True)
@@ -917,28 +1015,22 @@ class VersionMatrixExtractor:
             if tag_name:
                 return tag_name, self._get_ref_date(repo, tag_name)
 
-        print(f"No releases or tags found for {repo}; consider tracking it by "
-              f"head in PACKAGE_TRACKING_MODE.")
+        print(f"No releases or tags found for {repo}.")
         return None, None
 
     def _get_head_version(self, repo: str) -> tuple:
-        """Return (short_sha, date) of the default branch HEAD."""
+        """Return (sha, date) of the default branch HEAD."""
         commits = self._github_get(f"repos/{repo}/commits?per_page=1")
         if isinstance(commits, list) and commits:
             sha = commits[0].get('sha', '')
             date = commits[0].get('commit', {}).get('committer', {}).get('date')
-            return sha[:12] if sha else None, date[:10] if date else None
+            return sha or None, date[:10] if date else None
         return None, None
 
     def _determine_head_tracked_status(self, repo: str, pin: str,
-                                       pin_date: Optional[str],
                                        head_version: Optional[str]) -> tuple:
-        """Judge a pin that tracks HEAD rather than releases.
-
-        Being behind HEAD is the normal steady state for these packages, so
-        distance alone is not a signal. What matters is age: a pin only becomes
-        a problem once it is old enough that we are plausibly missing fixes.
-        """
+        """Judge a pin that tracks HEAD rather than releases: any pin short of
+        the branch tip is behind, so the nightly bump follows HEAD."""
         if not head_version:
             return None, None
 
@@ -946,33 +1038,17 @@ class VersionMatrixExtractor:
             return "matches stable", None
 
         comparison = self._github_get(f"repos/{repo}/compare/{head_version}...{pin}")
-        distance = None
         if comparison:
             behind_by = comparison.get('behind_by', 0)
             if behind_by > 0:
-                distance = f"{behind_by} commits behind HEAD"
-            elif comparison.get('ahead_by', 0) > 0:
+                return "behind stable", f"{behind_by} commits behind HEAD"
+            if comparison.get('ahead_by', 0) > 0:
                 # Pinned to an unmerged or since-rewritten commit.
                 return "newer than stable", (
                     f"{comparison['ahead_by']} commits ahead of HEAD")
 
-        age_days = self._days_since(pin_date)
-        if age_days is not None and age_days > HEAD_TRACKING_STALE_AFTER_DAYS:
-            age_note = f"pinned commit is {age_days} days old"
-            return "behind stable", (
-                f"{distance}, {age_note}" if distance else age_note)
-
-        # Recent enough to be deliberate: report the drift without alarming.
-        return "tracking head", distance
-
-    def _days_since(self, date: Optional[str]) -> Optional[int]:
-        """Whole days between an ISO date (YYYY-MM-DD) and today."""
-        if not date:
-            return None
-        try:
-            return (datetime.now() - datetime.strptime(date, "%Y-%m-%d")).days
-        except ValueError:
-            return None
+        # Compare API unavailable: the pin differs from HEAD, and bumping to HEAD is safe.
+        return "behind stable", None
 
     def _get_package_source_url(self, repo: str, ref: str) -> Optional[str]:
         """Build a browsable URL for a package ref."""

@@ -13,6 +13,11 @@ runs:
       shell: bash
       run: kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
+    - name: Sync agglayer/e2e tests
+      uses: ./.github/actions/sync-e2e-tests
+      with:
+        enclave_name: ${{ inputs.enclave_name }}
+
     - name: Bridge from L1 to L2
       shell: bash
       run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner-001 \

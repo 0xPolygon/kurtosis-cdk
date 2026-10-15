@@ -100,6 +100,10 @@ def get_db_configs(suffix, sequencer_type):
         # PROVER_DB / CDK_ERIGON_DBS are erigon-only and op-succinct is not
         # supported on the anvil stack, so only the central env dbs apply.
         dbs = CENTRAL_ENV_DBS
+    elif sequencer_type == constants.SEQUENCER_TYPE.besu:
+        # Besu only runs the pessimistic proof path, so it needs neither the zkevm prover nor the
+        # op-succinct proposer databases.
+        dbs = CENTRAL_ENV_DBS
     else:
         fail("Unsupported sequencer type: %s" % sequencer_type)
 

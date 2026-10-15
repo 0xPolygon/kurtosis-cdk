@@ -62,19 +62,24 @@ SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_reth="op-reth",
     anvil="anvil",
+    besu="besu",
 )
 
+# The single-validator QBFT Besu node is both the sequencer (block proposer) and the RPC endpoint,
+# so both mappings resolve to the same service.
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
     # Anvil runs a single node which is both the sequencer and the RPC.
     SEQUENCER_TYPE.anvil: "l2-anvil",
+    SEQUENCER_TYPE.besu: "besu",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
     SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
     SEQUENCER_TYPE.anvil: "l2-anvil",
+    SEQUENCER_TYPE.besu: "besu",
 }
 
 # Stacks whose L2 contracts are predeployed through the sovereign genesis
@@ -83,6 +88,7 @@ L2_RPC_MAPPING = {
 SOVEREIGN_SEQUENCER_TYPES = [
     SEQUENCER_TYPE.op_reth,
     SEQUENCER_TYPE.anvil,
+    SEQUENCER_TYPE.besu,
 ]
 
 FORK_ID_TO_NAME = {
@@ -124,13 +130,9 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.10.0-rc7",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.1.0",
-    # NOTE: v0.6.0-rc.8 is the upstream git tag name; the published GHCR image
-    # tag omits the "v" prefix (verified via GET
-    # https://ghcr.io/v2/agglayer/agglayer/tags/list?n=1000 -- the tag list
-    # contains "0.6.0-rc.8", not "v0.6.0-rc.8").
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.0-rc.8",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.0",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2-rc.1",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     # bridge_ui_backend "bridge_hub" mode only (src/additional_services/
     # bridge_ui/ui.star run_server): mounts a rendered config.ts and expects
@@ -174,7 +176,8 @@ DEFAULT_IMAGES = {
     # (agglayer-settlement-service/src/settlement_task.rs:543), leaving every
     # certificate stuck in `InError` even though the settlement tx itself
     # landed on L1. See plans/dev-ui-ci-snapshot/s4b-evidence/.
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.5.1",
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.8.1",
+    "besu_image": "hyperledger/besu:26.9.0",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
@@ -183,19 +186,20 @@ DEFAULT_IMAGES = {
     # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
     # For example: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
     "cdk_erigon_sovereign_image": "ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC3",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
+    # cdk 0.5.4 patched to use node-reported L1 block hashes (go-ethereum 1.15 does not hash Amsterdam headers).
+    "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.5",
-    "reth_image": "ghcr.io/paradigmxyz/reth:v2.4.1",
-    "lighthouse_image": "sigp/lighthouse:v8.2.1",
-    "mitm_image": "mitmproxy/mitmproxy:11.1.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.12",
-    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.7.1-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.4.1",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.4",
-    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.3",
-    # Pinned to v3.10.0: aggkit-prover 2.1.0 embeds the op-succinct-elfs from this
+    "geth_image": "ethereum/client-go:v1.17.8",
+    "reth_image": "ghcr.io/paradigmxyz/reth:v2.7.0",
+    "lighthouse_image": "sigp/lighthouse:v8.3.0-rc.0",
+    "mitm_image": "mitmproxy/mitmproxy:12.2.3",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.2",
+    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.8.1-cdk",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.0",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.9",
+    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.6",
+    # Pinned to v3.10.0: aggkit-prover 2.2.0 embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
     # match its own. Bump both together once a newer aggkit-prover ships.
@@ -204,7 +208,7 @@ DEFAULT_IMAGES = {
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
-    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC2",
+    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC4",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:3f1a3a0",
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",

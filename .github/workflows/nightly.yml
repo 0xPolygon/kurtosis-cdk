@@ -32,8 +32,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     continue-on-error: true  # prevent this job from failing the workflow
+    outputs:
+      # `continue-on-error` reports the job as successful, so the drift verdict
+      # has to travel to the summary as an output rather than a job result.
+      # Empty when the job was skipped (fork / no token) or an earlier step
+      # failed before the comparison ran — the summary treats that as "unknown"
+      # rather than as "up to date".
+      outdated: ${{ steps.version-check.outputs.outdated }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check if job should be run
         id: check-run
@@ -56,7 +63,7 @@ jobs:
           echo "Running version matrix job."
           echo "skip=false" >> $GITHUB_OUTPUT
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v7
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
           python-version: 3.13
@@ -87,33 +94,7 @@ jobs:
           fi
           echo "HAS_DIFF=${has_diff}" >> $GITHUB_ENV
           echo "HAS_DIFF=${has_diff}"
-
-      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        with:
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          method: chat.postMessage
-          payload: |
-            {
-              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
-              "text": "Kurtosis CDK Nightly - Version matrix check",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
-                  }
-                }${{ env.HAS_DIFF == 'true' && ',
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Check the documentation at `scripts/version-matrix` to update it"
-                  }
-                }' || '' }}
-              ]
-            }
+          echo "outdated=${has_diff}" >> $GITHUB_OUTPUT
 
       - name: Display check result
         if: ${{ steps.check-run.outputs.skip == 'false' }}
@@ -127,11 +108,21 @@ jobs:
             echo "✅ Version matrix is up to date"
           fi
 
+  bump-version-matrix:
+    needs: check-version-matrix
+    if: needs.check-version-matrix.outputs.outdated == 'true'
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    uses: ./.github/workflows/bump-version-matrix.yml
+    secrets: inherit
+
   run-without-args:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -167,11 +158,11 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/besu/*.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -179,7 +170,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]] || [[ "${folder_name}" == "besu" ]]; then
               job_name="${folder_name}-${file_name}"
             elif [[ "${folder_name}" == "nightly" ]]; then
               job_name="nightly-${file_name}"
@@ -202,7 +193,7 @@ jobs:
       matrix:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -240,7 +231,7 @@ jobs:
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -259,12 +250,13 @@ jobs:
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep
 
       - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           support-path: "${{ github.workspace }}/lib/bats-support"
           assert-path: "${{ github.workspace }}/lib/bats-assert"
           detik-path: "${{ github.workspace }}/lib/bats-detik"
           file-path: "${{ github.workspace }}/lib/bats-file"
+          github-token: ${{ github.token }}
 
       - name: Install polycli
         run: |
@@ -276,11 +268,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          ref: 3fb8af01358583e8c6df167beac9c1d2b06961c1 # 2026-03-05
+        uses: ./.github/actions/checkout-e2e
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -323,7 +311,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -397,7 +385,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -434,7 +422,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -525,7 +513,7 @@ jobs:
     # waits with margin. (num_chains=3 is a manual workflow_dispatch run; the nightly default is 2.)
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Resolve number of chains
         run: |
@@ -574,6 +562,12 @@ jobs:
       # that rollup's in-enclave test-runner-00X (the same mechanism as ./.github/actions/bridge-tests,
       # extended per rollup). These tests guard the WETH lookup behind a native-gas-token check, so
       # they work on our native rollups.
+      - name: Sync agglayer/e2e tests
+        uses: ./.github/actions/sync-e2e-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          services: ${{ env.NUM_CHAINS == '3' && 'test-runner-001 test-runner-002 test-runner-003' || 'test-runner-001 test-runner-002' }}
+
       - name: Run L1<->L2 bridge tests (per rollup)
         run: |
           set -eo pipefail
@@ -623,12 +617,13 @@ jobs:
           kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
 
       - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
           support-path: "${{ github.workspace }}/lib/bats-support"
           assert-path: "${{ github.workspace }}/lib/bats-assert"
           detik-path: "${{ github.workspace }}/lib/bats-detik"
           file-path: "${{ github.workspace }}/lib/bats-file"
+          github-token: ${{ github.token }}
 
       - name: Install polycli
         run: |
@@ -640,13 +635,7 @@ jobs:
           polycli version
 
       - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          # test/upgrade-agglayer-060 HEAD: the agglayer 0.6.0 multi-chain suite
-          # (tests/aggkit/bridge-e2e-{2,3}-chains.bats + the multi-setup helpers).
-          ref: c63f991dbd77003cd3c28cb7142d15f066f55f18
+        uses: ./.github/actions/checkout-e2e
 
       # NOTE: no agglayer-registration step here. The l2-to-l2-all-pairs.bats setup intentionally
       # does not call the e2e add_network_to_agglayer helper: the attached rollups are already
@@ -811,6 +800,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() && github.event_name == 'schedule' }}
     needs:
+      - check-version-matrix
+      - bump-version-matrix
       - run-without-args
       - run-with-args
       - run-with-op-succinct
@@ -819,7 +810,60 @@ jobs:
       - run-with-pre-deployed-gas-token
       - run-with-multi-l2
     steps:
-      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+      # bump-version-matrix is skipped whenever the matrix is up to date, so it is
+      # left out of the test status and reported with the matrix instead.
+      - name: Build the Slack message
+        id: message
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEEDS: ${{ toJSON(needs) }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
+          OUTDATED: ${{ needs.check-version-matrix.outputs.outdated }}
+          BUMP_RESULT: ${{ needs.bump-version-matrix.result }}
+          PR_OPERATION: ${{ needs.bump-version-matrix.outputs.pr-operation }}
+          PR_URL: ${{ needs.bump-version-matrix.outputs.pr-url }}
+        run: |
+          # Links are a bonus: an API error must not cost the Slack message.
+          jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || jobs=""
+
+          # Slack link to the first job whose name starts with $1, labelled $2.
+          job_link() {
+            local url
+            url=$(jq -rs --arg p "$1" 'map(select(.name | startswith($p)))[0].html_url // ""' <<< "$jobs")
+            if [[ -n "$url" ]]; then echo "<$url|$2>"; else echo "$2"; fi
+          }
+
+          tests=$(jq -r 'del(.["bump-version-matrix"]) | [.[].result]
+            | if index("failure") then "some tests failed ❌"
+              elif index("cancelled") or index("skipped") then "some tests were skipped ⚠️"
+              else "all tests passed ✅" end' <<< "$NEEDS")
+          # Per matrix leg, so the link lands on the leg that broke.
+          broken=$(jq -rs '[.[] | select(.conclusion == "failure" or .conclusion == "cancelled")
+            | select(.name | test("^(check|bump)-version-matrix") | not)
+            | "<\(.html_url)|\(.name)>"] | join(", ")' <<< "$jobs")
+          [[ -n "$broken" ]] && tests+=" ($broken)"
+
+          pr="<$PR_URL|#${PR_URL##*/}>"
+          if [[ "$OUTDATED" == false ]]; then
+            matrix="up to date ✅"
+          elif [[ "$OUTDATED" != true ]]; then
+            matrix="unknown ⚠️, the $(job_link check-version-matrix 'check job') failed before it could compare the matrix"
+          elif [[ "$PR_OPERATION" == created ]]; then
+            matrix="outdated ❌, bump PR opened: $pr"
+          elif [[ "$PR_OPERATION" == updated ]]; then
+            matrix="outdated ❌, bump PR refreshed: $pr"
+          elif [[ "$BUMP_RESULT" != success ]]; then
+            matrix="outdated ❌, the $(job_link bump-version-matrix 'bump job') failed"
+          elif [[ -n "$PR_URL" ]]; then
+            matrix="outdated ❌, nothing new to bump, $pr is still open"
+          else
+            matrix="outdated ❌, nothing to bump (pinned, pre-release or unpublished), see the $(job_link check-version-matrix drift)"
+          fi
+
+          echo "text=<$RUN_URL|Kurtosis CDK Nightly>: $tests | version matrix is $matrix" >> "$GITHUB_OUTPUT"
+
+      - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           method: chat.postMessage
@@ -832,7 +876,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || (contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')) && 'some tests were skipped ⚠️' || 'all tests passed ✅' }}",
+                    "text": ${{ toJSON(steps.message.outputs.text) }}
                   }
                 }
               ]

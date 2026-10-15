@@ -57,10 +57,38 @@ _wait_for_rpc_to_be_available() {
     done
 }
 
+# Amsterdam (EIP-8037) raises contract-creation gas, so the 1M gas limit of the
+# pre-signed keyless PolygonZkEVMDeployer tx runs out of gas. Raising it changes
+# the keyless sender, hence the deployer and every create2 address; L1 and L2
+# genesis must both be patched so the L2 bridge keeps the L1 bridge address.
+_patch_keyless_deployer_gas_limit() {
+    helpers="$contracts_dir/deployment/helpers/deployment-helpers.ts"
+    sed -i 's/const gasLimit = BigInt(1000000);/const gasLimit = BigInt(10000000);/' "$helpers"
+    if ! grep -q 'const gasLimit = BigInt(10000000);' "$helpers"; then
+        _echo_ts "Failed to patch the keyless deployer gas limit in $helpers"
+        exit 1
+    fi
+}
+
+# Under Amsterdam the bridge implementation deploy needs ~41M gas, above the
+# hardcoded 10.5M override. The gas limit is not part of the create2 address.
+_patch_bridge_implementation_gas_limit() {
+    deploy_script="$contracts_dir/deployment/v2/3_deployContracts.ts"
+    sed -i 's/const overrideGasLimit = 10500000n;/const overrideGasLimit = 60000000n;/' "$deploy_script"
+    if ! grep -q 'const overrideGasLimit = 60000000n;' "$deploy_script"; then
+        _echo_ts "Failed to patch the bridge implementation gas limit in $deploy_script"
+        exit 1
+    fi
+}
+
 # Internal function, used by create_agglayer_rollup
 _create_genesis() {
     _echo_ts "Step 4: Creating genesis"
     pushd "$contracts_dir" || exit 1
+    # The baked custom L1 genesis was built with the unpatched keyless deployer.
+    if [[ "{{ .l1_custom_genesis }}" != "true" ]]; then
+        _patch_keyless_deployer_gas_limit
+    fi
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then
         _echo_ts "The genesis file was not created after running createGenesis"
@@ -88,9 +116,11 @@ _deploy_agglayer_manager() {
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
 
     _echo_ts "Step 2: Deploying PolygonZKEVMDeployer"
+    _patch_keyless_deployer_gas_limit
     npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost 2>&1 | tee 03_zkevm_deployer.out
 
     _echo_ts "Step 3: Deploying contracts"
+    _patch_bridge_implementation_gas_limit
     npx hardhat run deployment/v2/3_deployContracts.ts --network localhost 2>&1 | tee 04_deploy_contracts.out
     if [[ ! -e deployment/v2/deploy_output.json ]]; then
         _echo_ts "The deploy_output.json file was not created after running deployContracts"
@@ -511,12 +541,12 @@ create_agglayer_rollup() {
     sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
 
-    # Do not create another rollup in the case of a sovereign (op-reth / anvil)
-    # rollup. This will be done in run-sovereign-setup.sh via
+    # Do not create another rollup in the case of a sovereign (op-reth / anvil /
+    # besu) rollup. This will be done in run-sovereign-setup.sh via
     # create_sovereign_rollup_predeployed. Creating one here would register a
     # second, non-sovereign rollup on L1, so chainIDToRollupID and
     # rollupIDToRollupData would resolve to the wrong rollup.
-    if [[ "{{.sequencer_type}}" != "op-reth" ]] && [[ "{{.sequencer_type}}" != "anvil" ]]; then
+    if [[ "{{.sequencer_type}}" != "op-reth" ]] && [[ "{{.sequencer_type}}" != "anvil" ]] && [[ "{{.sequencer_type}}" != "besu" ]]; then
         _echo_ts "Step 5: Creating Rollup/Validium/ECDSAMultisig"
         npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
         # Support for new output file format
@@ -805,9 +835,15 @@ initialize_rollup() {
     agglayer_manager=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
-    rpc_url="{{.op_el_rpc_url}}"
+    rpc_url="{{.l2_el_rpc_url}}"
+    # shellcheck disable=SC1054,SC1083,SC1056,SC1072,SC1073,SC1009
+    {{ if eq .sequencer_type "besu" }}
+    # The Besu genesis prefunds the L1 preallocated account on the L2 as well.
+    private_key="{{.l1_preallocated_private_key}}"
+    {{ else }}
     # This is the default prefunded account for the OP Network
     private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
+    {{ end }}
 
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_sovereignadmin_address}}"
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_aggoracle_address}}"
@@ -943,7 +979,7 @@ initialize_rollup() {
 
     # Check deployed contracts
     check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
-    check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
+    check_deployed_contracts "$l2_contract_addresses" "{{.l2_el_rpc_url}}"
 
     # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
     rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.l2_chain_id}}" --rpc-url "{{.l1_rpc_url}}")

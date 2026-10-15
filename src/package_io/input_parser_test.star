@@ -173,6 +173,20 @@ def test_parse_args_op_reth_op_el_rpc_url_aliasing_unaffected_by_anvil(plan):
     expect.eq(args["op_cl_rpc_url"], "http://op-cl-1-op-node-op-reth-001:8547")
 
 
+def test_validate_sequencer_type(plan):
+    for sequencer_type in [
+        constants.SEQUENCER_TYPE.cdk_erigon,
+        constants.SEQUENCER_TYPE.op_reth,
+        constants.SEQUENCER_TYPE.besu,
+    ]:
+        input_parser.validate_sequencer_type(sequencer_type)
+
+    expect.fails(
+        lambda: input_parser.validate_sequencer_type("geth"),
+        "Invalid sequencer type",
+    )
+
+
 def test_get_fork_id(plan):
     tests = [
         # rollup - supported forks
@@ -423,6 +437,24 @@ def test_get_fork_id(plan):
             constants.CONSENSUS_TYPE.pessimistic,
             constants.SEQUENCER_TYPE.op_reth,
             "image:v1.0.0-fork.12",
+            0,
+            "aggchain",
+            None,
+        ],
+        # besu - a vanilla sovereign chain has no fork id, like the other aggchains. pessimistic is
+        # rejected for besu by args_sanity_check, but it proves the zero comes from the sequencer type.
+        [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.SEQUENCER_TYPE.besu,
+            "image:v1.0.0-fork.12",
+            0,
+            "aggchain",
+            None,
+        ],
+        [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.SEQUENCER_TYPE.besu,
+            "image:v1.0.0",
             0,
             "aggchain",
             None,

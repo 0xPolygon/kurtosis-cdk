@@ -40,6 +40,12 @@ Based on [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon).
 
 Optimized for customization and zk security, it provides native token support, custom gas metering, multiple modes (rollup, validium and sovereign), and extensive configuration options.
 
+### [CDK Besu](./examples/cdk-besu.md)
+
+Based on [Hyperledger Besu](https://github.com/hyperledger/besu).
+
+A vanilla execution client running a single-validator QBFT chain, connected to Agglayer through the sovereign bridge predeploys and AggKit.
+
 ### [Observability](./examples/observability.md)
 
 Deploy the default stack with debugging and observability tools.

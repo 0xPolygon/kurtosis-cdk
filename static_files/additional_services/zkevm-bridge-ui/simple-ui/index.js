@@ -185,9 +185,14 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         df.appendChild(txtDiv);
 
         let h2 = document.createElement("h2");
-        let url = `${defaultBridgeService}/bridge?deposit_cnt=${dep.deposit_cnt}&net_id=${dep.network_id}`;
+        let url = new URL(`${defaultBridgeService}/bridge`);
+        url.searchParams.set("deposit_cnt", dep.deposit_cnt);
+        url.searchParams.set("net_id", dep.network_id);
         let a = document.createElement("a");
-        a.href = url;
+        // The base URL comes from a text field: refuse javascript: and other schemes.
+        if (url.protocol === "http:" || url.protocol === "https:") {
+            a.href = url.href;
+        }
         a.target = "_blank";
         a.innerText = "Deposit: " + dep.deposit_cnt;
         h2.appendChild(a);

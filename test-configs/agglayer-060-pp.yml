@@ -12,7 +12,9 @@ args:
   # Pessimistic stays on aggkit 0.5.4: 0.10.x requires an on-chain validator/multisig committee
   # that this consensus does not deploy, so its cert submission reverts. reth L1 is the repo
   # default now, so l1_el_type/reth_image no longer need to be set here.
-  aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+  # 0.5.4 rebuilt on go-ethereum 1.17.7: upstream 0.5.4 cannot hash Amsterdam L1 headers, so
+  # its L1 syncers drop every event on a block hash mismatch.
+  aggkit_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/aggkit:v0.5.4-cdk-amsterdam
   agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.5
   # Set true to exercise the optional dual-wallet (second tx-settlement signer) path.
   # agglayer_use_second_signer: true

@@ -220,10 +220,18 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
                 p[kk] = vv
         participants_with_defaults[k] = p
 
-    sorted_participants = {
-        k: _sort_dict_by_values(v) for k, v in participants_with_defaults.items()
+    # Emit sequencers first: they become op-{el,cl}-1, which L2_SEQUENCER_MAPPING and
+    # the op e2e tests both target. Kurtosis sorts YAML mapping keys alphabetically, so
+    # without this an args-file overriding participants would launch "rpc1" as node 1.
+    # "sequencer" is True on a sequencer, and the sequencer's name on a follower.
+    sequencers = [
+        k for k, v in participants_with_defaults.items() if v.get("sequencer") == True
+    ]
+    followers = [k for k in participants_with_defaults if k not in sequencers]
+    return {
+        k: _sort_dict_by_values(participants_with_defaults[k])
+        for k in sequencers + followers
     }
-    return sorted_participants
 
 
 def _get_l1_config(plan, args):
