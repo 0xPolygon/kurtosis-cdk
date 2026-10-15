@@ -23,9 +23,9 @@ args:
 
   # Images built from the AggchainQBFT branches.
   aggkit_prover_qbft_image: local/aggkit-prover-qbft:qbft-dev
-  # aggkit_image: local/aggkit:qbft-<sha>
-  # agglayer_image: local/agglayer:qbft-<sha>
-  # agglayer_contracts_image: local/agglayer-contracts:qbft-<sha>
+  aggkit_image: local/aggkit:qbft-dev
+  agglayer_image: local/agglayer:qbft-dev
+  agglayer_contracts_image: local/agglayer-contracts:qbft-dev
 
   additional_services:
     - test_runner
