@@ -10,6 +10,8 @@ def test_extract_aggkit_version(plan):
         ("ghcr.io/agglayer/aggkit:0.4.5", 0.4),
         ("ghcr.io/agglayer/aggkit:0.3.2-beta1", 0.3),
         ("ghcr.io/agglayer/aggkit:v0.5.0-beta1-custom", 0.5),
+        ("ghcr.io/agglayer/aggkit:local", 999.9),
+        ("local/aggkit:qbft-dev", 999.9),
     ]
     for image, tag in valid_cases:
         result = aggkit._extract_aggkit_version(image)

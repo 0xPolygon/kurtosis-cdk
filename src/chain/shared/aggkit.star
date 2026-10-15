@@ -705,9 +705,9 @@ def _extract_aggkit_version(aggkit_image):
     # ghcr.io/agglayer/aggkit:v0.5.0-beta1 -> v0.5.0-beta1
     tag = aggkit_image.split(":")[-1]
 
-    # Aggkit CI will use aggkit:local to test latest changes.
-    # Assume local is the latest version
-    if tag == "local":
+    # Aggkit CI will use aggkit:local to test latest changes, and local builds use free-form tags
+    # (e.g. local/aggkit:qbft-dev). Assume local is the latest version, as _aggkit_version_gte does.
+    if tag == "local" or "local" in aggkit_image:
         return 999.9
 
     # v0.5.0-beta1 -> v0.5.0
