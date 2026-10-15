@@ -821,8 +821,10 @@ _initialize_aggchain_qbft() {
                 chainId: {{.l2_chain_id}},
                 epochLength: {{.besu_epoch_length}}
             },
-            signers: [],
-            threshold: 0,
+            # The aggsender signs every certificate and requires a non-empty committee: keep the
+            # sequencer signer and agg_sender_multisig_threshold from create_new_rollup.json.
+            signers: .aggchainParams.signers,
+            threshold: .aggchainParams.threshold,
             useDefaultVkeys: false,
             useDefaultSigners: false,
             initOwnedAggchainVKey: $vkey,
