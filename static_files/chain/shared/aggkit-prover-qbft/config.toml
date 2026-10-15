@@ -1,0 +1,30 @@
+# aggkit-prover-qbft (agglayer/prover-besu-qbft): aggchain prover for AggchainQBFT chains.
+grpc-endpoint = "0.0.0.0:{{.grpc_port_number}}"
+network-id = {{.l2_network_id}}
+max-headers-per-proof = {{.max_headers_per_proof}}
+
+[log]
+level = "{{.log_level}}"
+format = "{{.log_format}}"
+
+[telemetry]
+prometheus-addr = "0.0.0.0:{{.metrics_port_number}}"
+
+[shutdown]
+runtime-timeout = "5s"
+
+[primary-prover.{{.primary_prover}}]
+proving-timeout = "1h"
+{{- if eq .primary_prover "network-prover" }}
+sp1-cluster-endpoint = "{{.sp1_cluster_endpoint}}"
+{{- end }}
+
+[contracts]
+l1-rpc-endpoint = "{{.l1_rpc_url}}"
+# Headers and EVM sketches must come from one node: the Besu RPC node (Forest storage).
+l2-execution-layer-rpc-endpoint = "{{.l2_el_rpc_url}}"
+polygon-rollup-manager = "{{.rollup_manager_address}}"
+global-exit-root-manager-v2-sovereign-chain = "{{.global_exit_root_address}}"
+# The plain Besu genesis.json; only its "config" section is read.
+evm-sketch-genesis = "/etc/aggkit-prover-qbft/genesis.json"
+header-fetch-concurrency = {{.header_fetch_concurrency}}

@@ -1,4 +1,5 @@
 aggkit_prover = import_module("./aggkit_prover.star")
+aggkit_prover_qbft = import_module("./aggkit_prover_qbft.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 ports_package = import_module("./ports.star")
@@ -471,6 +472,12 @@ def _build_config_data(args, deployment_context, extra_data=None):
         | deployment_context.contract_setup_addresses
         | deployment_context.sovereign_contract_setup_addresses
     )
+
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.qbft:
+        config_data = config_data | {
+            "aggkit_prover_grpc_url_prefix": aggkit_prover_qbft.SERVICE_NAME,
+            "aggkit_prover_grpc_port_number": aggkit_prover_qbft.GRPC_PORT_NUMBER,
+        }
 
     if extra_data:
         config_data = config_data | extra_data

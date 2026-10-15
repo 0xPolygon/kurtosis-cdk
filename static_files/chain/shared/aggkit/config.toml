@@ -22,7 +22,12 @@ L2URL = "{{.l2_rpc_url}}"
 {{- else}}
 L2URL = ""
 {{- end }}
+{{- if eq .consensus_contract_type "qbft" }}
+# AggchainQBFT has no op-node: the aggsender refuses a non-empty OpNodeURL for AGGCHAIN_TYPE 0x0002.
+OpNodeURL = ""
+{{- else }}
 OpNodeURL = "{{.op_cl_rpc_url}}"
+{{- end }}
 
 # Check if agglayer grpc or readrpc should be used for AggLayerURL
 {{- if eq .agglayer_endpoint "grpc" }}
@@ -56,6 +61,19 @@ rollupCreationBlockNumber = "{{.rollup_manager_block_number}}"
 rollupManagerCreationBlockNumber = "{{.rollup_manager_block_number}}"
 genesisBlockNumber = "{{.rollup_manager_block_number}}"
 # ------------------------------------------------------------------------------
+
+{{- if eq .consensus_contract_type "qbft" }}
+
+# ------------------------------------------------------------------------------
+# AggchainQBFT: the certificate verifier compares block hashes as reported by Besu. A QBFT block
+# hash cannot be recomputed from the header (the seals are stripped first), so the L2 client must
+# take the hash from the JSON-RPC response. aggkit defaults to this; it is pinned here on purpose.
+# ------------------------------------------------------------------------------
+[L2RPC]
+Mode = "basic"
+URL = "{{.l2_rpc_url}}"
+HashFromJSON = true
+{{- end }}
 
 # ==============================================================================
 #  _     _  ____ ___  _   _ _____ ___ ____

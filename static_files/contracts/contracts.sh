@@ -786,6 +786,58 @@ update_ger() {
 
 }
 
+# Internal function, used by initialize_rollup: initializes the AggchainQBFT rollup created by
+# create_sovereign_rollup_predeployed with InitParams derived from the running Besu chain.
+_initialize_aggchain_qbft() {
+    _echo_ts "Initializing AggchainQBFT from the Besu genesis"
+    local l2_rpc_url="{{.l2_el_rpc_url}}"
+
+    local genesis_block starting_block_hash extra_data starting_validators besu_validators
+    genesis_block="$(cast block 0 --json --rpc-url "$l2_rpc_url")"
+    starting_block_hash="$(jq -r '.hash' <<< "$genesis_block")"
+    extra_data="$(jq -r '.extraData' <<< "$genesis_block")"
+    # QBFT extraData = RLP([vanity, [validators], vote, round, [seals]]).
+    starting_validators="$(cast from-rlp "$extra_data" | jq -c '.[1] | map(ascii_downcase) | sort')"
+    besu_validators="$(cast rpc --rpc-url "$l2_rpc_url" qbft_getValidatorsByBlockNumber 0x0 | jq -c 'map(ascii_downcase) | sort')"
+    if [[ "$starting_validators" != "$besu_validators" ]]; then
+        _echo_ts "Genesis extraData validators $starting_validators differ from qbft_getValidatorsByBlockNumber $besu_validators"
+        exit 1
+    fi
+    _echo_ts "QBFT genesis: hash=$starting_block_hash validators=$starting_validators epochLength={{.besu_epoch_length}}"
+
+    # startingOutstandingVotes is empty: block 0 is an epoch block.
+    jq --argjson validators "$starting_validators" \
+        --arg block_hash "$starting_block_hash" \
+        --arg vkey "{{.aggchain_vkey_hash}}" \
+        --arg selector "{{.aggchain_vkey_selector}}" '
+        .deployerPvtKey = .aggchainManagerPvtKey |
+        .chainID = {{.l2_chain_id}} |
+        .aggchainParams = {
+            qbftParams: {
+                startingBlockNumber: 0,
+                startingBlockHash: $block_hash,
+                startingValidators: $validators,
+                startingOutstandingVotes: [],
+                chainId: {{.l2_chain_id}},
+                epochLength: {{.besu_epoch_length}}
+            },
+            signers: [],
+            threshold: 0,
+            useDefaultVkeys: false,
+            useDefaultSigners: false,
+            initOwnedAggchainVKey: $vkey,
+            initAggchainVKeySelector: $selector
+        }
+        ' "$input_dir"/create_new_rollup.json > "$output_dir"/initialize_rollup.json
+    cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
+
+    npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
+    if ! grep -q "Initialized successfully" 08_init_rollup.out; then
+        _echo_ts "AggchainQBFT initialization failed"
+        exit 1
+    fi
+}
+
 # Called always if we are deploying an Optimism Rollup
 initialize_rollup() {
     _echo_ts "Executing function initialize_rollup"
@@ -826,6 +878,11 @@ initialize_rollup() {
         cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
 
         npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
+    fi
+
+    # shellcheck disable=SC2050
+    if [[ "{{ .consensus_contract_type }}" == "qbft" ]]; then
+        _initialize_aggchain_qbft
     fi
 
     # Save Rollup Information to a file.
@@ -1361,7 +1418,11 @@ create_sovereign_rollup_predeployed() {
     cp "${output_dir}/combined.json" "$contracts_dir"/deployment/v2/deploy_output.json
 
     deployOPSuccinct="{{ .deploy_op_succinct }}"
-    if [[ $deployOPSuccinct == true ]]; then
+    # AggchainQBFT is initialized later, by initialize_rollup: its InitParams carry the hash of the
+    # L2 genesis block, and the L2 genesis can only be built once the rollup exists. So it takes the
+    # same create-only path as op-succinct (4_createRollup.ts would create and initialize at once).
+    # shellcheck disable=SC2050
+    if [[ $deployOPSuccinct == true ]] || [[ "{{ .consensus_contract_type }}" == "qbft" ]]; then
         rm "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json
         npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
         cp "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json "${output_dir}/add_rollup_type_output.json"

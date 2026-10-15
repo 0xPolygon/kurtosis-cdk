@@ -148,6 +148,16 @@ for step in $(seq 1 "${num_steps}"); do
           ;;
       esac
       ;;
+    "qbft")
+      # AggchainQBFT runs on Besu only: QBFT finalises every block as it is produced and serves no
+      # "safe"/"finalized" tags, so the head is the only progress signal.
+      LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
+      log_info "Got blocks: latest=${LATEST_BLOCK}"
+      if [[ "${LATEST_BLOCK}" -ge "${target}" ]]; then
+        log_info "Target blocks reached for latest block type"
+        exit 0
+      fi
+      ;;
     "fep")
       LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
       SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
@@ -208,6 +218,9 @@ case "${consensus_contract_type}" in
         exit 1
         ;;
     esac
+    ;;
+  "qbft")
+    log_error "Target blocks have not been reached for latest block type"
     ;;
   "fep")
     log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"

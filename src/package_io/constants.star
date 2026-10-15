@@ -35,6 +35,7 @@ CONSENSUS_TYPE = struct(
     pessimistic="pessimistic",
     ecdsa_multisig="ecdsa-multisig",
     fep="fep",
+    qbft="qbft",
 )
 
 CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
@@ -43,6 +44,7 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
     CONSENSUS_TYPE.pessimistic: "PolygonPessimisticConsensus",
     CONSENSUS_TYPE.ecdsa_multisig: "AggchainECDSAMultisig",
     CONSENSUS_TYPE.fep: "AggchainFEP",
+    CONSENSUS_TYPE.qbft: "AggchainQBFT",
 }
 
 SEQUENCER_TYPE = struct(
@@ -51,8 +53,9 @@ SEQUENCER_TYPE = struct(
     besu="besu",
 )
 
-# The single-validator QBFT Besu node is both the sequencer (block proposer) and the RPC endpoint,
-# so both mappings resolve to the same service.
+# With a single validator the Besu node is both the sequencer (block proposer) and the RPC endpoint.
+# With several validators "besu" is a dedicated non-validator RPC node, and the validators are
+# besu-validator-<n>; both mappings still resolve to the node the other components talk to.
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
@@ -101,6 +104,9 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.0",
+    # Aggchain prover for consensus_contract_type 'qbft' (agglayer/prover-besu-qbft). No image is
+    # published yet: build it locally from that repository and tag it, or override this arg.
+    "aggkit_prover_qbft_image": "local/aggkit-prover-qbft:qbft-dev",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2-rc.1",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",

@@ -235,10 +235,25 @@ DEFAULT_L2_ARGS = {
 }
 
 DEFAULT_BESU_ARGS = {
-    # Private key of the single QBFT validator. The matching address is derived at deploy time with
-    # `besu public-key export-address` and encoded into the genesis extraData, so the whole chain is
+    # Number of QBFT validators. With 1, a single Besu node is both validator and RPC endpoint and
+    # its key is besu_validator_private_key. With more, validator n (1-based) gets the key at index
+    # besu_validator_mnemonic_index_base + n - 1 of l1_preallocated_mnemonic, and a separate
+    # non-validator node serves RPC with the key at index besu_validator_mnemonic_index_base +
+    # besu_validator_count (the same scheme as prover-besu-qbft vectors/capture.sh: validators
+    # 100..103, RPC/fifth node 104 for 4 validators).
+    "besu_validator_count": 1,
+    "besu_validator_mnemonic_index_base": 100,
+    # Private key of the QBFT validator when besu_validator_count is 1. The matching address is
+    # derived at deploy time and encoded into the genesis extraData, so the whole chain is
     # reproducible from this key alone. Devnet key - do not reuse anywhere else.
     "besu_validator_private_key": "0x2b1f2c4cba8dcbc8c6b46a1e7c8a15e5bc5c01ba9de5b1e0e18b6e46f0e78e5c",
+    # JVM heap of each Besu node when besu_validator_count > 1 (BESU_OPTS=-Xmx...).
+    "besu_max_heap": "768m",
+    # Maximum concurrent HTTP JSON-RPC connections of the node that serves RPC. Besu's default (80)
+    # is too low for consensus_contract_type 'qbft': aggkit-prover-qbft alone keeps up to
+    # aggkit_prover_qbft_header_fetch_concurrency connections open, next to aggkit and the bridge
+    # service. Only applied when consensus_contract_type is 'qbft'.
+    "besu_rpc_max_active_connections": 200,
     # QBFT block period. Matches the default OP stack seconds_per_slot so certificate cadence and
     # the bridge tests behave the same as on the op-reth sovereign chain.
     "besu_block_period_seconds": 1,
@@ -248,6 +263,16 @@ DEFAULT_BESU_ARGS = {
     "besu_request_timeout_seconds": 4,
     # Block gas limit of the L2.
     "besu_gas_limit": "0x1c9c380",
+    # consensus_contract_type 'qbft' only (aggkit-prover-qbft).
+    # Maximum number of L2 headers proven by one aggchain proof.
+    "aggkit_prover_qbft_max_headers_per_proof": 7200,
+    # Concurrent header requests to the Besu RPC node; must stay well below
+    # besu_rpc_max_active_connections.
+    "aggkit_prover_qbft_header_fetch_concurrency": 16,
+    # Aggchain vkey registered under selector 0x00010002 (the hash_bytes form printed by
+    # `aggkit-prover-qbft vkey`). Empty: read it from aggkit_prover_qbft_image, so the registered key
+    # always matches the program the prover runs.
+    "aggchain_qbft_vkey": "",
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -386,8 +411,8 @@ DEFAULT_ARGS = (
         # Options:
         # - 'cdk-erigon': Use the cdk-erigon sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
         # - 'op-reth': Use the OP stack sequencer (https://github.com/paradigmxyz/op-reth).
-        # - 'besu': Use a vanilla single-validator QBFT Hyperledger Besu chain
-        #   (https://github.com/hyperledger/besu). Only 'ecdsa-multisig' consensus is supported.
+        # - 'besu': Use a vanilla QBFT Hyperledger Besu chain (https://github.com/hyperledger/besu).
+        #   Supports 'ecdsa-multisig' and 'qbft' consensus.
         "sequencer_type": constants.SEQUENCER_TYPE.op_reth,
         # The type of consensus contract to use.
         # Consensus Options:
@@ -397,6 +422,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa-multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
+        # - 'qbft': AggchainQBFT (AGGCHAIN_TYPE 0x0002), proven by aggkit-prover-qbft. Besu only.
         "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
         # Additional services to run alongside the network.
         # Options:
@@ -445,6 +471,7 @@ VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.pessimistic,
     constants.CONSENSUS_TYPE.fep,
     constants.CONSENSUS_TYPE.ecdsa_multisig,
+    constants.CONSENSUS_TYPE.qbft,
 ]
 
 VALID_SEQUENCER_TYPES = [
@@ -455,7 +482,8 @@ VALID_SEQUENCER_TYPES = [
 
 # Consensus types a Besu sovereign chain can be attached to Agglayer with. Besu is a vanilla
 # execution client: it produces no validity proof and exposes no aggchain-specific interface, so
-# 'fep' is out, and the aggsender runs in PessimisticProof mode either way.
+# 'fep' is out. 'ecdsa-multisig' runs the aggsender in PessimisticProof mode; 'qbft' runs it in
+# AggchainProof mode against aggkit-prover-qbft, which proves the QBFT seals of the L2 headers.
 #
 # 'pessimistic' is out for a version reason rather than a design one: it has to be pinned to aggkit
 # 0.5.4 (0.10.x reverts on cert submission without an on-chain multisig committee), and aggkit only
@@ -465,6 +493,7 @@ VALID_SEQUENCER_TYPES = [
 # silently drops every block carrying events and no certificate is ever built.
 VALID_BESU_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.ecdsa_multisig,
+    constants.CONSENSUS_TYPE.qbft,
 ]
 
 # Provers the agglayer node can use to generate pessimistic proofs. An unrecognised value used to
@@ -663,6 +692,7 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
     if consensus_contract_type in [
         constants.CONSENSUS_TYPE.ecdsa_multisig,
         constants.CONSENSUS_TYPE.fep,
+        constants.CONSENSUS_TYPE.qbft,
     ] or sequencer_type in [
         constants.SEQUENCER_TYPE.op_reth,
         constants.SEQUENCER_TYPE.besu,
@@ -866,6 +896,18 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
     if args["enable_normalcy"] and args["erigon_strict_mode"]:
         fail("normalcy and strict mode cannot be enabled together")
 
+    # AggchainQBFT proves QBFT seals, so it only makes sense on a QBFT chain. Checked before the
+    # op-reth branch below, which would otherwise silently turn it into 'pessimistic'.
+    if (
+        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.qbft
+        and args["sequencer_type"] != constants.SEQUENCER_TYPE.besu
+    ):
+        fail(
+            "consensus_contract_type 'qbft' requires sequencer_type 'besu', got '{}'.".format(
+                args["sequencer_type"]
+            )
+        )
+
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth:
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
@@ -883,7 +925,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
 
     # Besu is a vanilla execution client attached to Agglayer through aggkit and the sovereign
-    # bridge predeploys, so it only supports the pessimistic proof path.
+    # bridge predeploys: see VALID_BESU_CONSENSUS_TYPES.
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.besu:
         if args["consensus_contract_type"] not in VALID_BESU_CONSENSUS_TYPES:
             fail(
@@ -899,6 +941,35 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                     args["besu_block_period_seconds"]
                 )
             )
+        if args["besu_validator_count"] < 1:
+            fail(
+                "besu_validator_count ('{}') must be at least 1.".format(
+                    args["besu_validator_count"]
+                )
+            )
+        if args["besu_epoch_length"] < 1:
+            fail(
+                "besu_epoch_length ('{}') must be at least 1.".format(
+                    args["besu_epoch_length"]
+                )
+            )
+        if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.qbft:
+            # AggchainQBFT is initialized with no multisig signers: the certificate is authorised
+            # by the aggchain proof, so there is nothing for aggsender-validators to co-sign.
+            if args["use_agg_sender_validator"]:
+                fail(
+                    "use_agg_sender_validator is not supported with consensus_contract_type 'qbft'."
+                )
+            if (
+                args["aggkit_prover_qbft_header_fetch_concurrency"]
+                >= args["besu_rpc_max_active_connections"]
+            ):
+                fail(
+                    "aggkit_prover_qbft_header_fetch_concurrency ('{}') must be below besu_rpc_max_active_connections ('{}').".format(
+                        args["aggkit_prover_qbft_header_fetch_concurrency"],
+                        args["besu_rpc_max_active_connections"],
+                    )
+                )
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):

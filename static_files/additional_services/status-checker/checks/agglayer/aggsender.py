@@ -7,7 +7,7 @@ import os
 import sys
 
 consensus_type = os.getenv("CONSENSUS_CONTRACT_TYPE")
-args = ["pessimistic", "fep"]
+args = ["pessimistic", "fep", "qbft"]
 if consensus_type not in args:
     print(f"Skipping check, consensus must be one of: {', '.join(args)}")
     sys.exit(0)

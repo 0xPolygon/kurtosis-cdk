@@ -136,7 +136,11 @@ def run(plan, args={}):
             # Start the vanilla Besu chain on the genesis carrying the sovereign bridge/GER
             # predeploys. It has to be live before the rollup is initialized, because that step
             # funds accounts and checks the L2 bytecode over the L2 RPC.
-            plan.print("Deploying a single-validator QBFT Besu chain")
+            plan.print(
+                "Deploying a QBFT Besu chain with {} validator(s)".format(
+                    args["besu_validator_count"]
+                )
+            )
             besu_package.run(plan, args)
 
             # Fund Kurtosis addresses on the Besu L2

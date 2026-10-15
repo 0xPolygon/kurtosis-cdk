@@ -44,7 +44,7 @@ Optimized for customization and zk security, it provides native token support, c
 
 Based on [Hyperledger Besu](https://github.com/hyperledger/besu).
 
-A vanilla execution client running a single-validator QBFT chain, connected to Agglayer through the sovereign bridge predeploys and AggKit.
+A vanilla execution client running a QBFT chain, connected to Agglayer through the sovereign bridge predeploys and AggKit, either with an ECDSA multisig or with an aggchain proof of the QBFT seals (`AggchainQBFT`).
 
 ### [Observability](./examples/observability.md)
 

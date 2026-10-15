@@ -29,7 +29,10 @@ def run(
         ]
         and sequencer_type
         in [constants.SEQUENCER_TYPE.op_reth, constants.SEQUENCER_TYPE.besu]
-    ) or consensus_contract_type == constants.CONSENSUS_TYPE.fep
+    ) or consensus_contract_type in [
+        constants.CONSENSUS_TYPE.fep,
+        constants.CONSENSUS_TYPE.qbft,
+    ]
 
     db_configs = databases.get_db_configs(args["deployment_suffix"], sequencer_type)
 

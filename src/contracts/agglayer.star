@@ -80,12 +80,32 @@ def run(plan, args, deployment_stages, op_stack_args):
         "Agglayer vkey selector: {}".format(pp_vkey_selector),
     )
 
-    aggkit_prover_image = args.get("aggkit_prover_image")
-    aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
-        aggchain_vkey_selector = "0x00000000"
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.qbft:
+        # AggchainQBFT is proven by aggkit-prover-qbft. There is no noop program for it, so the
+        # mock prover proves the real program and the real vkey is registered under 0x00010002.
+        qbft_image = args["aggkit_prover_qbft_image"]
+        aggchain_vkey_hash = args["aggchain_qbft_vkey"]
+        if aggchain_vkey_hash == "":
+            aggchain_vkey_hash = aggchain_vkey.get_hash(
+                plan, qbft_image, "aggkit-prover-qbft"
+            )
+        aggchain_vkey_selector = aggchain_vkey.get_selector(
+            plan, qbft_image, "aggkit-prover-qbft"
+        )
     else:
-        aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
+        aggkit_prover_image = args.get("aggkit_prover_image")
+        aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
+        if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
+            aggchain_vkey_selector = "0x00000000"
+        else:
+            aggchain_vkey_selector = aggchain_vkey.get_selector(
+                plan, aggkit_prover_image
+            )
+    plan.print(
+        "Aggchain vkey hash: {}, selector: {}".format(
+            aggchain_vkey_hash, aggchain_vkey_selector
+        )
+    )
 
     # Set program vkey based on the consensus type.
     # For non pessimistic consensus types, we use the bytes32 zero hash.
@@ -95,6 +115,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
         constants.CONSENSUS_TYPE.ecdsa_multisig,
+        constants.CONSENSUS_TYPE.qbft,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
@@ -422,8 +443,10 @@ def is_vanilla_client(args, deployment_stages):
         in [constants.SEQUENCER_TYPE.op_reth, constants.SEQUENCER_TYPE.besu]
     ):
         return True
-    else:
-        return False
+    # The agglayer-contracts rollup tooling requires isVanillaClient for AggchainQBFT.
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.qbft:
+        return True
+    return False
 
 
 # Called from main for erigon stacks

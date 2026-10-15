@@ -1,5 +1,6 @@
 #!/bin/bash
-# Assembles the Besu QBFT genesis for the sovereign L2 and writes the validator node key.
+# Assembles the Besu QBFT genesis for the sovereign L2 (without its extraData, which
+# encode-extra-data.sh fills in with Besu's own RLP encoder) and writes the node keys.
 #
 # The sovereign bridge/GER contracts are injected the same way as on the op-reth stack: the
 # agglayer-contracts createSovereignGenesis tool emits a geth-format genesis, create_op_allocs.py
@@ -11,24 +12,42 @@ allocs_dir="/opt/besu-genesis-allocs"
 output_dir="/opt/besu-genesis-output"
 mkdir -p "${output_dir}"
 
-validator_private_key="{{.besu_validator_private_key}}"
-validator_address="$(cast wallet address --private-key "${validator_private_key}" | tr '[:upper:]' '[:lower:]')"
-echo "QBFT validator address: ${validator_address}"
+validator_count="{{.besu_validator_count}}"
+index_base="{{.besu_validator_mnemonic_index_base}}"
+mnemonic="{{.l1_preallocated_mnemonic}}"
 
-# QBFT encodes its genesis extraData as the RLP of
-#   [32-byte vanity, [validators], vote, round, [committed seals]].
-# With exactly one 20-byte validator, no vote, round 0 and no seals, that encoding has a fixed
-# shape, so it can be assembled directly instead of shelling out to an RLP encoder:
-#   f83a                                    list, 58 bytes
-#     a0 <32 bytes>                         vanity
-#     d5 94 <20 bytes>                      one-element validator list
-#     c0                                    empty vote
-#     80                                    round 0
-#     c0                                    empty committed seals
-# Verified against `besu operator generate-blockchain-config`, which produces the same bytes.
-vanity="0000000000000000000000000000000000000000000000000000000000000000"
-extra_data="0xf83aa0${vanity}d594${validator_address#0x}c080c0"
-echo "QBFT extraData: ${extra_data}"
+# write_node_key <name> <private key>: Besu reads the node key as bare hex, without the 0x prefix
+# and without a trailing newline. The enode id is the uncompressed public key without its 0x04
+# prefix, which is what `cast wallet public-key` prints.
+write_node_key() {
+    mkdir -p "${output_dir}/$1"
+    printf '%s' "${2#0x}" > "${output_dir}/$1/key"
+    cast wallet public-key --private-key "$2" | sed 's/^0x//' | tr -d '\n' > "${output_dir}/$1/pub"
+    cast wallet address --private-key "$2" | tr '[:upper:]' '[:lower:]' | tr -d '\n' > "${output_dir}/$1/address"
+    echo "Besu node $1: address $(cat "${output_dir}/$1/address")"
+}
+
+if [[ "${validator_count}" -eq 1 ]]; then
+    # A single node is both the validator and the RPC endpoint.
+    write_node_key "validator-1" "{{.besu_validator_private_key}}"
+else
+    # Validator n uses mnemonic index base+n-1 and the dedicated RPC node the next one, the scheme of
+    # prover-besu-qbft vectors/capture.sh (validators 100..103 and node5 = 104 for 4 validators).
+    for ((n = 1; n <= validator_count; n++)); do
+        write_node_key "validator-${n}" \
+            "$(cast wallet private-key --mnemonic "${mnemonic}" --mnemonic-index $((index_base + n - 1)))"
+    done
+    write_node_key "rpc" \
+        "$(cast wallet private-key --mnemonic "${mnemonic}" --mnemonic-index $((index_base + validator_count)))"
+fi
+
+# Genesis validators, sorted ascending: QBFT orders the validator set by address, and AggchainQBFT
+# requires startingValidators strictly ascending.
+for ((n = 1; n <= validator_count; n++)); do
+    cat "${output_dir}/validator-${n}/address"
+    echo
+done | sort | jq -R . | jq -s -c . > "${output_dir}/validators.json"
+echo "QBFT genesis validators: $(cat "${output_dir}/validators.json")"
 
 # Accounts that must be able to transact on the L2 from block 0. The aggoracle injects global exit
 # roots, the sovereign admin administers the bridge, the claim sponsor pays for claims, and the
@@ -61,11 +80,7 @@ jq -n \
     --argjson base "$(cat "${input_dir}/genesis-base.json")" \
     --argjson predeployed "${predeployed_allocs}" \
     --argjson funded "${funded_allocs}" \
-    --arg extra_data "${extra_data}" \
-    '$base | .extraData = $extra_data | .alloc = ($predeployed * $funded)' \
-    > "${output_dir}/genesis.json"
+    '$base | .extraData = "@@QBFT_EXTRA_DATA@@" | .alloc = ($predeployed * $funded)' \
+    > "${output_dir}/genesis-without-extra-data.json"
 
-# Besu reads the node key as bare hex, without the 0x prefix and without a trailing newline.
-printf '%s' "${validator_private_key#0x}" > "${output_dir}/key"
-
-echo "Besu genesis written with $(jq '.alloc | length' "${output_dir}/genesis.json") accounts"
+echo "Besu genesis assembled with $(jq '.alloc | length' "${output_dir}/genesis-without-extra-data.json") accounts"
