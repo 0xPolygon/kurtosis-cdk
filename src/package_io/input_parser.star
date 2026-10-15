@@ -198,6 +198,13 @@ DEFAULT_L1_ARGS = {
     "l1_anvil_block_time": 1,
     # l1_anvil_slots_in_epoch: number of slots in an epoch
     "l1_anvil_slots_in_epoch": 1,
+    # L1 anvil block gas limit. anvil's built-in default is smaller than the
+    # 60M overrideGasLimit that static_files/contracts/contracts.sh writes into
+    # the bridge-implementation deploy since the Amsterdam (EIP-8037) bump, so
+    # a default-limited anvil L1 rejects that tx with "intrinsic gas too high
+    # -- tx.gas_limit > env.block.gas_limit". Match the ethereum-package
+    # posture of a 200M L1 gas limit under Gloas (src/l1/ethereum.star).
+    "l1_anvil_gas_limit": 200000000,
     # Set this to true if the L1 contracts for the rollup are already
     # deployed. This also means that you'll need some way to run
     # recovery from outside of kurtosis

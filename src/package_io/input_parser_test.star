@@ -49,6 +49,9 @@ def test_parse_args_anvil_happy_path(plan):
     )
     expect.eq(args["sequencer_type"], constants.SEQUENCER_TYPE.anvil)
     expect.eq(args["consensus_contract_type"], constants.CONSENSUS_TYPE.ecdsa_multisig)
+    # The L1 anvil must boot with a block gas limit high enough for the 60M
+    # bridge-implementation deploy override (contracts.sh Amsterdam patch).
+    expect.true(args["l1_anvil_gas_limit"] >= 60000000)
 
 
 def test_parse_args_anvil_requires_ecdsa_multisig(plan):
