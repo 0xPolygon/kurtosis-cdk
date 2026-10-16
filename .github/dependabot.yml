@@ -7,7 +7,9 @@ multi-ecosystem-groups:
 
 updates:
   - package-ecosystem: github-actions
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     patterns:
       - "*"
     multi-ecosystem-group: all-deps
