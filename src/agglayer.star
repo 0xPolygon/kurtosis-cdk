@@ -107,6 +107,10 @@ def create_agglayer_config_artifact(
                     ),
                     "agglayer_admin_port": args["agglayer_admin_port"],
                     "prometheus_port": args["agglayer_metrics_port"],
+                    "agglayer_settle_confirmations": args[
+                        "agglayer_settle_confirmations"
+                    ],
+                    "agglayer_settlement_policy": args["agglayer_settlement_policy"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
                     "mock_verifier": args["agglayer_prover_primary_prover"]
@@ -116,6 +120,10 @@ def create_agglayer_config_artifact(
                     "op_el_rpc_url": args["op_el_rpc_url"],
                     "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
                     "consensus_contract_type": args["consensus_contract_type"],
+                    # Rollups beyond this run's own (network_id 1), pre-declared so
+                    # the agglayer this run deploys also knows about them. See
+                    # agglayer_extra_rollups in input_parser.star.
+                    "extra_rollups": args.get("agglayer_extra_rollups", []),
                 }
                 | contract_setup_addresses
                 | db_configs,

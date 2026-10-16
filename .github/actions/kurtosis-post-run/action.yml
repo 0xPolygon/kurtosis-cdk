@@ -70,6 +70,19 @@ runs:
           echo "✅ All services are running."
         fi
 
+    # This step never fails the job; it prints a ❌ + ::warning as a triage
+    # signal. The -Ev list below suppresses verified-benign log lines so the
+    # signal stays meaningful:
+    # - agglayer_storage::storage::migration "Failed to extract database
+    #   schema, assuming empty, error: IO error: No such file or directory":
+    #   first-boot probing of an (expected-to-be-absent) enclave database;
+    #   a real schema failure phrases its error differently.
+    # Known-benign but deliberately NOT suppressed: anvil-001's pair of
+    # "RPC request failed: / Error: Execution error: execution reverted"
+    # lines from the bridgeManager() (selector 0x14cc01a0) eth_call probe
+    # to the L1 bridge during bring-up (stable in every run since the anvil
+    # fixtures landed, incl. green ones). The paired "RPC request failed:"
+    # line is generic -- filtering it would hide real RPC failures too.
     - name: Check for errors in service logs
       if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
       shell: bash
@@ -77,7 +90,7 @@ runs:
         kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep RUNNING | grep -v "Status:" | awk '{print $2 "--" $1}' |
           while read -r container; do
             echo "Checking logs for ${container}"
-            if docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic"; then
+            if docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]|Failed to extract database schema, assuming empty, error: IO error: No such file or directory" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic"; then
               echo "❌ Errors found in container logs!"
               echo "::warning title=${container}::Errors found in container logs"
             else

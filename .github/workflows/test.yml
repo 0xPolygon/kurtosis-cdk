@@ -4,6 +4,14 @@ on:
   pull_request:
   push:
     branches: [main]
+  # K7b DIAGNOSTIC/RECOVERY (deliberate addition): this workflow's `test` runs
+  # stopped being created at all for PR #929 starting at commit 32a7ca61
+  # (K3) -- confirmed via the Actions API (total_count: 0 for that and every
+  # later commit's head_sha), even though `pull_request:` has no paths/
+  # branches filter and should fire on every synchronize. Before this
+  # change there was no way to trigger `test` manually to test that theory
+  # or to get PR #929 a real run while the underlying trigger is diagnosed.
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -63,6 +71,22 @@ jobs:
       - name: Run hadolint
         run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.github/scripts/.hadolint.yml {}
 
+      - name: No aggkit autoclaim option (agglayer/issues#55)
+        shell: bash
+        # aggkit PR #1901 removed the autoclaim service from aggkit, so our
+        # deployment tooling must not re-expose it: no aggkit autoclaim args,
+        # no AutoClaim config section, no autoclaim in any components list or
+        # in any --components flag. Character classes such as "[a]" prevent
+        # the pattern from matching this workflow file itself.
+        # (bridge-hub-autoclaim in the bridge UI and the legacy bridge-service
+        # claimer are different services and are intentionally allowed.)
+        run: |
+          if grep -rInE "aggkit_[a]utoclaim|\[\s*AutoClaim\b|aggkit_components[\"':= ]+[^\"']*autoclaim|--components[= ][^ \"']*autoclaim" \
+               --exclude-dir=.git .; then
+            echo "::error Found aggkit autoclaim option left in deployment tooling (agglayer/issues#55)"
+            exit 1
+          fi
+
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
@@ -120,6 +144,32 @@ jobs:
       - name: Run unit tests
         run: kurtosis-test .
 
+  # Deliberately NOT part of `unit`, and deliberately gated on nothing: every
+  # integration job below is `needs: [lint, unit]`, so a failure (or a Go
+  # toolchain download blip) in either of these two checks would SKIP the whole
+  # matrix rather than fail it -- and GitHub reports a skipped required check as
+  # satisfied. Keeping them in their own ungated job means they can go red on
+  # their own without silently disabling integration coverage.
+  snapshot-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ports.sh shell unit tests
+        run: ./snapshot/scripts/lib/ports_test.sh
+
+      - name: Run extract-state.sh config-tree unit test (K5 emitted-file regression net)
+        run: ./snapshot/scripts/extract-state_test.sh
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: scripts/anvil-template-check/go.mod
+
+      - name: Check anvil-L2 template rendering (regression net for silent template fallbacks)
+        run: ./scripts/anvil-template-check/check.sh
+
   run-without-args:
     needs: [lint, unit]
     runs-on: ubuntu-latest
@@ -165,7 +215,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/besu/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/besu/*.yml ./.github/tests/other/anvil/anvil-rollup.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -175,6 +225,12 @@ jobs:
             folder_name=$(basename $(dirname "${file_path}"))
             if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]] || [[ "${folder_name}" == "besu" ]]; then
               job_name="${folder_name}-${file_name}"
+            elif [[ "${folder_name}" == "anvil" ]]; then
+              # file_name is already "anvil-rollup" -- prefixing with the
+              # folder name too would produce the redundant
+              # "anvil-anvil-rollup", so this arm is explicit but keeps the
+              # bare file_name as the job name.
+              job_name="${file_name}"
             else
               job_name="${file_name}"
             fi
@@ -421,3 +477,109 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
+
+  # S15 (dev-ui-ci-snapshot plan): single-chain sequencer_type: anvil bring-up
+  # (S3/S4/S4b/S5). Deliberately its OWN job rather than a row in list-ymls'
+  # matrix, and deliberately NOT using the generic ./.github/actions/bridge-tests
+  # action (K2 investigated this explicitly):
+  #
+  # Since K2, _get_bridge_service_url (src/additional_services/test_runner.star)
+  # returns a real, reachable BRIDGE_SERVICE_URL for this stack too (the merged
+  # aggkit-001 service's "rest" port) when test_runner is wired in -- so the
+  # missing piece is no longer an empty URL. It's that bridge-tests' bats suite
+  # (tests/agglayer/bridges.bats, shipped in test_runner_image) drives claims via
+  # `polycli ulxly claim asset`, whose `--legacy` bridge-service client defaults
+  # to true and requests the legacy zkevm-bridge-service's REST shape
+  # (e.g. GET /bridges/{addr}). The aggkit bridge only serves /bridge/v1/...
+  # routes, so that request 404s with a plain-text body ("404 page not found"),
+  # and polycli's JSON decoder chokes on it ("invalid character 'p' after
+  # top-level value"), failing the "bridge native ETH from L1 to L2" bats case.
+  # (Verified empirically: K2-evidence/d-bats-run-l1-to-l2.log and
+  # K2-evidence/d-legacy-endpoint-probe.txt in the snapshot-v2-aggkit-e2e plan.)
+  # Until polycli/the bats suite gains a non-legacy (aggkit) bridge-service
+  # mode, this job keeps its bespoke checks below instead of the generic action.
+  # Verifies the two things S3/S4 identified as this stack's load-bearing
+  # invariants: the sovereign bridge/GER bytecode landed at the deterministic
+  # addresses, and aggkit's bridge REST reports both L1 and L2 sides synced+active.
+  run-with-anvil-l2:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/other/anvil/anvil-l2-rollup.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup progress
+        working-directory: .github/scripts
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} anvil ecdsa-multisig
+
+      - name: Verify sovereign bridge/GER bytecode at the deterministic addresses
+        # The bridge proxy is create2-derived through the keyless PolygonZkEVMDeployer,
+        # whose pre-signed tx gasLimit static_files/contracts/contracts.sh raises
+        # 1M -> 10M for Amsterdam (EIP-8037); that changes the keyless sender and
+        # every derived address, so this value must be re-derived whenever those
+        # patches change (current value from run 38786521994's deployment output;
+        # the L2 bridge is mirrored at the L1 bridge address, so one value covers
+        # both). The GER manager is predeployed at its legacy fixed address, which
+        # did not move.
+        run: |
+          l2_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} l2-anvil-001 rpc)
+          bridge_code=$(cast code 0x3854429dCbccDd8a1a7afA2e066Ba029fb866628 --rpc-url "${l2_rpc_url}")
+          ger_code=$(cast code 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa --rpc-url "${l2_rpc_url}")
+          if [ "${bridge_code}" = "0x" ]; then
+            echo "❌ sovereign bridge has no bytecode at 0x3854429dCbccDd8a1a7afA2e066Ba029fb866628"
+            exit 1
+          fi
+          if [ "${ger_code}" = "0x" ]; then
+            echo "❌ sovereign GER manager has no bytecode at 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+            exit 1
+          fi
+          echo "✅ sovereign bridge (${#bridge_code} hex chars) and GER manager (${#ger_code} hex chars) bytecode present"
+
+      - name: Verify aggkit bridge sync-status (L1 and L2 both synced+active)
+        run: |
+          bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001 rest)
+          # The L1/L2 syncers race the "Monitor rollup progress" block-height wait above,
+          # not the other way round -- poll instead of a single shot (matches monitor.sh's
+          # own retry style).
+          for attempt in $(seq 1 24); do
+            # `run:` blocks execute under `bash -e`, and a bare
+            # `var=$(cmd)` assignment is NOT a tested command -- so an
+            # unguarded `curl -sf` here would abort the whole step on the
+            # FIRST transient failure (exit 7 connection refused, 22 on
+            # 4xx/5xx) and the retry loop could never do its job. The
+            # early attempts are exactly when the endpoint is expected to
+            # be unavailable, so every probe below tolerates failure and
+            # falls through to the sleep.
+            sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1" || true)
+            echo "attempt ${attempt}/24 sync-status: ${sync_status}"
+            l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}" 2>/dev/null || true)
+            l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}" 2>/dev/null || true)
+            l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}" 2>/dev/null || true)
+            l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}" 2>/dev/null || true)
+            if [ "${l1_synced}" = "true" ] && [ "${l1_active}" = "true" ] && [ "${l2_synced}" = "true" ] && [ "${l2_active}" = "true" ]; then
+              echo "✅ aggkit bridge sync-status: L1 and L2 both synced+active"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ aggkit bridge sync-status did not reach fully synced+active on both sides within 120s"
+          exit 1
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: anvil-l2-rollup

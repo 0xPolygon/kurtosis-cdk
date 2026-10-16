@@ -1,0 +1,5 @@
+# K7 fixture: minimal stand-in for a captured aggkit-proxy-001 /etc/aggkit-proxy/config.toml.
+[BridgeServiceFinder.BridgeURLs]
+0 = "http://aggkit-001:5577"
+1 = "http://aggkit-001:5577"
+2 = "http://aggkit-002:5577"

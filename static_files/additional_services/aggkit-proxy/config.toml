@@ -1,0 +1,105 @@
+# aggkit-proxy config (proxy + tracker components; --components=proxy,tracker
+# -- see aggkit_proxy.star).
+#
+# Values chosen to mirror aggkit's own
+# proxy/scripts/configuration_based_on_kurtosis.sh recipe for a local devnet
+# (LatestBlock instead of FinalizedBlock -- FinalizedBlock lags too much on a
+# local devnet; PollInterval 10s instead of the 30s upstream default;
+# HealthCheckPath "/" since the aggkit bridge REST service serves its health
+# check at the root path, not "/health"). [Tracker] mirrors the binary's own
+# defaults (proxy/config/default.go) except RetentionPeriod, raised so a slow
+# L2->L1 demo certificate stays inspectable through /tracker/v1. BridgeAddrs is
+# intentionally left unset -- the tracker's own on-chain discovery covers this
+# package's needs there (an absent entry still matches logs on the event
+# signature alone). L1GlobalExitRootAddress has NO such fallback (confirmed in
+# aggkit's bridgetracker/sources/ger.go): left unset it defaults to the zero
+# address, which permanently stalls StepWaitingGERUpdate for every L1->L2
+# bridge, so it must be set explicitly below. As of aggkit v0.11.0-rc5
+# (bridgetracker/config.go's Config.Validate, PR agglayer/aggkit#1784) the
+# proxy now fails fast at startup with a clear error instead of silently
+# stalling if this resolves to the zero address -- this package's templating
+# already supplies a real address, so the new check is expected to pass
+# without any config change here.
+
+[Log]
+Environment = "development"
+Level = "info"
+Outputs = ["stderr"]
+
+[L1RPC]
+URL = "{{.l1_rpc_url}}"
+Mode = "basic"
+RetryMode = "backoff"
+MaxRetries = 5
+InitialBackoff = "2s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+
+[BridgeServiceFinder]
+RollupManagerAddr = "{{.rollup_manager_address}}"
+BlockFinality = "LatestBlock"
+PollInterval = "10s"
+BlockChunkSize = 10000
+HealthCheckPath = "/"
+HealthCheckTimeout = "5s"
+RequireAllHealthyOnStart = false
+
+[BridgeServiceFinder.BridgeURLs]
+{{- range .aggkit_proxy_bridge_urls }}
+{{.network_id}} = "{{.bridge_url}}"
+{{- end }}
+
+[BridgeServiceFinder.RPCURLs]
+{{- range .aggkit_proxy_rpc_urls }}
+{{.network_id}} = "{{.rpc_url}}"
+{{- end }}
+
+[REST]
+Host = "0.0.0.0"
+Port = 8080
+ReadTimeout = "5m"
+WriteTimeout = "5m"
+# As of aggkit v0.11.0-rc5, MaxRequestsPerIPAndSecond is unenforced in
+# RESTConfig-backed sections (no middleware reads it) -- upstream's own
+# default changed 10 -> 0 and docs/common_config.md's new RESTConfig section
+# documents it as "unused; apply rate limiting at the infra layer" (see
+# agglayer/aggkit#1783). Matching the upstream default
+# here rather than pinning a value that implies in-process enforcement it
+# doesn't have. Rate limiting for this service, if ever needed, belongs at
+# haproxy or another fronting layer.
+MaxRequestsPerIPAndSecond = 0
+
+[Tracker]
+# RetentionPeriod raised from the binary's 10m default so a slow L2->L1 demo
+# certificate (agglayer settlement can take a while) stays queryable through
+# /tracker/v1 instead of falling out of the registry mid-demo.
+RetentionPeriod = "30m"
+IdleTimeout = "30m"
+RegisterResolveTimeout = "3s"
+L1BlockFinality = "LatestBlock"
+L2BlockFinality = "LatestBlock"
+MaxTrackedBridges = 100000
+L1GlobalExitRootAddress = "{{.l1_global_exit_root_address}}"
+
+[Tracker.AgglayerClient]
+Cached = true
+[Tracker.AgglayerClient.ConfigurationCache]
+TTL = "1s"
+Capacity = 100
+SendCertificate = "forbidden"
+GetCertificateHeader = "cached"
+GetEpochConfiguration = "cached"
+GetLatestPendingCertificateHeader = "cached"
+GetNetworkInfo = "cached"
+
+[Tracker.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+UseTLS = false
+MinConnectTimeout = "5s"
+RequestTimeout = "300s"
+
+[Tracker.AgglayerClient.GRPC.Retry]
+InitialBackoff = "1s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+MaxAttempts = 20

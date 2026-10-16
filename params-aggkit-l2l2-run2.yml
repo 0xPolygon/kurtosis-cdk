@@ -1,0 +1,119 @@
+# S2 (aggkit-proxy-l2l2 plan): second `kurtosis run` into the SAME enclave as
+# params-aggkit-l2l2-run1.yml. Adds rollup 2 (network_id 2, deployment_suffix
+# -002, op-reth, aggkit-002, which also serves the bridge REST API via
+# --components=...,bridge), settling certificates through the agglayer
+# instance run1 already deployed.
+#
+# Must be run with `kurtosis run --enclave cdk --args-file params-aggkit-l2l2-run2.yml .`
+# AFTER run1 has completed in the same enclave. Do NOT `kurtosis enclave rm`
+# between run1 and run2 — that would tear down L1/agglayer/rollup 1 too.
+
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: ecdsa-multisig
+  # S2 (bridge-tracker plan): bumped to the upstream rc4 release image, same
+  # as run1 -- the L2->L2 claim readiness bug (upstream fix:
+  # https://github.com/agglayer/aggkit/pull/1761) is fixed in rc4, so the
+  # locally-built patched image is no longer needed.
+  # S2 (bridge-tracker-rc5 plan): bumped to rc5, same as run1 -- see
+  # https://github.com/agglayer/aggkit/pull/1784 for the rc4->rc5 delta.
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc8
+  # "bridge" so this same process serves the bridge REST API (port 5577) --
+  # there is no longer a separate aggkit-002-bridge service.
+  aggkit_components: "aggsender,aggoracle,bridge"
+
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # S4 (aggkit-proxy-l2l2 plan): deploy the standalone aggkit-proxy service
+  # (aggkit-proxy-001) here, on run2 -- it needs contract_setup_addresses
+  # (rollup_manager_address), which every run computes independently via its
+  # own contracts-00X service, and it needs to know about BOTH bridge
+  # services, which only exist once run2 has completed anyway.
+  # S5 (aggkit-proxy-l2l2 plan): also deploy bridge_ui here, for the same
+  # reason -- it wires the haproxy proxy's /aggkitapi route to aggkit-proxy-001
+  # (see aggkit_proxy_url below), which must already exist.
+  additional_services:
+    - aggkit_proxy
+    - bridge_ui
+
+  # S5 (aggkit-proxy-l2l2 plan): browser entrypoint. bridge_ui in "aggkit"
+  # mode skips the bridge-hub stack and renders just the haproxy proxy.
+  # aggkit_proxy_url points haproxy's single /aggkitapi backend at the
+  # standalone aggkit-proxy service (deployed above) instead of this run's
+  # own l2_context.aggkit_bridge_url (aggkit-002 only) -- one haproxy
+  # backend then fronts networks 0/1/2 via the proxy's own network_id-based
+  # routing.
+  bridge_ui_backend: aggkit
+  aggkit_proxy_url: "http://aggkit-proxy-001:8080"
+  # Per-chain L2 JSON-RPC routes: /l2rpc-001 -> rollup 1, /l2rpc-002 ->
+  # rollup 2. The bare /l2rpc route stays aliased to the "-001" entry here
+  # for back-compat (see the "HAProxy Route Map" section of
+  # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md).
+  bridge_ui_l2_rpc_urls:
+    - path_suffix: "-001"
+      url: "http://op-el-1-op-reth-op-node-001:8545"
+    - path_suffix: "-002"
+      url: "http://op-el-1-op-reth-op-node-002:8545"
+
+  # S4 (aggkit-proxy-l2l2 plan): static overrides for the aggkit-proxy
+  # BridgeServiceFinder. Required for every network including 0 -- network 0
+  # (L1) is never enumerated on-chain, and the on-chain URLs (trustedSequencerURL
+  # / aggchainMetadata) are enclave-internal hostnames not registered in this
+  # package anyway. Network 0 and network 1 both route to aggkit-001
+  # (every aggkit bridge instance syncs the L1 side); network 2 routes to
+  # aggkit-002.
+  aggkit_proxy_bridge_urls:
+    - network_id: 0
+      bridge_url: "http://aggkit-001:5577"
+    - network_id: 1
+      bridge_url: "http://aggkit-001:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002:5577"
+  aggkit_proxy_rpc_urls:
+    - network_id: 0
+      rpc_url: "http://el-1-geth-lighthouse:8545"
+    - network_id: 1
+      rpc_url: "http://op-el-1-op-reth-op-node-001:8545"
+    - network_id: 2
+      rpc_url: "http://op-el-1-op-reth-op-node-002:8545"
+
+  deployment_suffix: "-002"
+  l2_chain_id: 20202
+  l2_network_id: 2
+
+  # NOTE: do NOT override l2_admin_address / l2_sequencer_address / other
+  # l2_* role keys here. A first attempt at "distinct prefunded keys per
+  # chain" did override l2_admin_address for run2 and broke rollup-2
+  # creation: deploy_parameters.json templates admin/timelockAdminAddress/
+  # deployerPvtKey from l2_admin_address/private_key, and that address was
+  # already granted the RollupManager admin role by run1 (deploy_agglayer_
+  # contracts_on_l1 only runs once, at L1-deploy time). A different run2
+  # l2_admin_address has no admin role on the (already-deployed) L1
+  # RollupManager -> "Deployer does not have admin role" from
+  # 4_createRollup.ts, plus a CREATE2 genesis bridge-address mismatch
+  # ("AgglayerBridge proxy address ... does not match expectedBridgeAddress")
+  # since those addresses are deterministic functions of the deployer key.
+  # This matches aggkit's own CI recipe (test_e2e_op_args_chain_2.json),
+  # which likewise reuses every default key across chains.
+  #
+  # "Distinct prefunded keys per chain" (S2 work item) is instead satisfied
+  # by using separate, non-protocol-role EOAs as the `cast` bridge-sender
+  # wallets for chain-2 test traffic -- those are
+  # funded by the L1->L2 deposit bridge txs themselves, not by genesis
+  # role-account funding.
+
+optimism_package:
+  chains:
+    "002":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20202"
