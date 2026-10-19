@@ -158,7 +158,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 | aggkit | [0.11.0](https://github.com/agglayer/aggkit/releases/tag/v0.11.0) | [0.11.0](https://github.com/agglayer/aggkit/releases/tag/v0.11.0) | ✅ matches stable |
 | agglayer | [0.6.2-rc.1](https://github.com/agglayer/agglayer/releases/tag/v0.6.2-rc.1) | [0.6.1](https://github.com/agglayer/agglayer/releases/tag/v0.6.1) | ⚡️ newer than stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| besu | [26.9.0](https://github.com/hyperledger/besu/releases/tag/26.9.0) | [26.9.0](https://github.com/hyperledger/besu/releases/tag/26.9.0) | ✅ matches stable |
+| besu | [26.10.0](https://github.com/hyperledger/besu/releases/tag/26.10.0) | [26.10.0](https://github.com/hyperledger/besu/releases/tag/26.10.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC4](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC4) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ## Default Images
@@ -177,7 +177,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned Version | Latest Stable Version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | ✅ matches stable |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [f191032be3a7](https://github.com/ethpandaops/ethereum-package/tree/f191032be3a7ba069a6bb049ea5d5b9c3b1357e8) | [HEAD (f191032be3a7)](https://github.com/ethpandaops/ethereum-package/tree/f191032be3a7ba069a6bb049ea5d5b9c3b1357e8) | ✅ matches stable |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [3416a0252e5b](https://github.com/ethpandaops/ethereum-package/tree/3416a0252e5bc25a0d31d24fea9c46707447eb08) | [HEAD (3416a0252e5b)](https://github.com/ethpandaops/ethereum-package/tree/3416a0252e5bc25a0d31d24fea9c46707447eb08) | ✅ matches stable |
 | [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [HEAD (c8ff0b52d25d)](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | ✅ matches stable |
 | [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [HEAD (f3402ebad8cf)](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | ✅ matches stable |
 | [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [HEAD (9de7765a6c98)](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | ✅ matches stable |
