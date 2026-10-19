@@ -54,7 +54,7 @@ jobs:
         id: claude
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
+        uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           # Read-only: the PR is opened below with another app's token.
@@ -75,7 +75,7 @@ jobs:
       - name: Get app token
         id: app-token
         if: fromJSON(steps.claude.outputs.structured_output || '{"title":""}').title != ''
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           app-id: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_ID }}
           private-key: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_PRIVATE_KEY }}

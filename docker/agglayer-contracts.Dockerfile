@@ -1,4 +1,4 @@
-FROM golang:1.24 AS polycli-builder
+FROM golang:1.25 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
 ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.97" # 2025-10-29
 WORKDIR /opt/polygon-cli
@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cl
   && make build
 
 
-FROM node:22-bookworm
+FROM node:25-bookworm
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 

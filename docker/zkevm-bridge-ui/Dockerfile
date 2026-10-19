@@ -1,4 +1,4 @@
-FROM alpine:3.20 AS builder
+FROM alpine:3.24 AS builder
 ARG ZKEVM_BRIDGE_UI_BRANCH="develop"
 ARG ZKEVM_BRIDGE_UI_TAG_OR_COMMIT_SHA="3f1a3a0" # 2025-01-09
 

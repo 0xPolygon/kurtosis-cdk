@@ -1,4 +1,4 @@
-FROM golang:1.23 AS polycli-builder
+FROM golang:1.25 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
 ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
 WORKDIR /opt/polygon-cli
@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cl
   && make build
 
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 ARG FOUNDRY_VERSION="v1.3.6"
