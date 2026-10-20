@@ -2,7 +2,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: 0 6 * * * # Run this workflow every day at 6 AM Paris time (UTC+2).
+    - cron: 0 4 * * * # 04:00 UTC, i.e. 6 AM Paris in summer (5 AM in winter), so bump PRs land before the workday.
   workflow_dispatch:
     inputs:
       num_chains:
