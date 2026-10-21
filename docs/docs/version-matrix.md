@@ -167,7 +167,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 |-----------|-------------------------------|-----------------------|--------|
 | geth | [1.17.8](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.8) | [1.17.8](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.8) | ✅ matches stable |
 | lighthouse | [8.3.0](https://github.com/sigp/lighthouse/releases/tag/v8.3.0) | [8.3.0](https://github.com/sigp/lighthouse/releases/tag/v8.3.0) | ✅ matches stable |
-| reth | [2.7.0](https://github.com/paradigmxyz/reth/releases/tag/v2.7.0) | [2.7.0](https://github.com/paradigmxyz/reth/releases/tag/v2.7.0) | ✅ matches stable |
+| reth | [2.8.0](https://github.com/paradigmxyz/reth/releases/tag/v2.8.0) | [2.8.0](https://github.com/paradigmxyz/reth/releases/tag/v2.8.0) | ✅ matches stable |
 | status-checker | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | ✅ matches stable |
 
 ## Kurtosis Packages
