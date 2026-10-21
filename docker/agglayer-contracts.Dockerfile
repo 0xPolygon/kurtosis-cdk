@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cl
   && make build
 
 
-FROM node:25-bookworm
+FROM node:26-bookworm
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
