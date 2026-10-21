@@ -1,4 +1,4 @@
-FROM golang:1.25 AS polycli-builder
+FROM golang:1.26.10 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
 ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.97" # 2025-10-29
 WORKDIR /opt/polygon-cli
@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cl
   && make build
 
 
-FROM node:25-bookworm
+FROM node:26.12.1-bookworm
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
@@ -40,5 +40,5 @@ RUN apt-get update \
   && cp /root/.foundry/bin/* /usr/local/bin \
   && pip3 install --no-cache-dir --break-system-packages flask flask_wtf gunicorn
 
-# The `node` user (uid 1000) is created by the node:22-bookworm base image.
+# The `node` user (uid 1000) is created by the node base image.
 USER 1000

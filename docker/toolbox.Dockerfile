@@ -1,4 +1,4 @@
-FROM golang:1.25 AS polycli-builder
+FROM golang:1.26.10 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
 ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
 WORKDIR /opt/polygon-cli
