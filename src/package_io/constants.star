@@ -133,7 +133,7 @@ DEFAULT_IMAGES = {
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
     # match its own. Bump both together once a newer aggkit-prover ships.
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.10.0-agglayer",
-    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.9",
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.10",
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",

@@ -57,7 +57,7 @@ Repository: <https://github.com/0xPolygon/status-checker>
 
 ```bash
 # from the root of the repository
-image_name="status-checker-cdk:v0.2.8"
+image_name="status-checker-cdk:v0.2.10"
 docker build --tag "${image_name}" --file docker/status-checker-cdk.Dockerfile .
 ```
 
