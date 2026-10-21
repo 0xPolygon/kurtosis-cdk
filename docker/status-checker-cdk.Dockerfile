@@ -1,4 +1,4 @@
-FROM ghcr.io/0xpolygon/status-checker:v0.2.9
+FROM ghcr.io/0xpolygon/status-checker:v0.2.10
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image for offline status-checker environments"
 
