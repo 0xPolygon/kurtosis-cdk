@@ -99,8 +99,8 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.0",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.1",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
@@ -119,16 +119,16 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.8",
+    "geth_image": "ethereum/client-go:v1.17.9",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.8.0",
-    "lighthouse_image": "sigp/lighthouse:v8.3.0",
+    "lighthouse_image": "sigp/lighthouse:v8.3.1",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.2",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.4",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.8.1-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.0",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.9",
-    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.6",
-    # Pinned to v3.10.0: aggkit-prover 2.2.0 embeds the op-succinct-elfs from this
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.1",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.11",
+    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.7",
+    # Pinned to v3.10.0: aggkit-prover 2.2.x embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
     # match its own. Bump both together once a newer aggkit-prover ships.
