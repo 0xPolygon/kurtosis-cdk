@@ -29,14 +29,12 @@ kurtosis lint --format .
 
 #### Unit Tests
 
-We rely on [kurtosis-test](https://github.com/ethereum-optimism/kurtosis-test) to run a set of unit tests against the Starlark code.
+We rely on [kurtosis-test](https://github.com/leovct/kurtosis-test) to run a set of unit tests against the Starlark code.
 
 ```bash
-git clone https://github.com/ethereum-optimism/kurtosis-test.git
-pushd kurtosis-test
-git checkout v0.0.6
-go build -o kurtosis-test cli/main.go
-cp kurtosis-test /usr/local/bin
+# Linux x86_64, other platforms: https://github.com/leovct/kurtosis-test/releases
+curl -sSfL https://github.com/leovct/kurtosis-test/releases/download/v0.0.10/kurtosis-test_Linux_x86_64.tar.gz \
+  | sudo tar xz -C /usr/local/bin kurtosis-test
 ```
 
 Then run the Kurtosis tests.
