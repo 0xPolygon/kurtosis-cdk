@@ -811,14 +811,13 @@ jobs:
       - run-with-multi-l2
     steps:
       - name: Job durations
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
         run: |
-          # The recap is a bonus: an API error must not fail the workflow.
-          jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || exit 0
-          {
+          recap() {
+            local jobs
+            jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || return
             echo "## ⏱ Job durations"
             echo
             echo "| Job | Result | Duration |"
@@ -828,7 +827,9 @@ jobs:
               | map(. + {secs: ((.completed_at | fromdate) - (.started_at | fromdate))})
               | sort_by(.name)[]
               | "| [\(.name)](\(.html_url)) | \(.conclusion) | \(.secs / 60 | floor)m \(.secs % 60 | floor)s |"' <<< "$jobs"
-          } >> "$GITHUB_STEP_SUMMARY"
+          }
+          # The recap is a bonus: an API error must not fail the workflow.
+          recap >> "$GITHUB_STEP_SUMMARY" || echo "::warning::Could not list the job durations"
 
       # bump-version-matrix is skipped whenever the matrix is up to date, so it is
       # left out of the test status and reported with the matrix instead.
