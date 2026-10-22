@@ -811,6 +811,7 @@ jobs:
       - run-with-multi-l2
     steps:
       - name: Job durations
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
