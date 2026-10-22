@@ -1,6 +1,6 @@
 # Image names
-AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v12.2.3
-TOOLBOX_IMAGE_NAME := toolbox:0.0.12
+AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v12.2.3-r1
+TOOLBOX_IMAGE_NAME := toolbox:0.0.13
 ZKEVM_BRIDGE_UI_IMAGE_NAME := zkevm-bridge-ui:3f1a3a0
 AGGLAYER_DEV_UI_IMAGE_NAME := agglayer-dev-ui:844bfbc
 

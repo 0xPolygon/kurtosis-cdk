@@ -27,5 +27,5 @@ RUN apt-get update \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
   && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
-  && ln -s /root/.foundry/bin/* /usr/local/bin/ \
+  && cp --dereference /root/.foundry/bin/* /usr/local/bin/ \
   && rm -fr /root/.foundry/versions/*

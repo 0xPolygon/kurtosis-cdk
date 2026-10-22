@@ -73,7 +73,7 @@ FORK_ID_TO_NAME = {
 }
 
 TOOLBOX_IMAGE = (
-    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
+    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.13"
 )
 
 L1_ENGINE = struct(
@@ -102,7 +102,7 @@ DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.1",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2",
-    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
+    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r1",
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.8.1",
