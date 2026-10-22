@@ -810,6 +810,25 @@ jobs:
       - run-with-pre-deployed-gas-token
       - run-with-multi-l2
     steps:
+      - name: Job durations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
+        run: |
+          # The recap is a bonus: an API error must not fail the workflow.
+          jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || exit 0
+          {
+            echo "## ⏱ Job durations"
+            echo
+            echo "| Job | Result | Duration |"
+            echo "| --- | --- | --- |"
+            # Skip jobs still running (this one) and skipped ones, which have no real duration.
+            jq -rs 'map(select(.completed_at != null and .conclusion != "skipped"))
+              | map(. + {secs: ((.completed_at | fromdate) - (.started_at | fromdate))})
+              | sort_by(.name)[]
+              | "| [\(.name)](\(.html_url)) | \(.conclusion) | \(.secs / 60 | floor)m \(.secs % 60 | floor)s |"' <<< "$jobs"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # bump-version-matrix is skipped whenever the matrix is up to date, so it is
       # left out of the test status and reported with the matrix instead.
       - name: Build the Slack message

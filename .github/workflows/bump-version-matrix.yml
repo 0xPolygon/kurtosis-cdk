@@ -100,14 +100,6 @@ jobs:
           title: ${{ fromJSON(steps.claude.outputs.structured_output).title }}
           body: ${{ fromJSON(steps.claude.outputs.structured_output).body }}
 
-      # claude.yml answers this bot's @claude comments with a review.
-      - name: Ask Claude to review
-        if: contains(fromJSON('["created","updated"]'), steps.pr.outputs.pull-request-operation)
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
-        run: gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body "@claude please review"
-
       # Looked up rather than read from the step above, which is skipped when
       # nothing new was bumped while an earlier bump PR is still open.
       - name: Find the open bump PR
