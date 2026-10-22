@@ -1,0 +1,28 @@
+deployment_stages:
+  deploy_op_succinct: false
+
+args:
+  sequencer_type: op-reth
+  # ecdsa-multisig (not pessimistic): the 0.11.0-rc8 aggkit image routes every
+  # certificate through an on-chain multisig validator committee. Pessimistic
+  # contracts don't expose that interface, so aggsender's committee query reverts and
+  # L2->L1 exits never settle to L1 (l1-info-tree-index?network_id=1 stays "not found").
+  consensus_contract_type: ecdsa-multisig
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc8
+
+  # aggsender multisig committee: 1 validator, threshold 1 (matches the tested
+  # op-reth ecdsa-multisig reference, .github/tests/op-reth/sovereign-ecdsa-multisig.yml).
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  additional_services:
+    - bridge_spammer
+    - bridge_ui
+  bridge_ui_backend: aggkit
+
+optimism_package:
+  chains:
+    "001":
+      proposer_params:
+        enabled: false

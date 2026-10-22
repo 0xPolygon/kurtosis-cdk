@@ -162,18 +162,18 @@ def _create_deployment_context(
 
 
 def _deploy_core_aggkit_services(plan, args, deployment_context):
-    """Deploy the core aggkit services (main service and bridge)."""
+    """Deploy the core aggkit service (main service, with the bridge component
+    merged in -- see _deploy_main_aggkit_service)."""
     plan.print("Deploying core aggkit services")
 
-    # Create main aggkit service with inline config
-    _deploy_main_aggkit_service(plan, args, deployment_context)
-
-    # Create bridge service with inline config
-    return _deploy_bridge_service(plan, args, deployment_context)
+    # Create main aggkit service (also serves the bridge REST API) with inline config
+    return _deploy_main_aggkit_service(plan, args, deployment_context)
 
 
 def _deploy_main_aggkit_service(plan, args, deployment_context):
-    """Deploy the main aggkit service with inline config creation."""
+    """Deploy the main aggkit service with inline config creation. This
+    service also serves the bridge component (REST API) -- the bridge is no
+    longer a separate service/container, see aggkit_components."""
     # Create config artifact
     config_template = read_file(
         src="../../../static_files/chain/shared/aggkit/config.toml"
@@ -193,7 +193,7 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
 
     # Create and deploy service
     service_name = "aggkit" + args["deployment_suffix"]
-    ports = _get_aggkit_ports(args)
+    ports = _get_aggkit_bridge_ports(args)
 
     files_config = {
         "/etc/aggkit": Directory(
@@ -222,58 +222,6 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
             "run",
             "--cfg=/etc/aggkit/config.toml",
             "--components=" + args.get("aggkit_components", ""),
-        ],
-    )
-
-    plan.add_service(name=service_name, config=service_config)
-
-
-def _deploy_bridge_service(plan, args, deployment_context):
-    """Deploy the bridge service with inline config creation."""
-    # Create config artifact
-    config_template = read_file(
-        src="../../../static_files/chain/shared/aggkit/config.toml"
-    )
-    config_artifact = plan.render_templates(
-        name="aggkit-bridge-config{}".format(args.get("deployment_suffix")),
-        config={
-            "config.toml": struct(
-                template=config_template,
-                data=_build_config_data(args, deployment_context),
-            )
-        },
-    )
-
-    # Create and deploy bridge service
-    service_name = "aggkit" + args["deployment_suffix"] + "-bridge"
-    ports = _get_aggkit_bridge_ports(args)
-
-    files_config = {
-        "/etc/aggkit": Directory(
-            artifact_names=[
-                config_artifact,
-                deployment_context.keystore_artifacts.aggoracle,
-                deployment_context.keystore_artifacts.sovereignadmin,
-                deployment_context.keystore_artifacts.sequencer,
-            ]
-            + (
-                [deployment_context.keystore_artifacts.claim_sponsor]
-                if deployment_context.keystore_artifacts.claim_sponsor
-                else []
-            ),
-        ),
-        "/data": Directory(artifact_names=[]),
-    }
-
-    service_config = ServiceConfig(
-        image=args["aggkit_image"],
-        ports=ports,
-        files=files_config,
-        entrypoint=["/usr/local/bin/aggkit"],
-        cmd=[
-            "run",
-            "--cfg=/etc/aggkit/config.toml",
-            "--components=bridge",
         ],
     )
 
@@ -459,6 +407,14 @@ def _build_config_data(args, deployment_context, extra_data=None):
         | {
             "agglayer_endpoint": agglayer_endpoint,
             "aggkit_version": aggkit_version,
+            # Decide this in Starlark rather than inside the Go template: Kurtosis
+            # stringifies aggkit_version before handing it to text/template, so
+            # `{{- if lt .aggkit_version "0.8" }}` there does a lexicographic STRING
+            # comparison, and "0.11" < "0.8" is true digit-by-digit -- wrongly gating
+            # the legacy/deprecated polygonBridgeAddr key on for aggkit 0.11.x.
+            # _aggkit_version_gte parses major/minor as integers and compares them
+            # as a tuple -- correct regardless of minor-version digit count. See
+            # config.toml / cdk-config.toml.
             "aggkit_legacy_bridge_addr": not _aggkit_version_gte(
                 args.get("aggkit_image"), 0, 8
             ),
@@ -623,63 +579,17 @@ def get_keystores_artifacts(plan, args):
     )
 
 
-def create_bridge_config_artifact(
-    plan,
-    args,
-    contract_setup_addresses,
-    sovereign_contract_setup_addresses,
-    db_configs,
-):
-    bridge_config_template = read_file(
-        src="../../../static_files/chain/shared/zkevm-bridge-service/config.toml"
-    )
-    l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
-    if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (
-        args["consensus_contract_type"]
-        in [
-            constants.CONSENSUS_TYPE.pessimistic,
-            constants.CONSENSUS_TYPE.ecdsa_multisig,
-        ]
-    ):
-        l2_rpc_url = "http://{}{}:{}".format(
-            args["l2_rpc_name"],
-            args["deployment_suffix"],
-            ports_package.HTTP_RPC_PORT_NUMBER,
-        )
-        require_sovereign_chain_contract = False
-    else:
-        l2_rpc_url = args["op_el_rpc_url"]
-        require_sovereign_chain_contract = True
-
-    return plan.render_templates(
-        name="bridge-config{}".format(args.get("deployment_suffix")),
-        config={
-            "bridge-config.toml": struct(
-                template=bridge_config_template,
-                data={
-                    "log_level": args.get("log_level"),
-                    "environment": args.get("environment"),
-                    "l2_keystore_password": args["l2_keystore_password"],
-                    "db": db_configs.get("bridge_db"),
-                    "require_sovereign_chain_contract": require_sovereign_chain_contract,
-                    "sequencer_type": args["sequencer_type"],
-                    # rpc urls
-                    "l1_rpc_url": l1_rpc_url,
-                    "l2_rpc_url": l2_rpc_url,
-                    # ports
-                    "grpc_port_number": args["zkevm_bridge_grpc_port"],
-                    "rpc_port_number": args["zkevm_bridge_rpc_port"],
-                    "metrics_port_number": args["zkevm_bridge_metrics_port"],
-                }
-                | contract_setup_addresses
-                | sovereign_contract_setup_addresses,
-            )
-        },
-    )
-
-
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
+#
+# NOTE: this deliberately does NOT compare _extract_aggkit_version's float
+# (`version >= 0.3`) -- that collapses "<major>.<minor>" into a single float,
+# so "0.11" becomes 0.11, which is numerically LESS than 0.3 even though minor
+# version 11 is ordinally newer than minor version 3. Verified empirically:
+# for aggkit_image "...:0.11.0-rc4", the float comparison wrongly returns
+# "readrpc", which breaks certificate settlement against agglayer. Uses
+# _aggkit_version_gte instead, which parses major/minor as integers and
+# compares them as a tuple -- correct regardless of minor-version digit count.
 def _get_agglayer_endpoint(aggkit_image):
     # If the aggkit image is a local build, we assume it uses grpc.
     if "local" in aggkit_image:
@@ -708,10 +618,32 @@ def _extract_aggkit_version(aggkit_image):
 
     # v0.5.0-beta1 -> 0.5.0
     version = tag_without_suffix
+    found_digit = False
     for i in range(len(tag_without_suffix)):
         if tag_without_suffix[i].isdigit():
             version = tag_without_suffix[i:]
+            found_digit = True
             break
+
+    # Some CI-built tags (feature-branch build tags named after the branch,
+    # e.g. "feat-<branch>_<date>_<time><sha>") don't start with a numeric
+    # version at all once the first "-"-delimited segment is taken.
+    # Treat these the same as "local": assume they're built from the latest
+    # source and are therefore the latest version (grpc-capable), instead of
+    # hard-failing on float(<non-numeric string>).
+    if not found_digit:
+        return 999.9
+
+    # Other CI-built tags DO start with a digit but are still not a clean
+    # "<major>.<minor>[.<patch>]" version once the "-"-delimited suffix is
+    # dropped -- e.g. "develop_2026_08_03_13_20_56c849c" (branch name +
+    # underscore-joined build timestamp + short sha, no "-" at all so
+    # tag_without_suffix is the whole tag, and it starts with the "2026"
+    # digit of the date). float() would hard-fail on the underscores/hex
+    # digits in that string, so treat non-numeric "versions" the same way:
+    # assume latest (grpc-capable).
+    if not _is_simple_version(version):
+        return 999.9
 
     # return a float
     if version.count(".") > 1:
@@ -720,13 +652,26 @@ def _extract_aggkit_version(aggkit_image):
     return float(version)
 
 
+def _is_simple_version(version):
+    """True if version consists only of digits and '.' (i.e. is float()-safe)."""
+    for i in range(len(version)):
+        c = version[i]
+        if c != "." and not c.isdigit():
+            return False
+    return True
+
+
 def _aggkit_version_gte(aggkit_image, major, minor):
     """Return True if the aggkit image version is >= major.minor.
 
     Compares major/minor as integers so double-digit minors order correctly
-    (0.10 > 0.9 > 0.8). _extract_aggkit_version returns a float where "0.10"
-    collapses to 0.1 (< 0.8), which silently breaks version-conditional
-    config for aggkit >= 0.10; use this for those gates instead.
+    (0.10 > 0.9 > 0.8; 0.11 > 0.8 > 0.3). _extract_aggkit_version returns a
+    float where "0.10"/"0.11" collapse to 0.1/0.11 (< 0.8, < 0.3), which
+    silently breaks version-conditional config for aggkit >= 0.10; use this
+    for those gates instead. Non-numeric tags (local builds, CI build tags)
+    fall back to (0, 0) -- i.e. are treated as the oldest version -- since
+    this package only ever pins numeric release tags in practice, except for
+    the literal "local" tag which is treated as latest (see below).
     """
     if "local" in aggkit_image:
         return True

@@ -15,6 +15,14 @@ This tool creates deterministic, repeatable snapshots of am enclave that can be:
 - Packaged into Docker images with state baked in
 - Reproduced via Docker Compose to resume from exact state
 
+**Flavors:** the default flavor documented on this page targets the geth/lighthouse L1
+(optionally with an op-reth L2). A second flavor, `--flavor anvil-aggkit`, captures a
+full anvil + aggkit + agglayer devnet instead, consumable by dev-ui, aggkit, or agglayer
+— see [Anvil Devnet Snapshot](./anvil-devnet-snapshot.md) for its topology, the two
+compose variants (zero-mount vs. config-mount with an image-override seam), restore
+hazards, and the `summary.json`/port contract it publishes. The settlement-freedom
+prerequisite below applies to both flavors.
+
 ## Prerequisites for Snapshot Creation
 
 **IMPORTANT:** For snapshots to work correctly, the source enclave must meet these requirements:

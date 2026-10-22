@@ -6,6 +6,7 @@ op_succinct_package = import_module("./src/chain/op-reth/op_succinct_proposer.st
 # Main service packages.
 additional_services_launcher = import_module("./src/additional_services/launcher.star")
 agglayer_package = "./src/agglayer.star"
+anvil_l2_package = import_module("./src/chain/anvil/anvil_l2.star")
 besu_package = import_module("./src/chain/besu/besu.star")
 l1_launcher = import_module("./src/l1/launcher.star")
 chain_launcher = import_module("./src/chain/launcher.star")
@@ -15,11 +16,10 @@ sovereign_contracts_package = import_module("./src/contracts/sovereign.star")
 mitm_package = "./src/mitm.star"
 
 # Sequencer types whose L2 gets its bridge and global exit root contracts predeployed in the
-# genesis, and is then registered on L1 as a sovereign rollup.
-SOVEREIGN_SEQUENCER_TYPES = [
-    constants.SEQUENCER_TYPE.op_reth,
-    constants.SEQUENCER_TYPE.besu,
-]
+# genesis, and is then registered on L1 as a sovereign rollup. Canonical definition lives in
+# src/package_io/constants.star so the additional-services and input-parser modules check the
+# same set; this alias keeps main.star's unqualified references intact.
+SOVEREIGN_SEQUENCER_TYPES = constants.SOVEREIGN_SEQUENCER_TYPES
 
 
 def run(plan, args={}):
@@ -105,7 +105,35 @@ def run(plan, args={}):
                 agglayer_contracts_package
             ).create_sovereign_predeployed_genesis(plan, args)
 
-        if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+        if sequencer_type == constants.SEQUENCER_TYPE.anvil:
+            # The anvil L2 replaces the whole optimism-package: it is the
+            # sequencer, the RPC and the block producer. It must be started
+            # here -- after the sovereign allocs exist and before
+            # init_rollup, which funds accounts on the L2 and bytecode-checks
+            # the L2 contracts.
+            plan.print("Starting the anvil L2 with the sovereign predeployed allocs")
+            l2_genesis_artifact = import_module(
+                agglayer_contracts_package
+            ).create_anvil_l2_genesis(plan, args)
+            anvil_l2_package.run(plan, args, l2_genesis_artifact)
+
+            # Skipped for anvil: the optimism-package launch, the
+            # op-deployer-configs artifact and the L1 funding of the OP
+            # proposer/batcher/sequencer/challenger/proxy-admin addresses.
+            # None of those addresses exist without op-deployer.
+
+            # Fund Kurtosis addresses on the anvil L2. This is NOT skippable:
+            # it funds l2_admin_address, which the bridge UI e2e flow needs.
+            # contracts.sh's fund_addresses only auto-selects the anvil dev
+            # mnemonic for the op-reth service URL, so pass it explicitly.
+            sovereign_contracts_package.fund_addresses(
+                plan,
+                args,
+                contracts_util.get_l2_addresses_to_fund(args),
+                args["op_el_rpc_url"],
+                funder_mnemonic=args["l2_anvil_mnemonic"],
+            )
+        elif sequencer_type == constants.SEQUENCER_TYPE.op_reth:
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
             optimism_package = op_stack_args["source"]

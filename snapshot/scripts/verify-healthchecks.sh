@@ -4,13 +4,58 @@
 # This script validates that all healthchecks use available tools (curl, not wget)
 # and that critical services have proper healthcheck configurations
 #
+# Usage: verify-healthchecks.sh [--flavor default|anvil-aggkit] <SNAPSHOT_DIR>
+#
+# Flavor "default" (the pre-existing behaviour, unchanged -- see S9's outcome
+# notes): despite the ERRORS bookkeeping below, no code path in this flavor
+# ever increments ERRORS, so it always exits 0. That is a known, long-
+# standing bug, but fixing it is explicitly out of scope for the default
+# flavor (S9 fixes it for anvil-aggkit only; see the plan).
+#
+# Flavor "anvil-aggkit" (S9): real checks that DO set ERRORS and can fail --
+# every expected service has a healthcheck, `depends_on` gates on
+# service_healthy where S8 wires it, and the bundle stays bind-mount/volume
+# free (the "self-contained" contract).
+#
 set -euo pipefail
+
+FLAVOR="default"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --flavor)
+            if [ $# -lt 2 ]; then
+                echo "ERROR: --flavor requires a value" >&2
+                exit 1
+            fi
+            FLAVOR="$2"
+            shift 2
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            echo "Usage: $0 [--flavor default|anvil-aggkit] <SNAPSHOT_DIR>" >&2
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 # Check arguments
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 <SNAPSHOT_DIR>" >&2
+    echo "Usage: $0 [--flavor default|anvil-aggkit] <SNAPSHOT_DIR>" >&2
     exit 1
 fi
+
+# An unrecognised flavor must fail rather than silently select the default
+# path, whose checks are a strict subset of the anvil-aggkit ones.
+case "$FLAVOR" in
+    default | anvil-aggkit) ;;
+    *)
+        echo "ERROR: unknown flavor: '$FLAVOR' (expected 'default' or 'anvil-aggkit')" >&2
+        exit 1
+        ;;
+esac
 
 SNAPSHOT_DIR="$1"
 COMPOSE_FILE="$SNAPSHOT_DIR/docker-compose.yml"
@@ -43,6 +88,186 @@ log "Verifying healthchecks in: $COMPOSE_FILE"
 
 ERRORS=0
 WARNINGS=0
+
+# ============================================================================
+# Flavor: anvil-aggkit (S9)
+#
+# Real checks, unlike the default flavor below: this block is the actual fix
+# for "verify-healthchecks.sh always exits 0". It cross-checks the compose
+# file against discovery.json (every discovered component must appear, with
+# a healthcheck), and against the self-contained/no-bind-mount contract S8
+# built the image/compose generators around.
+#
+# The default flavor continues, byte-for-byte unchanged, below this block.
+# ============================================================================
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    DISCOVERY_JSON="$SNAPSHOT_DIR/discovery.json"
+
+    if ! command -v jq &> /dev/null; then
+        error "jq is required for --flavor anvil-aggkit"
+        exit 1
+    fi
+
+    log ""
+    log "=== [anvil-aggkit] Every service has a healthcheck ==="
+    # K5: `config --services` filters out profile-gated services (e.g.
+    # dev-ui's `profiles: ["devui"]`) unless the profile is explicitly
+    # requested. This is a static AUDIT of the whole compose file's shape,
+    # not a live `up`, so it must see every service regardless of profile --
+    # `--profile devui` here only affects what `config` prints, it starts
+    # nothing.
+    SERVICE_NAMES=$(docker compose -f "$COMPOSE_FILE" --profile devui config --services 2>/dev/null || true)
+    if [ -z "$SERVICE_NAMES" ]; then
+        error "Could not list services from $COMPOSE_FILE (docker compose config --services failed)"
+        ERRORS=$((ERRORS + 1))
+    fi
+    for service in $SERVICE_NAMES; do
+        SERVICE_SECTION=$(sed -n "/^  ${service}:/,/^  [a-zA-Z]/p" "$COMPOSE_FILE")
+        if echo "$SERVICE_SECTION" | grep -q "healthcheck:"; then
+            log "✓ $service: has a healthcheck"
+        else
+            error "✗ $service: NO healthcheck defined -- required for every anvil-aggkit service"
+            ERRORS=$((ERRORS + 1))
+        fi
+    done
+
+    log ""
+    log "=== [anvil-aggkit] Every discovered component matches its intended profile contract ==="
+    # K5b: K5's profile gating made `dev_ui` (agglayer-dev-ui-002) the ONE
+    # intentionally profile-gated component -- profiles: ["devui"], expected
+    # ABSENT from the default (`docker compose config --services`, no
+    # --profile flag) set and expected PRESENT only once --profile devui is
+    # passed. Every OTHER discovered component must be unconditionally in
+    # the default set, regardless of profile. Checking membership only
+    # against the (already --profile-devui-inclusive) $SERVICE_NAMES from
+    # the block above cannot fail on dev-ui at all -- it always sees it, by
+    # construction -- so this block also fetches the DEFAULT-profile service
+    # list and checks both halves explicitly. That keeps the check able to
+    # catch two distinct regressions: (a) a genuinely missing non-profiled
+    # component (the check's original purpose), and (b) dev-ui silently
+    # losing its profile gating (becoming default-always, defeating the
+    # whole point of K5's change) or silently disappearing even from
+    # --profile devui.
+    if [ -f "$DISCOVERY_JSON" ]; then
+        DEFAULT_SERVICE_NAMES=$(docker compose -f "$COMPOSE_FILE" config --services 2>/dev/null || true)
+        if [ -z "$DEFAULT_SERVICE_NAMES" ]; then
+            error "Could not list default-profile services from $COMPOSE_FILE"
+            ERRORS=$((ERRORS + 1))
+        fi
+        if ! DEVUI_SVC=$(jq -er '.dev_ui.service_name // empty' "$DISCOVERY_JSON" 2>/dev/null); then
+            error "discovery.json is invalid or has no dev_ui.service_name: $DISCOVERY_JSON"
+            ERRORS=$((ERRORS + 1))
+            DEVUI_SVC=""
+        fi
+        if ! DISCOVERED_SERVICES=$(jq -er '
+            [.l1_anvil, .agglayer, .aggkit_proxy, .haproxy, .dev_ui,
+             (.l2_chains[]? | (.anvil, .aggkit))]
+            | map(select(.found == true) | .service_name)
+            | select(length > 0)
+            | .[]
+        ' "$DISCOVERY_JSON" 2>/dev/null); then
+            error "discovery.json is invalid or lists no found services: $DISCOVERY_JSON"
+            ERRORS=$((ERRORS + 1))
+            DISCOVERED_SERVICES=""
+        fi
+        for svc in $DISCOVERED_SERVICES; do
+            if [ -n "$DEVUI_SVC" ] && [ "$svc" = "$DEVUI_SVC" ]; then
+                # Expected ABSENT from the default set, expected PRESENT
+                # under --profile devui.
+                if echo "$SERVICE_NAMES" | grep -qx "$svc"; then
+                    log "✓ discovered component '$svc' present under --profile devui (profile-gated, as intended)"
+                else
+                    error "✗ discovered component '$svc' is MISSING even under --profile devui"
+                    ERRORS=$((ERRORS + 1))
+                fi
+                if echo "$DEFAULT_SERVICE_NAMES" | grep -qx "$svc"; then
+                    error "✗ discovered component '$svc' is present in the DEFAULT compose set -- it must stay behind --profile devui"
+                    ERRORS=$((ERRORS + 1))
+                else
+                    log "✓ discovered component '$svc' correctly absent from the default compose set"
+                fi
+            else
+                if echo "$DEFAULT_SERVICE_NAMES" | grep -qx "$svc"; then
+                    log "✓ discovered component '$svc' present in compose (default set)"
+                else
+                    error "✗ discovered component '$svc' is MISSING from the generated compose file"
+                    ERRORS=$((ERRORS + 1))
+                fi
+            fi
+        done
+    else
+        error "discovery.json not found at $DISCOVERY_JSON -- cannot cross-check discovered components"
+        ERRORS=$((ERRORS + 1))
+    fi
+
+    log ""
+    log "=== [anvil-aggkit] depends_on gates on service_healthy, not just service_started ==="
+    # A `depends_on` list entry (or a map entry without condition:
+    # service_healthy) starts a service as soon as its dependency's
+    # CONTAINER starts, not once it is healthy -- exactly the ordering bug
+    # this flavor's compose is supposed to avoid (anvil/agglayer/aggkit all
+    # need their upstream truly ready first). `docker compose config
+    # --format json` normalizes depends_on to the long map form regardless
+    # of how it was written, so this is robust to either compose syntax.
+    COMPOSE_JSON=$(docker compose -f "$COMPOSE_FILE" config --format json 2>/dev/null || true)
+    if [ -z "$COMPOSE_JSON" ]; then
+        error "docker compose config --format json failed for $COMPOSE_FILE"
+        ERRORS=$((ERRORS + 1))
+    else
+        UNGATED=$(echo "$COMPOSE_JSON" | jq -r '
+            .services | to_entries[] as $s
+            | ($s.value.depends_on // {}) | to_entries[] as $d
+            | select($d.value.condition != "service_healthy")
+            | "\($s.key) -> \($d.key) (condition=\($d.value.condition // "none"))"
+        ')
+        if [ -n "$UNGATED" ]; then
+            while IFS= read -r line; do
+                [ -n "$line" ] || continue
+                error "✗ depends_on not gated on service_healthy: $line"
+                ERRORS=$((ERRORS + 1))
+            done <<< "$UNGATED"
+        else
+            log "✓ every depends_on entry is gated on condition: service_healthy"
+        fi
+
+        log ""
+        log "=== [anvil-aggkit] Self-contained: no bind mounts, no named volumes ==="
+        BAD_VOLUMES=$(echo "$COMPOSE_JSON" | jq -r '
+            .services | to_entries[] as $s
+            | ($s.value.volumes // [])[] as $v
+            | "\($s.key): \($v.source // $v)"
+        ')
+        if [ -n "$BAD_VOLUMES" ]; then
+            error "✗ found bind mount(s)/volume(s) -- the bundle must be self-contained:"
+            while IFS= read -r line; do
+                [ -n "$line" ] || continue
+                error "    $line"
+                ERRORS=$((ERRORS + 1))
+            done <<< "$BAD_VOLUMES"
+        else
+            log "✓ no bind mounts or volumes"
+        fi
+    fi
+
+    log ""
+    log "=== [anvil-aggkit] Healthcheck Verification Summary ==="
+    if [ "$ERRORS" -eq 0 ]; then
+        log "✓ All anvil-aggkit healthcheck/compose checks passed"
+    else
+        error "✗ Found $ERRORS error(s)"
+    fi
+    if [ "$WARNINGS" -gt 0 ]; then
+        warn "! Found $WARNINGS warning(s)"
+    fi
+    log ""
+    if [ "$ERRORS" -eq 0 ]; then
+        log "Healthcheck verification PASSED"
+        exit 0
+    else
+        error "Healthcheck verification FAILED"
+        exit 1
+    fi
+fi
 
 # Function to check a service's healthcheck
 check_service_healthcheck() {

@@ -114,8 +114,37 @@ runs:
 
     - name: Pre pull package images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      # A transient registry error ("unknown blob" after attempts=1) must not
+      # kill the whole job before the enclave even starts, so a failed pull is
+      # recorded instead of failing the step, and the failed images are
+      # retried (3 attempts total, 15s/30s backoff) before the step fails.
       shell: bash
-      run: cat modified-images.txt | xargs -n 1 -P 8 docker pull
+      run: |
+        max_attempts=3
+        # Pull each image in "$1" in parallel (8 at a time, as before). An
+        # image whose pull fails is appended to failed-images.txt rather than
+        # failing the whole xargs invocation, so one transient registry
+        # error takes down neither the other pulls nor this step.
+        pull_images() {
+          xargs -P 8 -IIMG sh -c 'docker pull "IMG" || echo "IMG" >> failed-images.txt' <"$1"
+        }
+        rm -f failed-images.txt
+        pull_images modified-images.txt
+        attempt=1
+        while [[ -s failed-images.txt && $attempt -lt $max_attempts ]]; do
+          attempt=$((attempt + 1))
+          echo "::warning::Transient image-pull failures; retrying (attempt $attempt of $max_attempts):"
+          cat failed-images.txt
+          sleep $(((attempt - 1) * 15))
+          sort -u failed-images.txt > retry-images.txt
+          : > failed-images.txt
+          pull_images retry-images.txt
+        done
+        if [[ -s failed-images.txt ]]; then
+          echo "::error::Image pulls failed after $attempt attempts:"
+          cat failed-images.txt
+          exit 1
+        fi
 
     - name: Pre pull kurtosis core images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}

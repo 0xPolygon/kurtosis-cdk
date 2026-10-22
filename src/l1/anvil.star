@@ -13,6 +13,7 @@ def run(plan, args):
     chain_id = str(args["l1_chain_id"])
     block_time = args.get("l1_anvil_block_time")
     slots_in_epoch = args.get("l1_anvil_slots_in_epoch")
+    gas_limit = args["l1_anvil_gas_limit"]
     service_files = {}
     mnemonic = args.get("l1_preallocated_mnemonic")
 
@@ -23,6 +24,13 @@ def run(plan, args):
         + str(slots_in_epoch)
         + " --chain-id "
         + chain_id
+        # Without an explicit limit the node boots with anvil's default block
+        # gas limit, which is below the 60M gas override contracts.sh writes
+        # into the bridge-implementation deploy (see l1_anvil_gas_limit in
+        # input_parser.star) and the deploy fails with "intrinsic gas too
+        # high -- tx.gas_limit > env.block.gas_limit".
+        + " --gas-limit "
+        + str(gas_limit)
         + " --host 0.0.0.0 --port "
         + str(args["anvil_port"])
         + " --dump-state "

@@ -48,14 +48,26 @@ fail() {
 
 # Usage
 usage() {
+    local status="${1:-0}"
     cat << EOF
 Snapshot Verification Script
 
 Usage:
-  $0 <SNAPSHOT_DIR>
+  $0 [--compose-file <name>] <SNAPSHOT_DIR>
 
 Arguments:
   SNAPSHOT_DIR        Path to snapshot directory
+
+Options:
+  --compose-file <name>  Compose file to verify against, relative to
+                          SNAPSHOT_DIR (default: docker-compose.yml). K5:
+                          this is what lets the SAME anvil-aggkit bundle be
+                          verified against BOTH the zero-mount default
+                          (docker-compose.yml) and the config-tree-mounted
+                          variant (docker-compose.mounts.yml). Only
+                          consulted for the anvil-aggkit flavor; the default
+                          (geth/lighthouse) flavor has no second variant and
+                          ignores this flag.
 
 Description:
   Verifies a snapshot by:
@@ -66,17 +78,44 @@ Description:
 
 Examples:
   $0 snapshots/snapshot-test-20260202-115500
+  $0 --compose-file docker-compose.mounts.yml snapshots/cdk-20260202-115500
 
 EOF
-    exit 0
+    exit "$status"
 }
 
 # Parse arguments
-if [ $# -ne 1 ]; then
-    usage
+COMPOSE_FILE_NAME="docker-compose.yml"
+POSITIONAL=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            ;;
+        --compose-file)
+            if [ $# -lt 2 ]; then
+                log_error "--compose-file requires a value"
+                exit 1
+            fi
+            COMPOSE_FILE_NAME="$2"
+            shift 2
+            ;;
+        -*)
+            log_error "Unknown option: $1"
+            usage 1
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#POSITIONAL[@]} -ne 1 ]; then
+    usage 1
 fi
 
-SNAPSHOT_DIR="$1"
+SNAPSHOT_DIR="${POSITIONAL[0]}"
 
 # Validate snapshot directory
 if [ ! -d "$SNAPSHOT_DIR" ]; then
@@ -84,10 +123,46 @@ if [ ! -d "$SNAPSHOT_DIR" ]; then
     exit 1
 fi
 
-if [ ! -f "$SNAPSHOT_DIR/docker-compose.yml" ]; then
-    log_error "docker-compose.yml not found in: $SNAPSHOT_DIR"
+if [ ! -f "$SNAPSHOT_DIR/$COMPOSE_FILE_NAME" ]; then
+    log_error "$COMPOSE_FILE_NAME not found in: $SNAPSHOT_DIR"
     exit 1
 fi
+
+# ============================================================================
+# Flavor detection (S9).
+#
+# The anvil-aggkit flavor has no metadata/checkpoint.json at all (see
+# snapshot/scripts/extract-state.sh -- it captures anvil state over RPC, not
+# a stopped-container tarball) and needs a completely different verification
+# path: a scripted bridge round trip, sync-status polling, CORS preflight,
+# etc. instead of "start containers, watch a block number".
+#
+# Detection reads summary.json's "flavor" key. That key is written ONLY by
+# the anvil-aggkit branch of generate-summary.sh -- every default-flavor
+# summary.json (and any snapshot predating this field) has no such key, so
+# `// "default"` resolves it to "default" and every line below this block,
+# for such a snapshot, runs completely unchanged. This is a pure insertion:
+# nothing pre-existing was edited to make room for it.
+# ============================================================================
+SNAPSHOT_FLAVOR="default"
+if [ -f "$SNAPSHOT_DIR/summary.json" ]; then
+    SNAPSHOT_FLAVOR=$(jq -r '.flavor // "default"' "$SNAPSHOT_DIR/summary.json" 2>/dev/null || echo "default")
+fi
+
+if [ "$SNAPSHOT_FLAVOR" = "anvil-aggkit" ]; then
+    # SNAPSHOT_ID is computed inline (not reused from below) -- at this point
+    # in the file that variable does not exist yet, and this script runs
+    # under `set -u`.
+    ANVIL_SNAPSHOT_ID=$(basename "$SNAPSHOT_DIR")
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # shellcheck disable=SC1090,SC1091 # SCRIPT_DIR is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
+    source "$SCRIPT_DIR/scripts/lib/verify-anvil-aggkit.sh"
+    run_anvil_aggkit_verification "$SNAPSHOT_DIR" "$ANVIL_SNAPSHOT_ID" "$SCRIPT_DIR" "$COMPOSE_FILE_NAME"
+    exit $?
+fi
+
+# ---- default (geth/lighthouse) flavor continues below, byte-for-byte
+# unchanged from before S9. ----
 
 if [ ! -f "$SNAPSHOT_DIR/metadata/checkpoint.json" ]; then
     log_error "checkpoint.json not found in: $SNAPSHOT_DIR"
