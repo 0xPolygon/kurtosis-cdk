@@ -1,6 +1,6 @@
 FROM golang:1.27.3 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
-ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
+ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.123" # 2026-10-22
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cli.git . \
   && git checkout ${POLYCLI_TAG_OR_COMMIT_SHA} \
