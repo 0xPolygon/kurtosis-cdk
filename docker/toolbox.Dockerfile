@@ -1,4 +1,4 @@
-FROM golang:1.26.10 AS polycli-builder
+FROM golang:1.27.3 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
 ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
 WORKDIR /opt/polygon-cli
@@ -27,5 +27,5 @@ RUN apt-get update \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
   && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
-  && ln -s /root/.foundry/bin/* /usr/local/bin/ \
+  && cp --dereference /root/.foundry/bin/* /usr/local/bin/ \
   && rm -fr /root/.foundry/versions/*
