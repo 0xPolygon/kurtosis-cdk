@@ -13,7 +13,7 @@ FROM node:24.22.1-bookworm
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
-ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v12.2.3" # 2025-10-30
+ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v12.2.3" # 2026-03-11
 ARG FOUNDRY_VERSION="v1.4.4" # 2025-10-30
 
 # STEP 1: Download agglayer contracts dependencies and compile contracts.
