@@ -30,7 +30,7 @@ Each image is suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For
 Repository: <https://github.com/agglayer/agglayer-contracts>
 
 ```bash
-image_name="agglayer-contracts:v12.2.3-r2"
+image_name="agglayer-contracts:v12.2.3-r3"
 docker build --tag $image_name --file agglayer-contracts.Dockerfile .
 ```
 
@@ -45,7 +45,7 @@ TODO
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
 
 ```bash
-image_name="toolbox:0.0.13"
+image_name="toolbox:0.0.14"
 docker build --tag $image_name --file toolbox.Dockerfile .
 ```
 
