@@ -30,7 +30,7 @@ Each image is suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For
 Repository: <https://github.com/agglayer/agglayer-contracts>
 
 ```bash
-image_name="agglayer-contracts:v12.2.3-r1"
+image_name="agglayer-contracts:v12.2.3-r2"
 docker build --tag $image_name --file agglayer-contracts.Dockerfile .
 ```
 
