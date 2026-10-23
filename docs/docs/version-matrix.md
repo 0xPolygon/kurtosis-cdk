@@ -45,7 +45,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | op-batcher | [1.17.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.4) | [1.17.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.4) | ✅ matches stable |
 | op-deployer | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | ✅ matches stable |
 | op-node | [1.19.11](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.11) | [1.19.11](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.11) | ✅ matches stable |
@@ -61,7 +61,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | 📌 pinned — Only supports aggkit 0.5.x so far. |
 | agglayer | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | 📌 pinned — aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+. |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | op-batcher | [1.17.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.4) | [1.17.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.4) | ✅ matches stable |
 | op-deployer | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | ✅ matches stable |
 | op-node | [1.19.11](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.11) | [1.19.11](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.11) | ✅ matches stable |
@@ -78,7 +78,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ matches stable |
 | aggkit-prover | [2.2.1](https://github.com/agglayer/provers/releases/tag/v2.2.1) | [2.2.1](https://github.com/agglayer/provers/releases/tag/v2.2.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | op-batcher | [1.17.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.4) | [1.17.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.17.4) | ✅ matches stable |
 | op-deployer | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | ✅ matches stable |
 | op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.19.11](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.11) | 📌 pinned — op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2). |
@@ -98,7 +98,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | cdk-erigon | [2.65.0-RC3](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC3) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
@@ -111,7 +111,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | 📌 pinned — Only supports aggkit 0.5.x so far. |
 | agglayer | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | 📌 pinned — aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+. |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | cdk-erigon | [2.65.0-RC3](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC3) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
@@ -123,7 +123,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | agglayer | [0.6.0-rc.5](https://github.com/agglayer/agglayer/releases/tag/v0.6.0-rc.5) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | 📌 pinned — Only supports agglayer 0.6.0-rc.5 so far. |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | cdk-data-availability | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | ✅ matches stable |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | 📌 pinned — Only supports cdk-erigon 2.61.x so far. |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | ✅ matches stable |
@@ -138,7 +138,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | agglayer | [0.6.0-rc.5](https://github.com/agglayer/agglayer/releases/tag/v0.6.0-rc.5) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | 📌 pinned — Only supports agglayer 0.6.0-rc.5 so far. |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | 📌 pinned — Only supports cdk-erigon 2.61.x so far. |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
@@ -157,7 +157,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
-| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
+| agglayer-contracts | [12.2.3-r3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3-r3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ⚡️ newer than stable |
 | besu | [26.10.1](https://github.com/hyperledger/besu/releases/tag/26.10.1) | [26.10.1](https://github.com/hyperledger/besu/releases/tag/26.10.1) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
@@ -165,9 +165,9 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| geth | [1.17.9](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.9) | [1.17.9](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.9) | ✅ matches stable |
+| geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ matches stable |
 | lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ matches stable |
-| reth | [2.8.0](https://github.com/paradigmxyz/reth/releases/tag/v2.8.0) | [2.8.0](https://github.com/paradigmxyz/reth/releases/tag/v2.8.0) | ✅ matches stable |
+| reth | [2.8.1](https://github.com/paradigmxyz/reth/releases/tag/v2.8.1) | [2.8.1](https://github.com/paradigmxyz/reth/releases/tag/v2.8.1) | ✅ matches stable |
 | status-checker | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | ✅ matches stable |
 
 ## Kurtosis Packages
@@ -177,7 +177,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned Version | Latest Stable Version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | ✅ matches stable |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [3ad03186953b](https://github.com/ethpandaops/ethereum-package/tree/3ad03186953bfa27e9060860aa9d636ea496f010) | [HEAD (3ad03186953b)](https://github.com/ethpandaops/ethereum-package/tree/3ad03186953bfa27e9060860aa9d636ea496f010) | ✅ matches stable |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [903982a05382](https://github.com/ethpandaops/ethereum-package/tree/903982a05382b9be07fca48579c75384df0a119c) | [HEAD (903982a05382)](https://github.com/ethpandaops/ethereum-package/tree/903982a05382b9be07fca48579c75384df0a119c) | ✅ matches stable |
 | [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [HEAD (c8ff0b52d25d)](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | ✅ matches stable |
 | [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [HEAD (f3402ebad8cf)](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | ✅ matches stable |
 | [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [HEAD (9de7765a6c98)](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | ✅ matches stable |
