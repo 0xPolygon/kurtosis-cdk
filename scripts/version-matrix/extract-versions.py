@@ -288,6 +288,8 @@ class VersionMatrixExtractor:
         # Specific handling for agglayer-contracts images
         if 'agglayer-contracts' in image:
             tag = tag.split('-fork')[0]
+            # Our image rebuilds (e.g. v12.2.3-r3) have no upstream release tag
+            tag = re.sub(r'-r\d+$', '', tag)
 
         # Specific handling for zkevm-prover images
         if 'zkevm-prover' in image and '-fork.' in tag:

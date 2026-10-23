@@ -120,7 +120,7 @@ DEFAULT_IMAGES = {
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
     "geth_image": "ethereum/client-go:v1.17.9",
-    "reth_image": "ghcr.io/paradigmxyz/reth:v2.8.0",
+    "reth_image": "ghcr.io/paradigmxyz/reth:v2.8.1",
     "lighthouse_image": "sigp/lighthouse:v8.3.2",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.4",
