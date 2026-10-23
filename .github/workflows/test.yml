@@ -21,10 +21,10 @@ env:
   # certifies the L2->L1 deposit and the bridge claim never becomes ready. 1.18.2+ syncs correctly.
   KURTOSIS_VERSION: 1.22.1
   # leovct/kurtosis-test is a maintained fork of ethereum-optimism/kurtosis-test (upstream's
-  # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.9 is built against
-  # kurtosis 1.20.0 and ships prebuilt binaries, so we install the release archive instead of
+  # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.10 is built against
+  # kurtosis 1.22.2 and ships prebuilt binaries, so we install the release archive instead of
   # compiling from source.
-  KURTOSIS_TEST_VERSION: v0.0.9
+  KURTOSIS_TEST_VERSION: v0.0.10
 
 jobs:
   lint:
