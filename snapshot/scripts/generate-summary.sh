@@ -194,16 +194,6 @@ extract_keystore_address() {
     jq -r '.address // empty' "$keystore_file" 2>/dev/null || echo ""
 }
 
-# Extract private key from keystore file (if possible - usually encrypted)
-# shellcheck disable=SC2317
-extract_keystore_privkey() {
-    local keystore_file="$1"
-
-    # Note: Keystores are encrypted, so we can't extract the private key directly
-    # Return empty string to indicate it's encrypted
-    echo ""
-}
-
 # Extract L1 contract addresses from agglayer and aggkit configs
 extract_l1_contracts() {
     local output_dir="$1"
