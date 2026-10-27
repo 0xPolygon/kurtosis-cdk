@@ -41,6 +41,11 @@ runs:
         sudo apt update
         sudo apt install -y kurtosis-cli=${{ inputs.kurtosis_version }}
         kurtosis analytics disable
+        # Since 1.21 the engine starts otel + ClickHouse side containers on Docker, and every kurtosis
+        # command re-checks them. CI checks logs with `docker logs` and vector still serves
+        # `kurtosis service logs`, so opt out of the otel collector.
+        printf '%s\n' 'config-version: 9' 'should-send-metrics: false' 'kurtosis-clusters:' \
+          '  docker:' '    type: docker' '    backend-log-collector: vector' > "$(kurtosis config path)"
         kurtosis version
 
     - name: Install jq
