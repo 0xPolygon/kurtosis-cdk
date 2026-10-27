@@ -18,4 +18,4 @@ runs:
         repository: agglayer/e2e
         path: ${{ inputs.path }}
         submodules: ${{ inputs.submodules }}
-        ref: edc92d219bb8138850f670fa7e91bf88f026ed01 # 2026-10-08, estimate L1 deposit gas on Amsterdam (agglayer/e2e#270)
+        ref: 5cba840ca10de48ab38411e62bd9647ad2bac29f # agglayer/e2e#272, stop aggkit before waiting for the null certificate (draft, repin to main once merged)
