@@ -18,4 +18,4 @@ runs:
         repository: agglayer/e2e
         path: ${{ inputs.path }}
         submodules: ${{ inputs.submodules }}
-        ref: ac2a4c9dbfa4dd1485dddd30b6d9eea5f0794ec3 # 2026-10-27, stop aggkit before waiting for the null certificate (agglayer/e2e#272)
+        ref: ac2a4c9dbfa4dd1485dddd30b6d9eea5f0794ec3
