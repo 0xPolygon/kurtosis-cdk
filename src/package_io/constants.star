@@ -123,10 +123,10 @@ DEFAULT_IMAGES = {
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.8.1",
     "lighthouse_image": "sigp/lighthouse:v8.3.2",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.4",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.18.0",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.8.1-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.1",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.11",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.8.0",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.0",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.7",
     # Pinned to v3.10.0: aggkit-prover 2.2.x embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
