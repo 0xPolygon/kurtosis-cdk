@@ -49,7 +49,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-batcher | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | ✅ matches stable |
 | op-deployer | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | ✅ matches stable |
 | op-node | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | ✅ matches stable |
-| op-proposer | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.7) | ✅ matches stable |
+| op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ matches stable |
 | op-reth | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
@@ -65,7 +65,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-batcher | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | ✅ matches stable |
 | op-deployer | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | [0.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.8.1) | ✅ matches stable |
 | op-node | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | ✅ matches stable |
-| op-proposer | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.7) | ✅ matches stable |
+| op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ matches stable |
 | op-reth | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
@@ -165,7 +165,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| geth | [1.17.9](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.9) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | 🚨 behind stable |
+| geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ matches stable |
 | lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ matches stable |
 | reth | [2.8.1](https://github.com/paradigmxyz/reth/releases/tag/v2.8.1) | [2.8.1](https://github.com/paradigmxyz/reth/releases/tag/v2.8.1) | ✅ matches stable |
 | status-checker | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | ✅ matches stable |
