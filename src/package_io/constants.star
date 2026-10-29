@@ -119,7 +119,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.9",
+    "geth_image": "ethereum/client-go:v1.17.10",
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.8.1",
     "lighthouse_image": "sigp/lighthouse:v8.3.2",
     "mitm_image": "mitmproxy/mitmproxy:12.2.3",
@@ -127,7 +127,7 @@ DEFAULT_IMAGES = {
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.8.1-cdk",
     "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.8.0",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.0",
-    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.7",
+    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.17.0",
     # Pinned to v3.10.0: aggkit-prover 2.2.x embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
