@@ -120,7 +120,27 @@ runs:
     - name: Pre pull package images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       shell: bash
-      run: cat modified-images.txt | xargs -n 1 -P 8 docker pull
+      run: |
+        # The Artifact Registry mirror intermittently 404s a layer blob of an entry built from a
+        # mutable tag (e.g. virtual/haproxy:3.2-bookworm) even though the digest exists upstream on
+        # Docker Hub, which fails the whole job. The mirror cannot be repaired from CI, so retry
+        # each pull a bounded number of times; a transient failure then succeeds on a later attempt.
+        pull_with_retry() {
+          local image="$1" attempt
+          for attempt in 1 2 3; do
+            docker pull "${image}" && return 0
+            echo "::warning::docker pull ${image} failed (attempt ${attempt}/3)"
+            if ((attempt < 3)); then
+              sleep 5
+            fi
+          done
+          echo "::error::docker pull ${image} failed after 3 attempts"
+          return 1
+        }
+        export -f pull_with_retry
+        # -P 8 keeps the original parallelism; the wrapper exits non-zero once an image runs out of
+        # attempts, so xargs still fails the step (123) instead of silently dropping that image.
+        cat modified-images.txt | xargs -n 1 -P 8 bash -c 'pull_with_retry "$@"' _
 
     - name: Pre pull kurtosis core images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
@@ -139,13 +159,42 @@ runs:
           "ethpandaops/ethereum-genesis-generator:5.2.2"
           "mslipper/deployment-utils@sha256:4506b112e4261014329152b161997129e7ca577f39c85e59cfdfdcb47ab7b5cf"
         )
+        # Same transient Artifact Registry blob 404 as the package images step above; retry each
+        # pull a bounded number of times before treating the image as genuinely unavailable.
+        pull_with_retry() {
+          local image="$1" attempt
+          for attempt in 1 2 3; do
+            docker pull "${image}" && return 0
+            echo "::warning::docker pull ${image} failed (attempt ${attempt}/3)"
+            if ((attempt < 3)); then
+              sleep 5
+            fi
+          done
+          echo "::error::docker pull ${image} failed after 3 attempts"
+          return 1
+        }
+        # Pull in parallel as before, but wait on every pid explicitly: a bare `wait` returns 0 even
+        # when a background pull failed, which would hide the failure.
+        pids=()
         for image in "${images[@]}"; do
-          {
-            docker pull "${registry}/${image}"
-            docker tag "${registry}/${image}" "${image}"
-          } &
+          (
+            pull_with_retry "${registry}/${image}" || exit 1
+            # Docker refuses to create a tag whose reference carries a digest, and a digest-pinned
+            # image is already addressed by its digest downstream, so there is no alias to create.
+            if [[ "${image}" != *@sha256:* ]]; then
+              docker tag "${registry}/${image}" "${image}"
+            fi
+          ) &
+          pids+=($!)
         done
-        wait
+        failed=0
+        for pid in "${pids[@]}"; do
+          wait "${pid}" || failed=1
+        done
+        if ((failed)); then
+          echo "::error::One or more kurtosis core images could not be pulled"
+          exit 1
+        fi
 
     - name: Display docker images
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
