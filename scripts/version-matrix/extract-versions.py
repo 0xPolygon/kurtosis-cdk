@@ -127,6 +127,7 @@ class VersionMatrixExtractor:
             "aggkit_prover_image": "aggkit-prover",
             "agglayer_image": "agglayer",
             "agglayer_contracts_image": "agglayer-contracts",
+            "anvil_image": "anvil",
             "besu_image": "besu",
             "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
@@ -192,6 +193,7 @@ class VersionMatrixExtractor:
             # succinct components
             "op-succinct-proposer": "agglayer/op-succinct",
             # ethereum components
+            "anvil": "foundry-rs/foundry",
             "geth": "ethereum/go-ethereum",
             "reth": "paradigmxyz/reth",
             "lighthouse": "sigp/lighthouse",
