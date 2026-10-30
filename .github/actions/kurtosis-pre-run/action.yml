@@ -177,7 +177,14 @@ runs:
         # when a background pull failed, which would hide the failure.
         pids=()
         for image in "${images[@]}"; do
-          (pull_with_retry "${registry}/${image}" && docker tag "${registry}/${image}" "${image}") &
+          (
+            pull_with_retry "${registry}/${image}" || exit 1
+            # Docker refuses to create a tag whose reference carries a digest, and a digest-pinned
+            # image is already addressed by its digest downstream, so there is no alias to create.
+            if [[ "${image}" != *@sha256:* ]]; then
+              docker tag "${registry}/${image}" "${image}"
+            fi
+          ) &
           pids+=($!)
         done
         failed=0
