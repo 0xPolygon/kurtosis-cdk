@@ -62,7 +62,7 @@ runs:
         yq --version
 
     - name: Install foundry
-      uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
+      uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
       with:
         version: v1.8.0
         cache: false
@@ -70,13 +70,13 @@ runs:
     # Login to registries
     - name: Login to docker registry
       if: ${{ inputs.docker_username && inputs.docker_token }}
-      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
       with:
         username: ${{ inputs.docker_username }}
         password: ${{ inputs.docker_token }}
 
     - name: Login to github container registry
-      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}

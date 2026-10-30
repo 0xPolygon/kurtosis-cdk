@@ -9,7 +9,7 @@ RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cl
 
 # Node 26 breaks the contracts deploy scripts: they load yargs 16 via `yargs/yargs`, an
 # extensionless CJS file that Node 26 parses as ESM. Stay on Node 24 until upstream bumps yargs.
-FROM node:24.22.1-bookworm
+FROM node:26.12.0-bookworm
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
