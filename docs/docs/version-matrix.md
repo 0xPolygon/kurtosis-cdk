@@ -158,14 +158,14 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 | aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| besu | [26.10.2](https://github.com/hyperledger/besu/releases/tag/26.10.2) | [26.10.2](https://github.com/hyperledger/besu/releases/tag/26.10.2) | ✅ matches stable |
+| besu | [26.11.0](https://github.com/hyperledger/besu/releases/tag/26.11.0) | [26.11.0](https://github.com/hyperledger/besu/releases/tag/26.11.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ## Default Images
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| anvil | [1.8.7](https://github.com/foundry-rs/foundry/releases/tag/v1.8.7) | [1.8.7](https://github.com/foundry-rs/foundry/releases/tag/v1.8.7) | ✅ matches stable |
+| anvil | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | ✅ matches stable |
 | geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ matches stable |
 | lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ matches stable |
 | reth | [2.9.0](https://github.com/paradigmxyz/reth/releases/tag/v2.9.0) | [2.9.0](https://github.com/paradigmxyz/reth/releases/tag/v2.9.0) | ✅ matches stable |
