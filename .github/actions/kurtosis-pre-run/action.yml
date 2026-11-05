@@ -23,15 +23,14 @@ runs:
   using: composite
   steps:
     - name: Free up disk space
-      uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
-      with:
-        tool-cache: false
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: false
-        docker-images: true
-        swap-storage: true
+      shell: bash
+      # Removes preinstalled toolchains (Android, .NET, Haskell) and GitHub's preloaded images, ~24 GB.
+      # Must run before the package images are pre-pulled.
+      run: |
+        df -h /
+        sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+        docker image prune --all --force > /dev/null
+        df -h /
 
     # Install dependencies
     - name: Install kurtosis
