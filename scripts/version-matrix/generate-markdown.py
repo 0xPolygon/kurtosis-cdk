@@ -226,13 +226,12 @@ sidebar_position: 3
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
         md = md.rstrip() + f"\n\n{self._sources(op)}\n\n"
-        md += "| Fork | Devnet status | Devnet offset (s) | op-node |\n"
-        md += "|------|---------------|-------------------|---------|\n"
+        md += "| Fork | Devnet status | Devnet offset (s) |\n"
+        md += "|------|---------------|-------------------|\n"
         for fork in op['forks']:
             md += (
                 f"| {fork['name']} | {self._fork_status(fork)}"
-                f" | {self._activation(fork['devnet'])}"
-                f" | {self._support(fork['support'].get('op-node'))} |\n"
+                f" | {self._activation(fork['devnet'])} |\n"
             )
         return md
 
@@ -277,10 +276,6 @@ sidebar_position: 3
         if False in fork.get('support', {}).values():
             return "—"
         return "unscheduled"
-
-    @staticmethod
-    def _support(known: Optional[bool]) -> str:
-        return {True: "✅", False: "❌"}.get(known, "—")
 
     @staticmethod
     def _fork_status(fork: Dict) -> str:

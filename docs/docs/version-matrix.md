@@ -222,13 +222,13 @@ Fork times are offsets in seconds from the L2 genesis: the optimism-package defa
 
 Checked against [optimism-package v2.0.0](https://github.com/agglayer/optimism-package/blob/v2.0.0/src/l2/input_parser.star) and [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go).
 
-| Fork | Devnet status | Devnet offset (s) | op-node |
-|------|---------------|-------------------|---------|
-| fjord | ✅ enabled | 0 | ✅ |
-| granite | ✅ enabled | 0 | ✅ |
-| holocene | ⚙️ op-deployer default | — | ✅ |
-| isthmus | ✅ enabled | 0 | ✅ |
-| jovian | ⚙️ op-deployer default | — | ✅ |
-| karst | ⚙️ op-deployer default — no knob in optimism-package | — | ✅ |
-| lagoon | ⚙️ op-deployer default — no knob in optimism-package | — | ✅ |
-| interop | ⏳ not supported yet | — | ❌ |
+| Fork | Devnet status | Devnet offset (s) |
+|------|---------------|-------------------|
+| fjord | ✅ enabled | 0 |
+| granite | ✅ enabled | 0 |
+| holocene | ⚙️ op-deployer default | — |
+| isthmus | ✅ enabled | 0 |
+| jovian | ⚙️ op-deployer default | — |
+| karst | ⚙️ op-deployer default — no knob in optimism-package | — |
+| lagoon | ⚙️ op-deployer default — no knob in optimism-package | — |
+| interop | ⏳ not supported yet | — |
