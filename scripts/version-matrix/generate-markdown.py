@@ -309,9 +309,9 @@ sidebar_position: 3
             pin_reason = package.get('pin_reason')
 
             status_emoji = {
-                'newer than stable': '⚡️',
-                'matches stable': '✅',
-                'behind stable': '🚨',
+                'ahead': '⚡️',
+                'up to date': '✅',
+                'behind': '🚨',
                 'pinned': '📌',
             }.get(status, '❓')
 
@@ -357,9 +357,9 @@ sidebar_position: 3
 
             # Format status with emoji
             status_emoji = {
-                'newer than stable': '⚡️',
-                'matches stable': '✅',
-                'behind stable': '🚨',
+                'ahead': '⚡️',
+                'up to date': '✅',
+                'behind': '🚨',
                 'pinned': '📌',
             }.get(status, '❓')
 

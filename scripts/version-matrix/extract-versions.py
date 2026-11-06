@@ -42,7 +42,7 @@ class ComponentVersion:
 UNPREFIXED_RELEASE_TAGS = {'besu'}
 
 # Components deliberately held back from the latest stable release, keyed by
-# (environment, component). These render as "pinned" instead of "behind stable"
+# (environment, component). These render as "pinned" instead of "behind"
 # so that genuine regressions stay visible in the matrix.
 #
 # Keep every reason short: "Only supports <component> <line> so far." when we are just
@@ -86,7 +86,7 @@ class PackageVersion:
 
 # External Kurtosis packages deliberately held back, keyed by package locator.
 # Same convention as PINNED_VERSIONS: these render as "pinned" rather than
-# "behind stable" so real drift stays visible.
+# "behind" so real drift stays visible.
 PINNED_PACKAGES = {}
 
 
@@ -486,9 +486,9 @@ class VersionMatrixExtractor:
             latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
 
             # special case for agglayer-contracts
-            experimental_status = "newer than stable"
-            stable_status = "matches stable"
-            deprecated_status = "behind stable"
+            experimental_status = "ahead"
+            stable_status = "up to date"
+            deprecated_status = "behind"
             
             if version_suffix.endswith("aggchain.multisig"):
                 return experimental_status
@@ -579,23 +579,23 @@ class VersionMatrixExtractor:
     def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion]):
         """Re-label deliberately held-back components as pinned.
 
-        Downgrades a "behind stable" status: if a pinned component ever catches
+        Downgrades a "behind" status: if a pinned component ever catches
         up with (or overtakes) stable, the real status is kept so that the pin
         can be retired.
 
         Also covers components held back to an older *pre-release* while the
         default moved ahead (e.g. agglayer pinned to 0.6.0-rc.5 for cdk-node
-        environments). Those still read "newer than stable" against the latest
+        environments). Those still read "ahead" against the latest
         stable tag, so the pin would otherwise stay invisible in the matrix.
         """
         for name, component in components.items():
             reason = PINNED_VERSIONS.get((environment_name, name))
             if not reason:
                 continue
-            if component.status == "behind stable":
+            if component.status == "behind":
                 component.status = "pinned"
                 component.pin_reason = reason
-            elif component.status == "newer than stable" and component.version in reason:
+            elif component.status == "ahead" and component.version in reason:
                 component.status = "pinned"
                 component.pin_reason = reason
 
@@ -1045,20 +1045,20 @@ class VersionMatrixExtractor:
             return None, None
 
         if pin[:12] == head_version[:12]:
-            return "matches stable", None
+            return "up to date", None
 
         comparison = self._github_get(f"repos/{repo}/compare/{head_version}...{pin}")
         if comparison:
             behind_by = comparison.get('behind_by', 0)
             if behind_by > 0:
-                return "behind stable", f"{behind_by} commits behind HEAD"
+                return "behind", f"{behind_by} commits behind HEAD"
             if comparison.get('ahead_by', 0) > 0:
                 # Pinned to an unmerged or since-rewritten commit.
-                return "newer than stable", (
+                return "ahead", (
                     f"{comparison['ahead_by']} commits ahead of HEAD")
 
         # Compare API unavailable: the pin differs from HEAD, and bumping to HEAD is safe.
-        return "behind stable", None
+        return "behind", None
 
     def _get_package_source_url(self, repo: str, ref: str) -> Optional[str]:
         """Build a browsable URL for a package ref."""
@@ -1082,13 +1082,13 @@ class VersionMatrixExtractor:
         # A tag pin can be compared directly against the latest release tag.
         if not self._is_commit_sha(pin) and not self._is_commit_sha(latest_version):
             if pin.lstrip('v') == latest_version.lstrip('v'):
-                return "matches stable", None
+                return "up to date", None
             return self._determine_status(
                 pin.lstrip('v'), latest_version.lstrip('v')), None
 
         # A commit pin equal to the latest ref is up to date.
         if pin[:12] == (latest_version or '')[:12]:
-            return "matches stable", None
+            return "up to date", None
 
         # For a commit pin, ask GitHub where it sits relative to the latest
         # release. Comparing raw dates would be wrong: a commit can be authored
@@ -1098,18 +1098,18 @@ class VersionMatrixExtractor:
             behind_by = comparison.get('behind_by', 0)
             ahead_by = comparison.get('ahead_by', 0)
             if behind_by > 0:
-                return "behind stable", f"{behind_by} commits behind {latest_version}"
+                return "behind", f"{behind_by} commits behind {latest_version}"
             if ahead_by > 0:
-                return "newer than stable", f"{ahead_by} commits ahead of {latest_version}"
-            return "matches stable", None
+                return "ahead", f"{ahead_by} commits ahead of {latest_version}"
+            return "up to date", None
 
         # Fall back to dates only when the comparison is unavailable.
         if pin_date and latest_version_date:
             if pin_date > latest_version_date:
-                return "newer than stable", None
+                return "ahead", None
             if pin_date < latest_version_date:
-                return "behind stable", None
-            return "matches stable", None
+                return "behind", None
+            return "up to date", None
 
         return None, None
 

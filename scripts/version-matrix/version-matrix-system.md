@@ -81,9 +81,9 @@ The system tracks status types for each component version:
 
 | Status | Icon | Description |
 |--------|------|-------------|
-| **matches stable** | ✅ | Current latest release, recommended for use |
-| **newer than stable** | ⚡️ | Newer than latest release, may be pre-release or beta |
-| **behind stable** | 🚨 | Older than latest release and should be bumped |
+| **up to date** | ✅ | Current latest release, recommended for use |
+| **ahead** | ⚡️ | Newer than latest release, may be pre-release or beta |
+| **behind** | 🚨 | Older than latest release and should be bumped |
 | **pinned** | 📌 | Deliberately held back — see the reason in the matrix |
 
 ### Pinned versions
@@ -107,7 +107,7 @@ PINNED_VERSIONS = {
 Keep every reason in the same short form — `Only supports <component> <line> so
 far.` — so the status column reads consistently and stays narrow.
 
-The pin only ever downgrades a `behind stable` result. Once the pinned
+The pin only ever downgrades a `behind` result. Once the pinned
 component catches up with (or overtakes) stable, its real status is reported
 again — that is the signal to delete the entry. Pins are scoped to a single
 environment, so a component pinned in one environment still reports 🚨 in the
@@ -154,12 +154,12 @@ What "latest" means follows from how a package is pinned in `kurtosis.yml`:
 - A **commit** pin (`@6dd3f26…`) is head-tracked: compared against the default
   branch tip, and the matrix labels the column `HEAD (<sha>)` so a sha is never
   presented as a stable version. We pin commits when upstream ships faster than
-  it tags, so the latest tag would report `⚡️ newer than stable` forever.
+  it tags, so the latest tag would report `⚡️ ahead` forever.
 
-A head-tracked pin reports `🚨 behind stable` with its commit distance as soon as
+A head-tracked pin reports `🚨 behind` with its commit distance as soon as
 HEAD moves past it, so the nightly bump PR follows the branch tip: one refreshed
 PR per upstream change rather than a pin drifting unnoticed. A pin ahead of HEAD
-(an unmerged or rewritten commit) reports `⚡️ newer than stable`.
+(an unmerged or rewritten commit) reports `⚡️ ahead`.
 
 ## Hard Forks
 

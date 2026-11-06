@@ -19,7 +19,7 @@ gh run view <run> --log --job <job> | grep -E '\s[-+]\|' | sed 's/.*Z //'
 
 Otherwise regenerate (step 3) on a fresh `origin/main` and read
 `git diff docs/docs/version-matrix.md`. The `+` rows are the new matrix. Keep only
-rows marked 🚨 (behind stable). Skip:
+rows marked 🚨 (behind). Skip:
 
 - 📌 `pinned` rows: deliberate holds declared in `PINNED_VERSIONS` in
   `extract-versions.py`. Pins are per environment, so a component 📌 in one
