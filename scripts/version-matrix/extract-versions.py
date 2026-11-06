@@ -35,6 +35,7 @@ class ComponentVersion:
     latest_version_source_url: Optional[str] = None
     status: Optional[str] = None
     pin_reason: Optional[str] = None
+    core: bool = False
 
 
 # Components whose upstream release tags carry no "v" prefix, so their release URL must not add
@@ -82,12 +83,61 @@ class PackageVersion:
     commit_distance: Optional[str] = None
     tracking_mode: str = "release"
     pin_reason: Optional[str] = None
+    core: bool = False
 
 
 # External Kurtosis packages deliberately held back, keyed by package locator.
 # Same convention as PINNED_VERSIONS: these render as "pinned" rather than
 # "behind" so real drift stays visible.
 PINNED_PACKAGES = {}
+
+# Images the devnet cannot run without: the L1 clients. Everything else listed
+# under default images is additional. Keys are component names.
+CORE_IMAGES = {"anvil", "geth", "lighthouse", "reth"}
+
+# Packages the devnet cannot run without: the L1 and the L2 OP stack. Keys are
+# package locators.
+CORE_PACKAGES = {
+    "github.com/ethpandaops/ethereum-package",
+    "github.com/agglayer/optimism-package",
+}
+
+# Images that are not in `component_mapping`: databases, observability, helpers
+# and services built outside this repo. Keys are the `DEFAULT_IMAGES` keys of
+# constants.star or the `*_IMAGE` constants of src/additional_services/*.star.
+#   repo:        GitHub repository whose latest release is the latest version
+#   tag_prefix:  prefix of its release tags (the image tag has none)
+#   commit_repo: repository the commit-sha image tag points into
+#   registry:    the image is tagged with commit shas on Artifact Registry, so
+#                the latest version is the last tag uploaded there
+# An image without any of these is listed with no latest version and no status.
+EXTRA_IMAGES = {
+    "db_image": {"name": "postgres"},
+    "mongodb_image": {"name": "mongodb"},
+    "zkevm_bridge_proxy_image": {"name": "haproxy"},
+    "mitm_image": {"name": "mitmproxy", "repo": "mitmproxy/mitmproxy", "tag_prefix": "v"},
+    "test_runner_image": {"name": "e2e-test-runner", "commit_repo": "agglayer/e2e"},
+    "agglayer_dev_ui_image": {"name": "agglayer-dev-ui", "registry": True},
+    "agglogger_image": {"name": "agglogger", "registry": True},
+    "bridge_hub_api_image": {"name": "bridge-hub-api", "registry": True},
+    "bridge_hub_consumer_image": {"name": "bridge-hub-consumer", "registry": True},
+    "bridge_hub_autoclaim_image": {"name": "bridge-hub-autoclaim", "registry": True},
+    "zkevm_bridge_ui_image": {"name": "zkevm-bridge-ui", "registry": True},
+    "PROMETHEUS_IMAGE": {"name": "prometheus", "repo": "prometheus/prometheus", "tag_prefix": "v"},
+    "GRAFANA_IMAGE": {"name": "grafana", "repo": "grafana/grafana", "tag_prefix": "v"},
+    "PANOPTICHAIN_IMAGE": {"name": "panoptichain", "repo": "0xPolygon/panoptichain", "tag_prefix": "v"},
+    "ASSERTOOR_IMAGE": {"name": "assertoor", "repo": "ethpandaops/assertoor", "tag_prefix": "v"},
+    "ERPC_IMAGE": {"name": "erpc", "repo": "erpc/erpc"},
+    "BLUTGANG_IMAGE": {"name": "blutgang", "repo": "rainshowerLabs/blutgang", "tag_prefix": "Blutgang-"},
+    "ARPEGGIO_IMAGE": {"name": "arpeggio"},
+    # Tagged `v4fixed`: no version to compare.
+    "AGGLAYER_DASHBOARD_IMAGE": {"name": "agglayer-dashboard"},
+}
+
+# DEFAULT_IMAGES entries left out on purpose, with the reason.
+SKIPPED_IMAGES = {
+    "cdk_erigon_sovereign_image": "reference only, not used by this package",
+}
 
 
 class VersionMatrixExtractor:
@@ -250,11 +300,118 @@ class VersionMatrixExtractor:
                             version_source_url=version_source_url,
                             latest_version_source_url=latest_version_source_url,
                             status=status,
+                            core=name in CORE_IMAGES,
                         )
+                    elif key not in EXTRA_IMAGES and key not in SKIPPED_IMAGES:
+                        print(f"Warning: DEFAULT_IMAGES key '{key}' is neither "
+                              "tracked nor skipped, add it to EXTRA_IMAGES or SKIPPED_IMAGES.")
 
         except Exception as e:
             print(f"Error extracting default images: {e}")
         return components
+
+    def extract_extra_images(self) -> Dict[str, ComponentVersion]:
+        """Extract the images listed in EXTRA_IMAGES (see there for how each is tracked)."""
+        images = {}
+        try:
+            default_images = re.search(
+                r'DEFAULT_IMAGES\s*=\s*\{(.*?)\}', self.constants_path.read_text(), re.DOTALL)
+            if default_images:
+                images.update(re.findall(r'"([^"]+)":\s*"([^"]+)"', default_images.group(1)))
+            for path in sorted((self.repo_root / "src" / "additional_services").glob("*.star")):
+                images.update(re.findall(
+                    r'^([A-Z][A-Z_]*_IMAGE)\s*=\s*"([^"]+)"', path.read_text(), re.MULTILINE))
+        except Exception as e:
+            print(f"Error extracting additional images: {e}")
+            return {}
+
+        for key in images:
+            if key.endswith("_IMAGE") and key.isupper() and key not in EXTRA_IMAGES:
+                print(f"Warning: additional service constant '{key}' is not tracked, "
+                      "add it to EXTRA_IMAGES.")
+
+        tracked = {key: image for key, image in images.items() if key in EXTRA_IMAGES}
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            results = pool.map(lambda item: self._extra_image(*item, EXTRA_IMAGES[item[0]]),
+                               tracked.items())
+        return {EXTRA_IMAGES[key]["name"]: comp for key, comp in zip(tracked, results)}
+
+    def _extra_image(self, key: str, image: str, spec: dict) -> ComponentVersion:
+        tag = image.rpartition(":")[2] if ":" in image.rpartition("/")[2] else "latest"
+        prefix = spec.get("tag_prefix", "")
+        version = tag[len(prefix):] if prefix and tag.startswith(prefix) else tag.lstrip("v") if prefix else tag
+        repo = spec.get("repo")
+        version_url = latest = latest_url = None
+        if repo:
+            version_url = f"https://github.com/{repo}/releases/tag/{prefix}{version}"
+            latest = self._get_latest_release(repo, prefix)
+            latest_url = f"https://github.com/{repo}/releases/tag/{prefix}{latest}" if latest else None
+            status = self._determine_semver_status(version, latest)
+        elif spec.get("registry"):
+            latest = self._get_latest_uploaded_tag(image)
+            status = (None if not latest else
+                      "up to date" if version == latest else "behind")
+        else:
+            status = None
+        if spec.get("commit_repo"):
+            version_url = f"https://github.com/{spec['commit_repo']}/commit/{version}"
+        return ComponentVersion(
+            version=version, image=image, latest_version=latest,
+            version_source_url=version_url, latest_version_source_url=latest_url,
+            status=status, core=False,
+        )
+
+    def _get_latest_release(self, repo: str, tag_prefix: str) -> Optional[str]:
+        """Latest stable GitHub release of a repo, without its tag prefix."""
+        try:
+            status_code, release = self._get_json(
+                f"https://api.github.com/repos/{repo}/releases/latest")
+        except Exception as e:
+            print(f"Error fetching latest release of {repo}: {e}")
+            return None
+        if status_code != 200:
+            print(f"Error fetching latest release of {repo}: {status_code}")
+            return None
+        tag = release["tag_name"]
+        if tag_prefix and tag.startswith(tag_prefix):
+            return tag[len(tag_prefix):]
+        return tag.lstrip("v") if tag_prefix else tag
+
+    @staticmethod
+    def _get_latest_uploaded_tag(image: str) -> Optional[str]:
+        """Most recently uploaded commit-sha tag of an Artifact Registry image, read
+        anonymously (Docker Registry v2 API). Sha tags cannot be ordered, and the
+        upload time is a GCR extension: without it the newest tag cannot be told."""
+        host, _, rest = image.partition("/")
+        repository = rest.rsplit(":", 1)[0]
+        try:
+            response = requests.get(f"https://{host}/v2/{repository}/tags/list",
+                                    params={"n": 1000}, timeout=30)
+            response.raise_for_status()
+            body = response.json()
+        except Exception as e:
+            print(f"Error listing tags of {image}: {e}")
+            return None
+        uploaded = {tag: int(manifest["timeUploadedMs"])
+                    for manifest in body.get("manifest", {}).values()
+                    if "timeUploadedMs" in manifest
+                    for tag in manifest.get("tag", [])
+                    if re.fullmatch(r"[0-9a-f]{7,40}", tag)}
+        return max(uploaded, key=uploaded.get) if uploaded else None
+
+    @staticmethod
+    def _determine_semver_status(version: str, latest: Optional[str]) -> Optional[str]:
+        """Compare two plain numeric versions; None when either is not one."""
+        def key(v):
+            try:
+                numbers = [int(part) for part in v.partition("-")[0].split(".")]
+            except ValueError:
+                return None
+            return tuple(numbers + [0] * (3 - len(numbers)))
+        ours, theirs = key(version), key(latest) if latest else None
+        if ours is None or theirs is None:
+            return None
+        return "ahead" if ours > theirs else "behind" if ours < theirs else "up to date"
 
     def _prewarm_latest_versions(self, images_content: str):
         """Populate the latest-version cache concurrently.
@@ -845,6 +1002,7 @@ class VersionMatrixExtractor:
         print("Extracting default images...")
         default_images = self.extract_default_images()
         filtered_default_images = self.filter_default_images(default_images)
+        filtered_default_images.update(self.extract_extra_images())
 
         print("Extracting test environments...")
         test_environments = self.extract_test_environments(default_images)
@@ -953,6 +1111,7 @@ class VersionMatrixExtractor:
             commit_distance=commit_distance,
             tracking_mode=tracking_mode,
             pin_reason=PINNED_PACKAGES.get(package_locator),
+            core=package_locator in CORE_PACKAGES,
         )
 
     def _repo_from_locator(self, locator: str) -> Optional[str]:

@@ -113,6 +113,20 @@ again — that is the signal to delete the entry. Pins are scoped to a single
 environment, so a component pinned in one environment still reports 🚨 in the
 others.
 
+## Default Images: Core and Additional
+
+The default images (those not already shown in a test environment) are split in
+two tables. The core images are the ones the devnet cannot start without, the L1
+clients (`CORE_IMAGES` in `extract-versions.py`); everything else is additional.
+The additional images include the databases, the observability stack and the
+helper services, declared either in `DEFAULT_IMAGES` or as `*_IMAGE` constants in
+`src/additional_services/`. They are listed in `EXTRA_IMAGES`, which says how
+each one is tracked: the latest GitHub release of its repository (mind the tag
+prefix), the last tag uploaded to Artifact Registry for images tagged with commit
+shas, or nothing when there is no upstream signal (databases, an image tagged
+`v4fixed`). A new image that is in neither `EXTRA_IMAGES` nor `SKIPPED_IMAGES`
+makes the extractor print a warning, so it cannot be left out silently.
+
 ## External Kurtosis Packages
 
 Alongside container images, the matrix tracks the external Kurtosis packages
@@ -142,7 +156,8 @@ by *ancestry* rather than by date: the script asks the GitHub compare API
 whether the pinned commit is ahead of or behind the latest release, because a
 commit can be authored after a release was published while still being an
 ancestor of it. The resulting distance (e.g. `14 commits behind 1.0.0`) is shown
-in the matrix. Packages deliberately held back go in `PINNED_PACKAGES`, keyed by
+in the matrix. The packages are split like the images: `CORE_PACKAGES` (the L1 and
+the L2 OP stack) first, the others under Additional. Packages deliberately held back go in `PINNED_PACKAGES`, keyed by
 package locator, using the same short reason form as `PINNED_VERSIONS`.
 
 ### Release-tracked vs head-tracked packages

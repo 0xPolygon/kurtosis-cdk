@@ -35,6 +35,11 @@ Before bumping, check the new image is published:
 `docker manifest inspect <image>:<tag>`. A release often lands before its image
 (agglayer images take ~30 min). Skip unpublished ones and say so in the PR.
 
+A bump of a row under "Additional" images follows the same steps. Such images are
+declared in `src/package_io/constants.star` or in `src/additional_services/*.star`
+(`*_IMAGE` constants), and how each is tracked lives in `EXTRA_IMAGES` in
+`extract-versions.py`.
+
 ## 2. Bump
 
 - Replace the **full image reference** (`sigp/lighthouse:v8.2.2` →
