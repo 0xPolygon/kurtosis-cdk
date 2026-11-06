@@ -264,7 +264,9 @@ sidebar_position: 3
     @staticmethod
     def _testnet(fork: Dict, url: Optional[str] = None) -> str:
         if fork.get('testnet') is None:
-            return "—"
+            if False in fork.get('support', {}).values():
+                return "—"
+            return "unscheduled"
         value = str(fork['testnet'])
         return f"[{value}]({url.format(value)})" if url else value
 
