@@ -202,7 +202,7 @@ instead of rendering a fork as unsupported.
 
 An OP Stack fork left unset is omitted from the op-deployer intent, so it is not
 scheduled at genesis: set its `*_time_offset` to enable it. The OP Mainnet column
-reads the superchain registry (`main`), as unix timestamps. Fork rows never use 🚨, so the bump
+links the block of each activation, computed from the superchain registry (`main`) timestamps. Fork rows never use 🚨, so the bump
 workflow leaves them alone: enabling a fork is a decision, not a version bump.
 The L1 code is shared with kurtosis-pos's copy of `hard_forks.py`: keep both in
 sync. A new L1 fork needs its EL name in `L1_EL_FORKS`, or its geth column reads

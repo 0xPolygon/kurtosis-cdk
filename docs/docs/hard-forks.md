@@ -36,18 +36,18 @@ Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, 
 
 Fork times are offsets in seconds from the L2 genesis: the optimism-package defaults, overridden in [`src/package_io/op_input_parser.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/op_input_parser.star). Forks before Fjord always activate at genesis.
 
-OP Mainnet times are unix timestamps from the [superchain registry](https://github.com/ethereum-optimism/superchain-registry).
+The OP Mainnet column is the first block at the activation time listed in the [superchain registry](https://github.com/ethereum-optimism/superchain-registry).
 
-| Fork | Devnet status | Devnet offset (s) | OP Mainnet time |
-|------|---------------|-------------------|-----------------|
+| Fork | Devnet status | Devnet offset (s) | OP Mainnet block |
+|------|---------------|-------------------|------------------|
 | interop | ⏳ not supported yet | — | — |
 | lagoon | 💤 not enabled | — | — |
-| karst | ✅ enabled | 0 | 1783526401 (2026-07-08) |
-| jovian | ✅ enabled | 0 | 1764691201 (2025-12-02) |
-| isthmus | ✅ enabled | 0 | 1746806401 (2025-05-09) |
-| holocene | ✅ enabled | 0 | 1736445601 (2025-01-09) |
-| granite | ✅ enabled | 0 | 1726070401 (2024-09-11) |
-| fjord | ✅ enabled | 0 | 1720627201 (2024-07-10) |
+| karst | ✅ enabled | 0 | [153963812](https://optimistic.etherscan.io/block/153963812) |
+| jovian | ✅ enabled | 0 | [144546212](https://optimistic.etherscan.io/block/144546212) |
+| isthmus | ✅ enabled | 0 | [135603812](https://optimistic.etherscan.io/block/135603812) |
+| holocene | ✅ enabled | 0 | [130423412](https://optimistic.etherscan.io/block/130423412) |
+| granite | ✅ enabled | 0 | [125235812](https://optimistic.etherscan.io/block/125235812) |
+| fjord | ✅ enabled | 0 | [122514212](https://optimistic.etherscan.io/block/122514212) |
 
 Checked against:
 

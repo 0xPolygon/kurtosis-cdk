@@ -12,7 +12,6 @@ This script creates a comprehensive Markdown version matrix that includes:
 
 import json
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 from dataclasses import dataclass
@@ -40,6 +39,13 @@ class MatrixEntry:
     components: Dict[str, str]
     sources: Dict[str, str]
     status: Dict[str, str]
+
+
+# OP Mainnet Bedrock genesis (superchain-registry op.toml), to turn a fork
+# timestamp into a block number.
+OP_MAINNET_GENESIS_BLOCK = 105235063
+OP_MAINNET_GENESIS_TIME = 1686068903
+OP_MAINNET_BLOCK_URL = "https://optimistic.etherscan.io/block/{}"
 
 
 def _short_ref(ref: str) -> str:
@@ -248,11 +254,11 @@ sidebar_position: 3
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
         md = md.rstrip() + "\n\n"
-        md += "OP Mainnet times are unix timestamps from the "
+        md += "The OP Mainnet column is the first block at the activation time listed in the "
         md += "[superchain registry](https://github.com/ethereum-optimism/superchain-registry). "
         md = md.rstrip() + "\n\n"
-        md += "| Fork | Devnet status | Devnet offset (s) | OP Mainnet time |\n"
-        md += "|------|---------------|-------------------|-----------------|"
+        md += "| Fork | Devnet status | Devnet offset (s) | OP Mainnet block |\n"
+        md += "|------|---------------|-------------------|------------------|"
         md += "\n"
         for fork in self._newest_first(op['forks']):
             md += (
@@ -305,8 +311,10 @@ sidebar_position: 3
     def _mainnet_time(fork: Dict) -> str:
         if fork.get('mainnet') is None:
             return "—"
-        date = datetime.fromtimestamp(fork['mainnet'], timezone.utc).strftime("%Y-%m-%d")
-        return f"{fork['mainnet']} ({date})"
+        # OP Mainnet has produced a block every 2s since the Bedrock genesis.
+        block = (OP_MAINNET_GENESIS_BLOCK
+                 + (fork['mainnet'] - OP_MAINNET_GENESIS_TIME) // 2)
+        return f"[{block}]({OP_MAINNET_BLOCK_URL.format(block)})"
 
     @staticmethod
     def _fork_status(fork: Dict) -> str:
