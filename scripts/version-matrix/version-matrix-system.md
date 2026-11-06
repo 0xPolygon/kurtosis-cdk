@@ -62,7 +62,7 @@ export GITHUB_TOKEN="..."
 python3 scripts/version-matrix/extract-versions.py
 
 # Generate Markdown documentation
-# File saved to docs/docs/version-matrix.md
+# Files saved to docs/docs/version-matrix.md and docs/docs/hard-forks.md
 python3 scripts/version-matrix/generate-markdown.py
 ```
 
@@ -164,7 +164,8 @@ PR per upstream change rather than a pin drifting unnoticed. A pin ahead of HEAD
 ## Hard Forks
 
 `hard_forks.py` compares what the devnet activates with what the pinned clients
-support, for two domains:
+support, for two domains. The result is written to its own page,
+`docs/docs/hard-forks.md`, by the same `generate-markdown.py`:
 
 | Domain   | Devnet schedule                                                                         | Checked against                                                    |
 |----------|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------|
