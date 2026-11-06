@@ -196,7 +196,7 @@ sidebar_position: 3
         md += "when a pin or the package config does, so a fork that is merely "
         md += "announced upstream never shows up as drift. These rows are "
         md += "informational and never bumped automatically.\n\n"
-        md += "| Status | Meaning |\n"
+        md += "| Devnet status | Meaning |\n"
         md += "|--------|---------|\n"
         for status, (emoji, meaning) in FORK_STATUSES.items():
             md += f"| {emoji} {status} | {meaning} |\n"
@@ -206,14 +206,15 @@ sidebar_position: 3
         md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
         md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
         md += f"{self._sources(l1)}\n\n"
-        md += "| Fork | EL fork | Devnet epoch | Mainnet epoch | geth | lighthouse | Status |\n"
-        md += "|------|---------|--------------|---------------|------|------------|--------|\n"
+        md += "| CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | Supported by geth | Supported by lighthouse | Devnet status |\n"
+        md += "|------|---------|--------------|---------------|---------------|------|------------|--------|\n"
         scheduled = [f for f in l1['forks'] if not self._is_unscheduled(f)]
         for fork in scheduled:
             support = fork['support']
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
-                f" | {self._activation(fork['devnet'])} | {self._mainnet(fork, L1_EPOCH_URL)}"
+                f" | {self._activation(fork['devnet'])} | {self._testnet(fork)}"
+                f" | {self._mainnet(fork, L1_EPOCH_URL)}"
                 f" | {self._support(support.get('geth'))}"
                 f" | {self._support(support.get('lighthouse'))}"
                 f" | {self._fork_status(fork)} |\n"
@@ -227,7 +228,7 @@ sidebar_position: 3
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
         md += f"{self._sources(op)}\n\n"
-        md += "| Fork | Devnet offset (s) | op-node | Status |\n"
+        md += "| Fork | Devnet offset (s) | Supported by op-node | Devnet status |\n"
         md += "|------|-------------------|---------|--------|\n"
         for fork in op['forks']:
             md += (
@@ -252,8 +253,10 @@ sidebar_position: 3
 
     @staticmethod
     def _is_unscheduled(fork: Dict) -> bool:
-        # A fork a pinned client does not know has no mainnet schedule to speak of.
+        # Forks the devnet enables stay in the tables; a fork a pinned client
+        # does not know has no mainnet schedule to speak of.
         return (fork.get('mainnet') is None
+                and fork.get('status') != 'enabled'
                 and False not in fork.get('support', {}).values())
 
     @classmethod
@@ -266,11 +269,20 @@ sidebar_position: 3
         return f"\nNot scheduled on mainnet yet: {items}.\n"
 
     @staticmethod
+    def _testnet(fork: Dict, url: Optional[str] = None) -> str:
+        if fork.get('testnet') is None:
+            return "—"
+        value = str(fork['testnet'])
+        return f"[{value}]({url.format(value)})" if url else value
+
+    @staticmethod
     def _mainnet(fork: Dict, url: Optional[str] = None) -> str:
         if fork.get('mainnet') is not None:
             value = str(fork['mainnet'])
             return f"[{value}]({url.format(value)})" if url else value
-        return "—"
+        if False in fork.get('support', {}).values():
+            return "—"
+        return "unscheduled"
 
     @staticmethod
     def _support(known: Optional[bool]) -> str:

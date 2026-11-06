@@ -42,8 +42,9 @@ L1_EL_FORKS = {
     "heze": "bogota",
 }
 
-LIGHTHOUSE_MAINNET_CONFIG = (
-    "common/eth2_network_config/built_in_network_configs/mainnet/config.yaml")
+LIGHTHOUSE_NETWORK_CONFIG = (
+    "common/eth2_network_config/built_in_network_configs/{}/config.yaml")
+LIGHTHOUSE_MAINNET_CONFIG = LIGHTHOUSE_NETWORK_CONFIG.format("mainnet")
 
 
 @dataclass
@@ -54,6 +55,8 @@ class HardFork:
     devnet: Optional[int]
     # Activation on mainnet; None if unscheduled or not applicable.
     mainnet: Optional[int] = None
+    # Activation on the public testnet (Sepolia for L1, Amoy for Bor and Heimdall-v2).
+    testnet: Optional[int] = None
     # Whether each pinned client knows the fork; None when not applicable.
     support: Dict[str, Optional[bool]] = field(default_factory=dict)
     status: Optional[str] = None
@@ -134,6 +137,9 @@ def l1_forks(overrides: str, ethereum_package: Tuple[str, str],
     mainnet = yaml.safe_load(
         fetch("sigp/lighthouse", lighthouse_tag, LIGHTHOUSE_MAINNET_CONFIG))
     blob_schedule = mainnet.get("BLOB_SCHEDULE") or []
+    sepolia = yaml.safe_load(fetch("sigp/lighthouse", lighthouse_tag,
+                                   LIGHTHOUSE_NETWORK_CONFIG.format("sepolia")))
+    sepolia_blob_schedule = sepolia.get("BLOB_SCHEDULE") or []
 
     # The package runs the "minimal" preset, so these are the defaults of every
     # knob it does not override.
@@ -153,6 +159,8 @@ def l1_forks(overrides: str, ethereum_package: Tuple[str, str],
             cl_known = "BLOB_SCHEDULE" in mainnet
             mainnet_epoch = (blob_schedule[index - 1]["EPOCH"]
                              if index <= len(blob_schedule) else None)
+            testnet_epoch = (sepolia_blob_schedule[index - 1]["EPOCH"]
+                             if index <= len(sepolia_blob_schedule) else None)
         else:
             if name not in L1_EL_FORKS:
                 print(f"Warning: no EL fork known for L1 fork {name}, "
@@ -161,6 +169,7 @@ def l1_forks(overrides: str, ethereum_package: Tuple[str, str],
             cl_key = f"{name.upper()}_FORK_EPOCH"
             cl_known = cl_key in mainnet
             mainnet_epoch = _epoch(mainnet.get(cl_key))
+            testnet_epoch = _epoch(sepolia.get(cl_key))
 
         support = {
             "geth": f'json:"{el_name}Time' in geth_config if el_name else None,
@@ -169,6 +178,7 @@ def l1_forks(overrides: str, ethereum_package: Tuple[str, str],
         devnet = _epoch(configured.get(knob, default))
         forks.append(HardFork(
             name=name, el_name=el_name, devnet=devnet, mainnet=mainnet_epoch,
+            testnet=testnet_epoch,
             support=support, status=fork_status(devnet is not None, support)))
 
     return {
