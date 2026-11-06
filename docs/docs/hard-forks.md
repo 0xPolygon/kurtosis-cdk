@@ -36,18 +36,21 @@ Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, 
 
 Fork times are offsets in seconds from the L2 genesis: the optimism-package defaults, overridden in [`src/package_io/op_input_parser.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/op_input_parser.star). Forks before Fjord always activate at genesis.
 
-| Fork | Devnet status | Devnet offset (s) |
-|------|---------------|-------------------|
-| interop | ⏳ not supported yet | — |
-| lagoon | ⚙️ op-deployer default — no knob in optimism-package | — |
-| karst | ⚙️ op-deployer default — no knob in optimism-package | — |
-| jovian | ⚙️ op-deployer default | — |
-| holocene | ⚙️ op-deployer default | — |
-| isthmus | ✅ enabled | 0 |
-| granite | ✅ enabled | 0 |
-| fjord | ✅ enabled | 0 |
+The OP Mainnet column is the first block at the activation time listed in the [superchain registry](https://github.com/ethereum-optimism/superchain-registry).
+
+| Fork | Devnet status | Devnet offset (s) | OP Mainnet block |
+|------|---------------|-------------------|------------------|
+| interop | — | — | — |
+| lagoon | — | — | — |
+| karst | ✅ enabled | 0 | [153963812](https://optimistic.etherscan.io/block/153963812) |
+| jovian | ✅ enabled | 0 | [144546212](https://optimistic.etherscan.io/block/144546212) |
+| isthmus | ✅ enabled | 0 | [135603812](https://optimistic.etherscan.io/block/135603812) |
+| holocene | ✅ enabled | 0 | [130423412](https://optimistic.etherscan.io/block/130423412) |
+| granite | ✅ enabled | 0 | [125235812](https://optimistic.etherscan.io/block/125235812) |
+| fjord | ✅ enabled | 0 | [122514212](https://optimistic.etherscan.io/block/122514212) |
 
 Checked against:
 
-- [optimism-package v2.0.0](https://github.com/agglayer/optimism-package/blob/v2.0.0/src/l2/input_parser.star)
+- [optimism-package v2.1.0](https://github.com/agglayer/optimism-package/blob/v2.1.0/src/l2/input_parser.star)
 - [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go)
+- [superchain-registry main](https://github.com/ethereum-optimism/superchain-registry/blob/main/superchain/configs/mainnet/superchain.toml)

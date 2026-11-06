@@ -27,7 +27,7 @@ rows marked 🚨 (behind). Skip:
 - Pre-releases (`rc`, `beta`, `alpha`): flag them instead.
 - The same component appears once per environment: it is one bump.
 - The tables of `docs/docs/hard-forks.md`: they are not versions and never use 🚨. A bump can
-  change them (a new op-node fork shows up as ⚙️, a dropped one as ❌): keep that
+  change them (a new op-node fork shows up as 💤, a dropped one as ❌): keep that
   in the regenerated page and mention it in the PR body, but never edit fork
   settings to make a row green.
 

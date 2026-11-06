@@ -199,11 +199,10 @@ instead of rendering a fork as unsupported.
 | not enabled             | 💤   | Known to the pinned clients, but the devnet leaves it off                 |
 | not supported yet       | ⏳   | Exposed by the package, but not known to a pinned client yet              |
 | enabled but unsupported | ❌   | Configured by the devnet, but a pinned client ignores the setting         |
-| op-deployer default     | ⚙️   | Left unset, so op-deployer's standard schedule decides when it activates |
 
-An OP Stack fork left unset is omitted from the op-deployer intent, so its
-activation follows op-deployer's standard schedule, which cannot be read from
-source: set its `*_time_offset` to pin it. Fork rows never use 🚨, so the bump
+An OP Stack fork left unset is omitted from the op-deployer intent, so it is not
+scheduled at genesis: set its `*_time_offset` to enable it. The OP Mainnet column
+links the block of each activation, computed from the superchain registry (`main`) timestamps. Fork rows never use 🚨, so the bump
 workflow leaves them alone: enabling a fork is a decision, not a version bump.
 The L1 code is shared with kurtosis-pos's copy of `hard_forks.py`: keep both in
 sync. A new L1 fork needs its EL name in `L1_EL_FORKS`, or its geth column reads

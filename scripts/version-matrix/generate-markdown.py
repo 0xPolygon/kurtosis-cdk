@@ -28,7 +28,6 @@ FORK_STATUSES = {
     "not enabled": ("💤", "Known to the pinned clients, but the devnet leaves it off."),
     "not supported yet": ("⏳", "Exposed by the package, but not known to a pinned client yet."),
     "enabled but unsupported": ("❌", "Configured by the devnet, but a pinned client does not know it and ignores the setting."),
-    "op-deployer default": ("⚙️", "Left unset by the devnet, so op-deployer's standard schedule decides when it activates."),
 }
 
 
@@ -40,6 +39,13 @@ class MatrixEntry:
     components: Dict[str, str]
     sources: Dict[str, str]
     status: Dict[str, str]
+
+
+# OP Mainnet Bedrock genesis (superchain-registry op.toml), to turn a fork
+# timestamp into a block number.
+OP_MAINNET_GENESIS_BLOCK = 105235063
+OP_MAINNET_GENESIS_TIME = 1686068903
+OP_MAINNET_BLOCK_URL = "https://optimistic.etherscan.io/block/{}"
 
 
 def _short_ref(ref: str) -> str:
@@ -248,12 +254,18 @@ sidebar_position: 3
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
         md = md.rstrip() + "\n\n"
-        md += "| Fork | Devnet status | Devnet offset (s) |\n"
-        md += "|------|---------------|-------------------|\n"
+        md += "The OP Mainnet column is the first block at the activation time listed in the "
+        md += "[superchain registry](https://github.com/ethereum-optimism/superchain-registry). "
+        md = md.rstrip() + "\n\n"
+        md += "| Fork | Devnet status | Devnet offset (s) | OP Mainnet block |\n"
+        md += "|------|---------------|-------------------|------------------|"
+        md += "\n"
         for fork in self._newest_first(op['forks']):
             md += (
-                f"| {fork['name']} | {self._fork_status(fork)}"
-                f" | {self._activation(fork['devnet'])} |\n"
+                f"| {fork['name']}"
+                f" | {'—' if fork['devnet'] is None else self._fork_status(fork)}"
+                f" | {self._activation(fork['devnet'])}"
+                f" | {self._mainnet_time(fork)} |\n"
             )
         md += f"\n{self._sources(op)}\n"
         return md
@@ -295,6 +307,15 @@ sidebar_position: 3
             value = str(fork['mainnet'])
             return f"[{value}]({url.format(value)})" if url else value
         return "—"
+
+    @staticmethod
+    def _mainnet_time(fork: Dict) -> str:
+        if fork.get('mainnet') is None:
+            return "—"
+        # OP Mainnet has produced a block every 2s since the Bedrock genesis.
+        block = (OP_MAINNET_GENESIS_BLOCK
+                 + (fork['mainnet'] - OP_MAINNET_GENESIS_TIME) // 2)
+        return f"[{block}]({OP_MAINNET_BLOCK_URL.format(block)})"
 
     @staticmethod
     def _fork_status(fork: Dict) -> str:
