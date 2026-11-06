@@ -7,12 +7,26 @@ This script creates a comprehensive Markdown version matrix that includes:
 2. Test environment configurations
 3. Version status indicators (stable, deprecated, experimental, pinned)
 4. Links to source repositories and releases
+5. The L1 and OP Stack hard fork schedules
 """
 
 import json
+import re
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 from dataclasses import dataclass
+
+REPO_URL = "https://github.com/0xPolygon/kurtosis-cdk"
+
+# Hard fork rows never use 🚨: the bump workflow acts on 🚨 rows, and a fork is
+# not something to bump.
+FORK_STATUSES = {
+    "enabled": ("✅", "Activated by the devnet and known to the pinned clients."),
+    "not enabled": ("💤", "Known to the pinned clients, but the devnet leaves it off."),
+    "not supported yet": ("⏳", "Exposed by the package, but not known to a pinned client yet."),
+    "enabled but unsupported": ("❌", "Configured by the devnet, but a pinned client does not know it and ignores the setting."),
+    "op-deployer default": ("⚙️", "Left unset by the devnet, so op-deployer's standard schedule decides when it activates."),
+}
 
 
 @dataclass
@@ -23,6 +37,11 @@ class MatrixEntry:
     components: Dict[str, str]
     sources: Dict[str, str]
     status: Dict[str, str]
+
+
+def _short_ref(ref: str) -> str:
+    """Shorten commit SHAs like the package table does, but never a tag."""
+    return ref[:12] if re.fullmatch(r"[0-9a-f]{40}", ref) else ref
 
 
 class MarkdownMatrixGenerator:
@@ -59,6 +78,8 @@ sidebar_position: 3
         md += "- [Default Images](#default-images)\n"
         if data.get('packages'):
             md += "- [Kurtosis Packages](#kurtosis-packages)\n"
+        if data.get('hard_forks'):
+            md += "- [Hard Forks](#hard-forks)\n"
         md += "\n"
 
         # Test environments organized by execution client
@@ -160,7 +181,92 @@ sidebar_position: 3
             md += "which is the single place to bump them.\n\n"
             md += self._generate_package_table(packages)
 
+        forks = data.get('hard_forks')
+        if forks:
+            md += self._generate_hard_forks(forks)
+
         return md
+
+    def _generate_hard_forks(self, forks: Dict) -> str:
+        md = "\n## Hard Forks\n\n"
+        md += "Fork schedule of the devnet, checked against the source of the "
+        md += "clients and packages at the versions pinned above. It only changes "
+        md += "when a pin or the package config does, so a fork that is merely "
+        md += "announced upstream never shows up as drift. These rows are "
+        md += "informational and never bumped automatically.\n\n"
+        md += "| Status | Meaning |\n"
+        md += "|--------|---------|\n"
+        for status, (emoji, meaning) in FORK_STATUSES.items():
+            md += f"| {emoji} {status} | {meaning} |\n"
+
+        l1 = forks['l1']
+        md += "\n### L1\n\n"
+        md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
+        md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
+        md += f"{self._sources(l1)}\n\n"
+        md += "| Fork | EL fork | Devnet epoch | Mainnet epoch | geth | lighthouse | Status |\n"
+        md += "|------|---------|--------------|---------------|------|------------|--------|\n"
+        for fork in l1['forks']:
+            support = fork['support']
+            md += (
+                f"| {fork['name']} | {fork.get('el_name') or '—'}"
+                f" | {self._activation(fork['devnet'])} | {self._mainnet(fork)}"
+                f" | {self._support(support.get('geth'))}"
+                f" | {self._support(support.get('lighthouse'))}"
+                f" | {self._fork_status(fork)} |\n"
+            )
+
+        op = forks['op']
+        md += "\n### OP Stack\n\n"
+        md += "Fork times are offsets in seconds from the L2 genesis: the "
+        md += "optimism-package defaults, overridden in "
+        md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
+        md += "Forks before Fjord always activate at genesis. "
+        md += f"{self._sources(op)}\n\n"
+        md += "| Fork | Devnet offset (s) | op-node | Status |\n"
+        md += "|------|-------------------|---------|--------|\n"
+        for fork in op['forks']:
+            md += (
+                f"| {fork['name']} | {self._activation(fork['devnet'])}"
+                f" | {self._support(fork['support'].get('op-node'))}"
+                f" | {self._fork_status(fork)} |\n"
+            )
+        return md
+
+    @staticmethod
+    def _sources(section: Dict) -> str:
+        """Name the pinned versions a fork table was checked against."""
+        links = [f"[{s['name']} {_short_ref(s['ref'])}]({s['url']})"
+                 for s in section['sources']]
+        if len(links) > 1:
+            links = [", ".join(links[:-1]), links[-1]]
+        return f"Checked against {' and '.join(links)}."
+
+    @staticmethod
+    def _activation(value: Optional[int]) -> str:
+        return "—" if value is None else str(value)
+
+    @staticmethod
+    def _mainnet(fork: Dict) -> str:
+        if fork.get('mainnet') is not None:
+            return str(fork['mainnet'])
+        # A fork no pinned client knows has no mainnet schedule to speak of.
+        if False in fork.get('support', {}).values():
+            return "—"
+        return "unscheduled"
+
+    @staticmethod
+    def _support(known: Optional[bool]) -> str:
+        return {True: "yes", False: "no"}.get(known, "—")
+
+    @staticmethod
+    def _fork_status(fork: Dict) -> str:
+        status = fork.get('status')
+        emoji = FORK_STATUSES.get(status, ('❓', None))[0]
+        display = f"{emoji} {status}" if status else 'N/A'
+        if fork.get('note'):
+            display += f" — {fork['note']}"
+        return display
 
     def _generate_package_table(self, packages: Dict) -> str:
         """Generate the external Kurtosis packages table."""

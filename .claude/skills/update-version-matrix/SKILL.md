@@ -26,6 +26,10 @@ rows marked 🚨 (behind stable). Skip:
   environment and 🚨 in another still needs bumping in the second.
 - Pre-releases (`rc`, `beta`, `alpha`): flag them instead.
 - The same component appears once per environment: it is one bump.
+- The `Hard Forks` tables: they are not versions and never use 🚨. A bump can
+  change them (a new op-node fork shows up as ⚙️, a dropped one as ❌): keep that
+  in the regenerated page and mention it in the PR body, but never edit fork
+  settings to make a row green.
 
 Before bumping, check the new image is published:
 `docker manifest inspect <image>:<tag>`. A release often lands before its image

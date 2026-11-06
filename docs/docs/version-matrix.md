@@ -11,6 +11,7 @@ sidebar_position: 3
 - [Test Environments](#test-environments)
 - [Default Images](#default-images)
 - [Kurtosis Packages](#kurtosis-packages)
+- [Hard Forks](#hard-forks)
 
 ## Test Environments
 
@@ -182,3 +183,50 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [HEAD (c8ff0b52d25d)](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | ✅ matches stable |
 | [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [HEAD (f3402ebad8cf)](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | ✅ matches stable |
 | [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [HEAD (9de7765a6c98)](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | ✅ matches stable |
+
+## Hard Forks
+
+Fork schedule of the devnet, checked against the source of the clients and packages at the versions pinned above. It only changes when a pin or the package config does, so a fork that is merely announced upstream never shows up as drift. These rows are informational and never bumped automatically.
+
+| Status | Meaning |
+|--------|---------|
+| ✅ enabled | Activated by the devnet and known to the pinned clients. |
+| 💤 not enabled | Known to the pinned clients, but the devnet leaves it off. |
+| ⏳ not supported yet | Exposed by the package, but not known to a pinned client yet. |
+| ❌ enabled but unsupported | Configured by the devnet, but a pinned client does not know it and ignores the setting. |
+| ⚙️ op-deployer default | Left unset by the devnet, so op-deployer's standard schedule decides when it activates. |
+
+### L1
+
+Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`src/l1/ethereum.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/l1/ethereum.star). Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/ethereum-package/blob/5795b77e65235ad223d4d3b413b2739190bf60cc/src/package_io/input_parser.star), [geth v1.17.10](https://github.com/ethereum/go-ethereum/blob/v1.17.10/params/config.go) and [lighthouse v8.3.2](https://github.com/sigp/lighthouse/blob/v8.3.2/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml).
+
+| Fork | EL fork | Devnet epoch | Mainnet epoch | geth | lighthouse | Status |
+|------|---------|--------------|---------------|------|------------|--------|
+| altair | — | 0 | 74240 | — | yes | ✅ enabled |
+| bellatrix | — | 0 | 144896 | — | yes | ✅ enabled |
+| capella | shanghai | 0 | 194048 | yes | yes | ✅ enabled |
+| deneb | cancun | 0 | 269568 | yes | yes | ✅ enabled |
+| electra | prague | 0 | 364032 | yes | yes | ✅ enabled |
+| fulu | osaka | 0 | 411392 | yes | yes | ✅ enabled |
+| gloas | amsterdam | 0 | unscheduled | yes | yes | ✅ enabled |
+| heze | bogota | — | unscheduled | yes | yes | 💤 not enabled |
+| bpo_1 | bpo1 | 0 | 412672 | yes | yes | ✅ enabled |
+| bpo_2 | bpo2 | 0 | 419072 | yes | yes | ✅ enabled |
+| bpo_3 | bpo3 | — | unscheduled | yes | yes | 💤 not enabled |
+| bpo_4 | bpo4 | — | unscheduled | yes | yes | 💤 not enabled |
+| bpo_5 | bpo5 | — | unscheduled | yes | yes | 💤 not enabled |
+
+### OP Stack
+
+Fork times are offsets in seconds from the L2 genesis: the optimism-package defaults, overridden in [`src/package_io/op_input_parser.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/op_input_parser.star). Forks before Fjord always activate at genesis. Checked against [optimism-package v2.0.0](https://github.com/agglayer/optimism-package/blob/v2.0.0/src/l2/input_parser.star) and [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go).
+
+| Fork | Devnet offset (s) | op-node | Status |
+|------|-------------------|---------|--------|
+| fjord | 0 | yes | ✅ enabled |
+| granite | 0 | yes | ✅ enabled |
+| holocene | — | yes | ⚙️ op-deployer default |
+| isthmus | 0 | yes | ✅ enabled |
+| jovian | — | yes | ⚙️ op-deployer default |
+| karst | — | yes | ⚙️ op-deployer default — no knob in optimism-package |
+| lagoon | — | yes | ⚙️ op-deployer default — no knob in optimism-package |
+| interop | — | no | ⏳ not supported yet |

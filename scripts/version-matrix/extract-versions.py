@@ -6,6 +6,7 @@ This script automatically extracts version information from:
 1. constants.star (DEFAULT_IMAGES)
 2. .github/tests/ configurations
 3. Git tags and releases from component repositories
+4. The L1 and OP Stack hard fork schedules (see hard_forks.py)
 
 It generates an updated version matrix with status indicators.
 """
@@ -15,6 +16,7 @@ import re
 import json
 import yaml
 import requests
+import hard_forks
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -850,6 +852,9 @@ class VersionMatrixExtractor:
         print("Extracting external Kurtosis packages...")
         packages = self.extract_packages()
 
+        print("Extracting hard forks...")
+        forks = hard_forks.extract(self.repo_root)
+
         # Count environments by type
         environment_counts = {
             'total': len(test_environments)
@@ -870,6 +875,7 @@ class VersionMatrixExtractor:
             'default_images': {name: asdict(comp) for name, comp in filtered_default_images.items()},
             'test_environments': {name: asdict(environment) for name, environment in test_environments.items()},
             'packages': {name: asdict(package) for name, package in packages.items()},
+            'hard_forks': forks,
             'summary': {
                 'total_components': len(default_images),
                 'total_packages': len(packages),

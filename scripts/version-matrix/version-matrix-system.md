@@ -20,6 +20,7 @@ The version matrix system automates the process of tracking component versions a
    - Parses `input_parser.star` for default component versions
    - Scans `.github/tests/` for test environment configurations
    - Parses the `replace` block in `kurtosis.yml` for external Kurtosis package pins
+   - Reads the L1 and OP Stack hard fork schedules (`hard_forks.py`)
    - Fetches latest release information from GitHub APIs
    - Generates machine-readable version data (`version-matrix.json`)
 
@@ -159,3 +160,35 @@ A head-tracked pin reports `🚨 behind stable` with its commit distance as soon
 HEAD moves past it, so the nightly bump PR follows the branch tip: one refreshed
 PR per upstream change rather than a pin drifting unnoticed. A pin ahead of HEAD
 (an unmerged or rewritten commit) reports `⚡️ newer than stable`.
+
+## Hard Forks
+
+`hard_forks.py` compares what the devnet activates with what the pinned clients
+support, for two domains:
+
+| Domain   | Devnet schedule                                                                         | Checked against                                                    |
+|----------|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| L1       | ethereum-package `minimal` preset defaults, overridden in `src/l1/ethereum.star`        | geth `params/config.go`, lighthouse built-in mainnet `config.yaml` |
+| OP Stack | optimism-package `*_time_offset` defaults, overridden in `src/package_io/op_input_parser.star` | the mainline forks of op-node `op-core/forks/forks.go`             |
+
+Upstream files are read at the refs this repo pins (image tags, the `kurtosis.yml`
+package pins), never at upstream HEAD. The tables therefore only change when a
+pin or the package config changes: a fork that is merely announced or scheduled
+upstream never makes the nightly diff non-empty. A failed fetch fails the script
+instead of rendering a fork as unsupported.
+
+| Status                  | Icon | Description                                                               |
+|-------------------------|------|---------------------------------------------------------------------------|
+| enabled                 | ✅   | Activated by the devnet and known to the pinned clients                   |
+| not enabled             | 💤   | Known to the pinned clients, but the devnet leaves it off                 |
+| not supported yet       | ⏳   | Exposed by the package, but not known to a pinned client yet              |
+| enabled but unsupported | ❌   | Configured by the devnet, but a pinned client ignores the setting         |
+| op-deployer default     | ⚙️   | Left unset, so op-deployer's standard schedule decides when it activates |
+
+An OP Stack fork left unset is omitted from the op-deployer intent, so its
+activation follows op-deployer's standard schedule, which cannot be read from
+source: set its `*_time_offset` to pin it. Fork rows never use 🚨, so the bump
+workflow leaves them alone: enabling a fork is a decision, not a version bump.
+The L1 code is shared with kurtosis-pos's copy of `hard_forks.py`: keep both in
+sync. A new L1 fork needs its EL name in `L1_EL_FORKS`, or its geth column reads
+`—`.
