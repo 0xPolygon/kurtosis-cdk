@@ -262,7 +262,8 @@ sidebar_position: 3
         md += "\n"
         for fork in self._newest_first(op['forks']):
             md += (
-                f"| {fork['name']} | {self._fork_status(fork)}"
+                f"| {fork['name']}"
+                f" | {'—' if fork['devnet'] is None else self._fork_status(fork)}"
                 f" | {self._activation(fork['devnet'])}"
                 f" | {self._mainnet_time(fork)} |\n"
             )

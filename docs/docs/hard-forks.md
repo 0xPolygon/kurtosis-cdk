@@ -40,8 +40,8 @@ The OP Mainnet column is the first block at the activation time listed in the [s
 
 | Fork | Devnet status | Devnet offset (s) | OP Mainnet block |
 |------|---------------|-------------------|------------------|
-| interop | ⏳ not supported yet | — | — |
-| lagoon | 💤 not enabled | — | — |
+| interop | — | — | — |
+| lagoon | — | — | — |
 | karst | ✅ enabled | 0 | [153963812](https://optimistic.etherscan.io/block/153963812) |
 | jovian | ✅ enabled | 0 | [144546212](https://optimistic.etherscan.io/block/144546212) |
 | isthmus | ✅ enabled | 0 | [135603812](https://optimistic.etherscan.io/block/135603812) |
