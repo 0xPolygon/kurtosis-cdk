@@ -33,3 +33,14 @@
 code .token.comment, pre code span:has(.token.comment) {
   display: none;
 }
+
+/* Let tables fill the content column instead of shrinking to their content. */
+.markdown table {
+  display: table;
+  width: 100%;
+}
+
+/* Wider page so tables with many columns and links stay readable. */
+:root {
+  --ifm-container-width-xl: 1800px;
+}
