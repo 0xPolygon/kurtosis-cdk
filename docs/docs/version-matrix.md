@@ -210,7 +210,7 @@ Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/e
 | deneb | cancun | ✅ enabled | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) |
 | electra | prague | ✅ enabled | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) |
 | fulu | osaka | ✅ enabled | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) |
-| gloas | amsterdam | ✅ enabled | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | unscheduled |
+| gloas | amsterdam | ✅ enabled | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | not scheduled yet |
 | bpo_1 | bpo1 | ✅ enabled | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) |
 | bpo_2 | bpo2 | ✅ enabled | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) |
 
