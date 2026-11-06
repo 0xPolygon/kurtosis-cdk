@@ -251,20 +251,16 @@ sidebar_position: 3
 
     @staticmethod
     def _is_unscheduled(fork: Dict) -> bool:
-        # Forks the devnet enables stay in the tables; a fork a pinned client
-        # does not know has no mainnet schedule to speak of.
-        return (fork.get('mainnet') is None
-                and fork.get('status') != 'enabled'
-                and False not in fork.get('support', {}).values())
+        return (fork.get('status') == 'not enabled'
+                and fork.get('testnet') is None
+                and fork.get('mainnet') is None)
 
     @classmethod
     def _unscheduled_note(cls, forks) -> str:
         if not forks:
             return ""
-        items = ", ".join(
-            f"`{f['name']}` ({FORK_STATUSES.get(f.get('status'), ('❓',))[0]} {f.get('status')})"
-            for f in forks)
-        return f"\nNot scheduled on mainnet yet: {items}.\n"
+        items = ", ".join(f"`{f['name']}`" for f in forks)
+        return f"\nNot enabled on devnet and not scheduled on testnet or mainnet: {items}.\n"
 
     @staticmethod
     def _testnet(fork: Dict, url: Optional[str] = None) -> str:

@@ -212,7 +212,7 @@ Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`
 | bpo_1 | bpo1 | ✅ enabled | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) |
 | bpo_2 | bpo2 | ✅ enabled | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) |
 
-Not scheduled on mainnet yet: `heze` (💤 not enabled), `bpo_3` (💤 not enabled), `bpo_4` (💤 not enabled), `bpo_5` (💤 not enabled).
+Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, `bpo_4`, `bpo_5`.
 
 ### OP Stack
 
