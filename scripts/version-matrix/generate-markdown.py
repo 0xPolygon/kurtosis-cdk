@@ -287,7 +287,7 @@ sidebar_position: 3
 
     @staticmethod
     def _support(known: Optional[bool]) -> str:
-        return {True: "yes", False: "no"}.get(known, "—")
+        return {True: "✅", False: "❌"}.get(known, "—")
 
     @staticmethod
     def _fork_status(fork: Dict) -> str:

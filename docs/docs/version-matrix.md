@@ -202,15 +202,15 @@ Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`
 
 | CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | Supported by geth | Supported by lighthouse | Devnet status |
 |------|---------|--------------|---------------|---------------|------|------------|--------|
-| altair | — | 0 | [50](https://beaconscan.com/sepolia/epoch/50) | [74240](https://beaconscan.com/epoch/74240) | — | yes | ✅ enabled |
-| bellatrix | — | 0 | [100](https://beaconscan.com/sepolia/epoch/100) | [144896](https://beaconscan.com/epoch/144896) | — | yes | ✅ enabled |
-| capella | shanghai | 0 | [56832](https://beaconscan.com/sepolia/epoch/56832) | [194048](https://beaconscan.com/epoch/194048) | yes | yes | ✅ enabled |
-| deneb | cancun | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) | yes | yes | ✅ enabled |
-| electra | prague | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) | yes | yes | ✅ enabled |
-| fulu | osaka | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) | yes | yes | ✅ enabled |
-| gloas | amsterdam | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | unscheduled | yes | yes | ✅ enabled |
-| bpo_1 | bpo1 | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) | yes | yes | ✅ enabled |
-| bpo_2 | bpo2 | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) | yes | yes | ✅ enabled |
+| altair | — | 0 | [50](https://beaconscan.com/sepolia/epoch/50) | [74240](https://beaconscan.com/epoch/74240) | — | ✅ | ✅ enabled |
+| bellatrix | — | 0 | [100](https://beaconscan.com/sepolia/epoch/100) | [144896](https://beaconscan.com/epoch/144896) | — | ✅ | ✅ enabled |
+| capella | shanghai | 0 | [56832](https://beaconscan.com/sepolia/epoch/56832) | [194048](https://beaconscan.com/epoch/194048) | ✅ | ✅ | ✅ enabled |
+| deneb | cancun | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) | ✅ | ✅ | ✅ enabled |
+| electra | prague | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) | ✅ | ✅ | ✅ enabled |
+| fulu | osaka | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) | ✅ | ✅ | ✅ enabled |
+| gloas | amsterdam | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | unscheduled | ✅ | ✅ | ✅ enabled |
+| bpo_1 | bpo1 | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) | ✅ | ✅ | ✅ enabled |
+| bpo_2 | bpo2 | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) | ✅ | ✅ | ✅ enabled |
 
 Not scheduled on mainnet yet: `heze` (💤 not enabled), `bpo_3` (💤 not enabled), `bpo_4` (💤 not enabled), `bpo_5` (💤 not enabled).
 
@@ -220,11 +220,11 @@ Fork times are offsets in seconds from the L2 genesis: the optimism-package defa
 
 | Fork | Devnet offset (s) | Supported by op-node | Devnet status |
 |------|-------------------|---------|--------|
-| fjord | 0 | yes | ✅ enabled |
-| granite | 0 | yes | ✅ enabled |
-| holocene | — | yes | ⚙️ op-deployer default |
-| isthmus | 0 | yes | ✅ enabled |
-| jovian | — | yes | ⚙️ op-deployer default |
-| karst | — | yes | ⚙️ op-deployer default — no knob in optimism-package |
-| lagoon | — | yes | ⚙️ op-deployer default — no knob in optimism-package |
-| interop | — | no | ⏳ not supported yet |
+| fjord | 0 | ✅ | ✅ enabled |
+| granite | 0 | ✅ | ✅ enabled |
+| holocene | — | ✅ | ⚙️ op-deployer default |
+| isthmus | 0 | ✅ | ✅ enabled |
+| jovian | — | ✅ | ⚙️ op-deployer default |
+| karst | — | ✅ | ⚙️ op-deployer default — no knob in optimism-package |
+| lagoon | — | ✅ | ⚙️ op-deployer default — no knob in optimism-package |
+| interop | — | ❌ | ⏳ not supported yet |
