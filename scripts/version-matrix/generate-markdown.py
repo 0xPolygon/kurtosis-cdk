@@ -206,7 +206,7 @@ sidebar_position: 3
         md += "\n### L1\n\n"
         md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
         md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
-        md += f"{self._sources(l1)}\n\n"
+        md = md.rstrip() + f"\n\n{self._sources(l1)}\n\n"
         md += "| CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |\n"
         md += "|------|---------|---------------|--------------|---------------|---------------|\n"
         scheduled = [f for f in l1['forks'] if not self._is_unscheduled(f)]
@@ -225,7 +225,7 @@ sidebar_position: 3
         md += "optimism-package defaults, overridden in "
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
-        md += f"{self._sources(op)}\n\n"
+        md = md.rstrip() + f"\n\n{self._sources(op)}\n\n"
         md += "| Fork | Devnet status | Devnet offset (s) | op-node |\n"
         md += "|------|---------------|-------------------|---------|\n"
         for fork in op['forks']:
