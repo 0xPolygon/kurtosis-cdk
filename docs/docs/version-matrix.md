@@ -208,13 +208,10 @@ Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`
 | deneb | cancun | 0 | [269568](https://beaconscan.com/epoch/269568) | yes | yes | ✅ enabled |
 | electra | prague | 0 | [364032](https://beaconscan.com/epoch/364032) | yes | yes | ✅ enabled |
 | fulu | osaka | 0 | [411392](https://beaconscan.com/epoch/411392) | yes | yes | ✅ enabled |
-| gloas | amsterdam | 0 | —[^unscheduled] | yes | yes | ✅ enabled |
-| heze | bogota | — | —[^unscheduled] | yes | yes | 💤 not enabled |
 | bpo_1 | bpo1 | 0 | [412672](https://beaconscan.com/epoch/412672) | yes | yes | ✅ enabled |
 | bpo_2 | bpo2 | 0 | [419072](https://beaconscan.com/epoch/419072) | yes | yes | ✅ enabled |
-| bpo_3 | bpo3 | — | —[^unscheduled] | yes | yes | 💤 not enabled |
-| bpo_4 | bpo4 | — | —[^unscheduled] | yes | yes | 💤 not enabled |
-| bpo_5 | bpo5 | — | —[^unscheduled] | yes | yes | 💤 not enabled |
+
+Not scheduled on mainnet yet: `gloas` (✅ enabled), `heze` (💤 not enabled), `bpo_3` (💤 not enabled), `bpo_4` (💤 not enabled), `bpo_5` (💤 not enabled).
 
 ### OP Stack
 
@@ -230,5 +227,3 @@ Fork times are offsets in seconds from the L2 genesis: the optimism-package defa
 | karst | — | yes | ⚙️ op-deployer default — no knob in optimism-package |
 | lagoon | — | yes | ⚙️ op-deployer default — no knob in optimism-package |
 | interop | — | no | ⏳ not supported yet |
-
-[^unscheduled]: No activation is scheduled on mainnet yet in the pinned clients' sources.

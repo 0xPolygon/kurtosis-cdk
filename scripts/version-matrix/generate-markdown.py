@@ -20,10 +20,6 @@ REPO_URL = "https://github.com/0xPolygon/kurtosis-cdk"
 
 # Hard fork rows never use 🚨: the bump workflow acts on 🚨 rows, and a fork is
 # not something to bump.
-UNSCHEDULED_MARK = "[^unscheduled]"
-UNSCHEDULED_NOTE = (
-    "\n[^unscheduled]: No activation is scheduled on mainnet yet in the pinned clients' sources.\n"
-)
 L1_EPOCH_URL = "https://beaconscan.com/epoch/{}"
 
 FORK_STATUSES = {
@@ -212,7 +208,8 @@ sidebar_position: 3
         md += f"{self._sources(l1)}\n\n"
         md += "| Fork | EL fork | Devnet epoch | Mainnet epoch | geth | lighthouse | Status |\n"
         md += "|------|---------|--------------|---------------|------|------------|--------|\n"
-        for fork in l1['forks']:
+        scheduled = [f for f in l1['forks'] if not self._is_unscheduled(f)]
+        for fork in scheduled:
             support = fork['support']
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
@@ -221,6 +218,7 @@ sidebar_position: 3
                 f" | {self._support(support.get('lighthouse'))}"
                 f" | {self._fork_status(fork)} |\n"
             )
+        md += self._unscheduled_note([f for f in l1['forks'] if self._is_unscheduled(f)])
 
         op = forks['op']
         md += "\n### OP Stack\n\n"
@@ -237,8 +235,6 @@ sidebar_position: 3
                 f" | {self._support(fork['support'].get('op-node'))}"
                 f" | {self._fork_status(fork)} |\n"
             )
-        if UNSCHEDULED_MARK in md:
-            md += UNSCHEDULED_NOTE
         return md
 
     @staticmethod
@@ -255,14 +251,26 @@ sidebar_position: 3
         return "—" if value is None else str(value)
 
     @staticmethod
+    def _is_unscheduled(fork: Dict) -> bool:
+        # A fork a pinned client does not know has no mainnet schedule to speak of.
+        return (fork.get('mainnet') is None
+                and False not in fork.get('support', {}).values())
+
+    @classmethod
+    def _unscheduled_note(cls, forks) -> str:
+        if not forks:
+            return ""
+        items = ", ".join(
+            f"`{f['name']}` ({FORK_STATUSES.get(f.get('status'), ('❓',))[0]} {f.get('status')})"
+            for f in forks)
+        return f"\nNot scheduled on mainnet yet: {items}.\n"
+
+    @staticmethod
     def _mainnet(fork: Dict, url: Optional[str] = None) -> str:
         if fork.get('mainnet') is not None:
             value = str(fork['mainnet'])
             return f"[{value}]({url.format(value)})" if url else value
-        # A fork no pinned client knows has no mainnet schedule to speak of.
-        if False in fork.get('support', {}).values():
-            return "—"
-        return "—" + UNSCHEDULED_MARK
+        return "—"
 
     @staticmethod
     def _support(known: Optional[bool]) -> str:
