@@ -216,7 +216,7 @@ sidebar_position: 3
         md += "\n### L1 (Ethereum)\n\n"
         md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
         md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
-        md = md.rstrip() + f"\n\n{self._sources(l1)}\n\n"
+        md = md.rstrip() + "\n\n"
         md += "| CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |\n"
         md += "|------|---------|---------------|--------------|---------------|---------------|\n"
         scheduled = self._newest_first([f for f in l1['forks'] if not self._is_unscheduled(f)])
@@ -227,6 +227,7 @@ sidebar_position: 3
                 f" | {self._activation(fork['devnet'])} | {self._testnet(fork, SEPOLIA_EPOCH_URL)}"
                 f" | {self._mainnet(fork, L1_EPOCH_URL)} |\n"
             )
+        md += f"\n{self._sources(l1)}\n"
         md += self._unscheduled_note([f for f in l1['forks'] if self._is_unscheduled(f)])
 
         op = forks['op']
@@ -235,7 +236,7 @@ sidebar_position: 3
         md += "optimism-package defaults, overridden in "
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
-        md = md.rstrip() + f"\n\n{self._sources(op)}\n\n"
+        md = md.rstrip() + "\n\n"
         md += "| Fork | Devnet status | Devnet offset (s) |\n"
         md += "|------|---------------|-------------------|\n"
         for fork in self._newest_first(op['forks']):
@@ -243,6 +244,7 @@ sidebar_position: 3
                 f"| {fork['name']} | {self._fork_status(fork)}"
                 f" | {self._activation(fork['devnet'])} |\n"
             )
+        md += f"\n{self._sources(op)}\n"
         return md
 
     @staticmethod
