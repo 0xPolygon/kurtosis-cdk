@@ -80,7 +80,10 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
                     # The rollup block time
                     "seconds_per_slot": 1,
                     # Hard fork activation times
+                    "holocene_time_offset": 0,
                     "isthmus_time_offset": 0,
+                    "jovian_time_offset": 0,
+                    "karst_time_offset": 0,
                 }
             ),
         }
