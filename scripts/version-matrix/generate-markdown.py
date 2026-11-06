@@ -207,15 +207,15 @@ sidebar_position: 3
         md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
         md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
         md += f"{self._sources(l1)}\n\n"
-        md += "| CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | Devnet status |\n"
-        md += "|------|---------|--------------|---------------|---------------|--------|\n"
+        md += "| CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |\n"
+        md += "|------|---------|---------------|--------------|---------------|---------------|\n"
         scheduled = [f for f in l1['forks'] if not self._is_unscheduled(f)]
         for fork in scheduled:
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
+                f" | {self._fork_status(fork)}"
                 f" | {self._activation(fork['devnet'])} | {self._testnet(fork, SEPOLIA_EPOCH_URL)}"
-                f" | {self._mainnet(fork, L1_EPOCH_URL)}"
-                f" | {self._fork_status(fork)} |\n"
+                f" | {self._mainnet(fork, L1_EPOCH_URL)} |\n"
             )
         md += self._unscheduled_note([f for f in l1['forks'] if self._is_unscheduled(f)])
 
@@ -226,13 +226,13 @@ sidebar_position: 3
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
         md += f"{self._sources(op)}\n\n"
-        md += "| Fork | Devnet offset (s) | op-node | Devnet status |\n"
-        md += "|------|-------------------|---------|--------|\n"
+        md += "| Fork | Devnet status | Devnet offset (s) | op-node |\n"
+        md += "|------|---------------|-------------------|---------|\n"
         for fork in op['forks']:
             md += (
-                f"| {fork['name']} | {self._activation(fork['devnet'])}"
-                f" | {self._support(fork['support'].get('op-node'))}"
-                f" | {self._fork_status(fork)} |\n"
+                f"| {fork['name']} | {self._fork_status(fork)}"
+                f" | {self._activation(fork['devnet'])}"
+                f" | {self._support(fork['support'].get('op-node'))} |\n"
             )
         return md
 
