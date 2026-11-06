@@ -163,22 +163,61 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 
 ## Default Images
 
+Container images deployed by the package that are not part of a test environment above, pinned in [`src/package_io/constants.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/constants.star) and [`src/additional_services`](https://github.com/0xPolygon/kurtosis-cdk/tree/main/src/additional_services). For images published to a registry without GitHub releases (Artifact Registry), the latest version is the last tag uploaded there.
+
+### Core
+
+The L1 clients: the devnet does not start without them.
+
 | Component | Deployed version | Latest stable version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | anvil | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | ✅ up to date |
 | geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ up to date |
 | lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ up to date |
 | reth | [2.10.0](https://github.com/paradigmxyz/reth/releases/tag/v2.10.0) | [2.10.0](https://github.com/paradigmxyz/reth/releases/tag/v2.10.0) | ✅ up to date |
+
+### Additional
+
+Everything else: databases, observability, utility images and the status checker.
+
+| Component | Deployed version | Latest stable version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| agglayer-dashboard | v4fixed | N/A | N/A |
+| agglayer-dev-ui | 844bfbc | 844bfbc | ✅ up to date |
+| agglogger | bf1f8c1 | bf1f8c1 | ✅ up to date |
+| arpeggio | v0.0.1 | N/A | N/A |
+| assertoor | [0.0.11](https://github.com/ethpandaops/assertoor/releases/tag/v0.0.11) | [0.1.2](https://github.com/ethpandaops/assertoor/releases/tag/v0.1.2) | 🚨 behind |
+| blutgang | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | ✅ up to date |
+| bridge-hub-api | 2a71905 | 2a71905 | ✅ up to date |
+| bridge-hub-autoclaim | 2a71905 | 2a71905 | ✅ up to date |
+| bridge-hub-consumer | 2a71905 | 2a71905 | ✅ up to date |
+| e2e-test-runner | [dda31ee](https://github.com/agglayer/e2e/commit/dda31ee) | N/A | N/A |
+| erpc | [0.0.24](https://github.com/erpc/erpc/releases/tag/0.0.24) | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | 🚨 behind |
+| grafana | [11.1.4](https://github.com/grafana/grafana/releases/tag/v11.1.4) | [13.3.0](https://github.com/grafana/grafana/releases/tag/v13.3.0) | 🚨 behind |
+| haproxy | 3.2-bookworm | N/A | N/A |
+| mitmproxy | [12.2.3](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.2.3) | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | 🚨 behind |
+| mongodb | 7.0.29 | N/A | N/A |
+| panoptichain | [3.0.4](https://github.com/0xPolygon/panoptichain/releases/tag/v3.0.4) | [8.1.4](https://github.com/0xPolygon/panoptichain/releases/tag/v8.1.4) | 🚨 behind |
+| postgres | 17.6 | N/A | N/A |
+| prometheus | [3.0.1](https://github.com/prometheus/prometheus/releases/tag/v3.0.1) | [3.16.0](https://github.com/prometheus/prometheus/releases/tag/v3.16.0) | 🚨 behind |
 | status-checker | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | ✅ up to date |
+| zkevm-bridge-ui | 3f1a3a0 | 3f1a3a0 | ✅ up to date |
 
 ## Kurtosis Packages
 
 External Kurtosis packages this package depends on. Versions are pinned in the [`replace` block of `kurtosis.yml`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/kurtosis.yml), which is the single place to bump them.
 
+### Core
+
 | Package | Pinned version | Latest stable version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | [v2.1.0](https://github.com/agglayer/optimism-package/releases/tag/v2.1.0) | 🚨 behind |
 | [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [5795b77e6523](https://github.com/ethpandaops/ethereum-package/tree/5795b77e65235ad223d4d3b413b2739190bf60cc) | [HEAD (5795b77e6523)](https://github.com/ethpandaops/ethereum-package/tree/5795b77e65235ad223d4d3b413b2739190bf60cc) | ✅ up to date |
+
+### Additional
+
+| Package | Pinned version | Latest stable version | Status |
+|---------|----------------|-----------------------|--------|
 | [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [HEAD (c8ff0b52d25d)](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | ✅ up to date |
 | [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [HEAD (f3402ebad8cf)](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | ✅ up to date |
 | [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [HEAD (9de7765a6c98)](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | ✅ up to date |

@@ -171,8 +171,19 @@ sidebar_position: 3
                 md += "\n"
 
         # Default images table
+        images = data.get('default_images', {})
         md += "## Default Images\n\n"
-        md += self._generate_component_table(data.get('default_images', {}))
+        md += "Container images deployed by the package that are not part of a test environment above, "
+        md += "pinned in [`src/package_io/constants.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/constants.star) "
+        md += "and [`src/additional_services`](https://github.com/0xPolygon/kurtosis-cdk/tree/main/src/additional_services). "
+        md += "For images published to a registry without GitHub releases (Artifact Registry), "
+        md += "the latest version is the last tag uploaded there.\n\n"
+        md += "### Core\n\n"
+        md += "The L1 clients: the devnet does not start without them.\n\n"
+        md += self._generate_component_table({n: c for n, c in images.items() if c.get('core')})
+        md += "\n### Additional\n\n"
+        md += "Everything else: databases, observability, utility images and the status checker.\n\n"
+        md += self._generate_component_table({n: c for n, c in images.items() if not c.get('core')})
 
         # External Kurtosis packages
         packages = data.get('packages', {})
@@ -181,7 +192,12 @@ sidebar_position: 3
             md += "External Kurtosis packages this package depends on. Versions are pinned "
             md += "in the [`replace` block of `kurtosis.yml`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/kurtosis.yml), "
             md += "which is the single place to bump them.\n\n"
-            md += self._generate_package_table(packages)
+            md += "### Core\n\n"
+            md += self._generate_package_table({n: p for n, p in packages.items() if p.get('core')})
+            additional = {n: p for n, p in packages.items() if not p.get('core')}
+            if additional:
+                md += "\n### Additional\n\n"
+                md += self._generate_package_table(additional)
 
         return md
 
@@ -361,8 +377,13 @@ sidebar_position: 3
             status_display = f"{status_emoji} {status}" if status != 'N/A' and status is not None else 'N/A'
             if pin_reason:
                 status_display += f" — {pin_reason}"
-            version_deployed_display = f"[{version_deployed}]({version_deployed_source_url})" if version_deployed else 'N/A'
-            latest_version_display = f"[{latest_version}]({latest_version_source_url})" if latest_version else 'N/A'
+            def linked(version, url):
+                if not version:
+                    return 'N/A'
+                return f"[{version}]({url})" if url else version
+
+            version_deployed_display = linked(version_deployed, version_deployed_source_url)
+            latest_version_display = linked(latest_version, latest_version_source_url)
 
             table += f"| {component_name} | {version_deployed_display} | {latest_version_display} | {status_display} |\n"
         return table
