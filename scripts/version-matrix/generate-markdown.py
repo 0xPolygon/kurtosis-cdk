@@ -274,9 +274,7 @@ sidebar_position: 3
     @staticmethod
     def _testnet(fork: Dict, url: Optional[str] = None) -> str:
         if fork.get('testnet') is None:
-            if False in fork.get('support', {}).values():
-                return "—"
-            return "not scheduled yet"
+            return "—"
         value = str(fork['testnet'])
         return f"[{value}]({url.format(value)})" if url else value
 
@@ -285,9 +283,7 @@ sidebar_position: 3
         if fork.get('mainnet') is not None:
             value = str(fork['mainnet'])
             return f"[{value}]({url.format(value)})" if url else value
-        if False in fork.get('support', {}).values():
-            return "—"
-        return "not scheduled yet"
+        return "—"
 
     @staticmethod
     def _fork_status(fork: Dict) -> str:

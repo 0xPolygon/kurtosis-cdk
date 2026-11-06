@@ -204,7 +204,7 @@ Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/e
 
 | CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |
 |------|---------|---------------|--------------|---------------|---------------|
-| gloas | amsterdam | ✅ enabled | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | not scheduled yet |
+| gloas | amsterdam | ✅ enabled | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | — |
 | bpo_2 | bpo2 | ✅ enabled | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) |
 | bpo_1 | bpo1 | ✅ enabled | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) |
 | fulu | osaka | ✅ enabled | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) |
