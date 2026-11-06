@@ -36,18 +36,21 @@ Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, 
 
 Fork times are offsets in seconds from the L2 genesis: the optimism-package defaults, overridden in [`src/package_io/op_input_parser.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/op_input_parser.star). Forks before Fjord always activate at genesis.
 
-| Fork | Devnet status | Devnet offset (s) |
-|------|---------------|-------------------|
-| interop | ⏳ not supported yet | — |
-| lagoon | ⚙️ op-deployer default | — |
-| karst | ✅ enabled | 0 |
-| jovian | ✅ enabled | 0 |
-| isthmus | ✅ enabled | 0 |
-| holocene | ✅ enabled | 0 |
-| granite | ✅ enabled | 0 |
-| fjord | ✅ enabled | 0 |
+OP Mainnet times are unix timestamps from the [superchain registry](https://github.com/ethereum-optimism/superchain-registry).
+
+| Fork | Devnet status | Devnet offset (s) | OP Mainnet time |
+|------|---------------|-------------------|-----------------|
+| interop | ⏳ not supported yet | — | — |
+| lagoon | 💤 not enabled | — | — |
+| karst | ✅ enabled | 0 | 1783526401 (2026-07-08) |
+| jovian | ✅ enabled | 0 | 1764691201 (2025-12-02) |
+| isthmus | ✅ enabled | 0 | 1746806401 (2025-05-09) |
+| holocene | ✅ enabled | 0 | 1736445601 (2025-01-09) |
+| granite | ✅ enabled | 0 | 1726070401 (2024-09-11) |
+| fjord | ✅ enabled | 0 | 1720627201 (2024-07-10) |
 
 Checked against:
 
 - [optimism-package v2.1.0](https://github.com/agglayer/optimism-package/blob/v2.1.0/src/l2/input_parser.star)
 - [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go)
+- [superchain-registry main](https://github.com/ethereum-optimism/superchain-registry/blob/main/superchain/configs/mainnet/superchain.toml)

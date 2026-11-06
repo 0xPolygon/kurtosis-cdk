@@ -12,6 +12,7 @@ This script creates a comprehensive Markdown version matrix that includes:
 
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 from dataclasses import dataclass
@@ -28,7 +29,6 @@ FORK_STATUSES = {
     "not enabled": ("💤", "Known to the pinned clients, but the devnet leaves it off."),
     "not supported yet": ("⏳", "Exposed by the package, but not known to a pinned client yet."),
     "enabled but unsupported": ("❌", "Configured by the devnet, but a pinned client does not know it and ignores the setting."),
-    "op-deployer default": ("⚙️", "Left unset by the devnet, so op-deployer's standard schedule decides when it activates."),
 }
 
 
@@ -248,12 +248,17 @@ sidebar_position: 3
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "
         md += "Forks before Fjord always activate at genesis. "
         md = md.rstrip() + "\n\n"
-        md += "| Fork | Devnet status | Devnet offset (s) |\n"
-        md += "|------|---------------|-------------------|\n"
+        md += "OP Mainnet times are unix timestamps from the "
+        md += "[superchain registry](https://github.com/ethereum-optimism/superchain-registry). "
+        md = md.rstrip() + "\n\n"
+        md += "| Fork | Devnet status | Devnet offset (s) | OP Mainnet time |\n"
+        md += "|------|---------------|-------------------|-----------------|"
+        md += "\n"
         for fork in self._newest_first(op['forks']):
             md += (
                 f"| {fork['name']} | {self._fork_status(fork)}"
-                f" | {self._activation(fork['devnet'])} |\n"
+                f" | {self._activation(fork['devnet'])}"
+                f" | {self._mainnet_time(fork)} |\n"
             )
         md += f"\n{self._sources(op)}\n"
         return md
@@ -295,6 +300,13 @@ sidebar_position: 3
             value = str(fork['mainnet'])
             return f"[{value}]({url.format(value)})" if url else value
         return "—"
+
+    @staticmethod
+    def _mainnet_time(fork: Dict) -> str:
+        if fork.get('mainnet') is None:
+            return "—"
+        date = datetime.fromtimestamp(fork['mainnet'], timezone.utc).strftime("%Y-%m-%d")
+        return f"{fork['mainnet']} ({date})"
 
     @staticmethod
     def _fork_status(fork: Dict) -> str:

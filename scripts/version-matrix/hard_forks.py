@@ -194,18 +194,20 @@ def l1_forks(overrides: str, ethereum_package: Tuple[str, str],
 
 # --- kurtosis-cdk -----------------------------------------------------------
 
-STATUS_DEPLOYER_DEFAULT = "op-deployer default"
-
 OPTIMISM_REPO = "ethereum-optimism/optimism"
+
+# OP Mainnet follows the Superchain-wide schedule, in unix timestamps.
+SUPERCHAIN_REGISTRY = "ethereum-optimism/superchain-registry"
+SUPERCHAIN_MAINNET_CONFIG = "superchain/configs/mainnet/superchain.toml"
 
 
 def op_forks(overrides: str, optimism_package: Tuple[str, str],
              op_node_version: str) -> Dict:
     """OP Stack forks: the optimism-package `<fork>_time_offset` knobs, the values
     this package overrides them with, and whether the pinned op-node knows each
-    fork. A knob left unset is omitted from the op-deployer intent, so the
-    activation falls to op-deployer's standard schedule, which follows the
-    superchain registry and cannot be resolved from source here."""
+    fork. A knob left unset is omitted from the op-deployer intent, so the fork
+    is not scheduled at genesis. OP Mainnet activation times come from the
+    superchain registry."""
     pkg_repo, pkg_ref = optimism_package
     pkg_path = "src/l2/input_parser.star"
     forks_path = "op-core/forks/forks.go"
@@ -225,6 +227,11 @@ def op_forks(overrides: str, optimism_package: Tuple[str, str],
     known = [names[ident] for ident in re.findall(r"^\s*(\w+),", mainline.group(1),
                                                   re.MULTILINE)]
 
+    registry = fetch(SUPERCHAIN_REGISTRY, "main", SUPERCHAIN_MAINNET_CONFIG)
+    hardforks = registry.split("[hardforks]", 1)[-1].split("\n[", 1)[0]
+    mainnet = {name: int(time) for name, time in
+               re.findall(r"^(\w+)_time\s*=\s*(\d+)", hardforks, re.MULTILINE)}
+
     # Forks before the first one optimism-package has a knob for (bedrock to
     # ecotone) always activate at genesis: listing them adds nothing.
     first = min(known.index(name) for name in knobs if name in known)
@@ -234,10 +241,9 @@ def op_forks(overrides: str, optimism_package: Tuple[str, str],
         offset = None if value in (None, "None") else int(value)
         support = {"op-node": name in known}
         status = fork_status(offset is not None, support)
-        if offset is None and support["op-node"]:
-            status = STATUS_DEPLOYER_DEFAULT
         forks.append(HardFork(
-            name=name, devnet=offset, support=support, status=status,
+            name=name, devnet=offset, mainnet=mainnet.get(name),
+            support=support, status=status,
             note=None if name in knobs else "no knob in optimism-package"))
 
     return {
@@ -245,6 +251,8 @@ def op_forks(overrides: str, optimism_package: Tuple[str, str],
             source("optimism-package", pkg_repo, pkg_ref, pkg_path),
             {**source("op-node", OPTIMISM_REPO, op_node_tag, forks_path),
              "ref": op_node_version},
+            source("superchain-registry", SUPERCHAIN_REGISTRY, "main",
+                   SUPERCHAIN_MAINNET_CONFIG),
         ],
         "forks": [asdict(fork) for fork in forks],
     }
