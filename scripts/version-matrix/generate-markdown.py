@@ -207,17 +207,14 @@ sidebar_position: 3
         md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
         md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
         md += f"{self._sources(l1)}\n\n"
-        md += "| CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | geth | lighthouse | Devnet status |\n"
-        md += "|------|---------|--------------|---------------|---------------|------|------------|--------|\n"
+        md += "| CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | Devnet status |\n"
+        md += "|------|---------|--------------|---------------|---------------|--------|\n"
         scheduled = [f for f in l1['forks'] if not self._is_unscheduled(f)]
         for fork in scheduled:
-            support = fork['support']
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
                 f" | {self._activation(fork['devnet'])} | {self._testnet(fork, SEPOLIA_EPOCH_URL)}"
                 f" | {self._mainnet(fork, L1_EPOCH_URL)}"
-                f" | {self._support(support.get('geth'))}"
-                f" | {self._support(support.get('lighthouse'))}"
                 f" | {self._fork_status(fork)} |\n"
             )
         md += self._unscheduled_note([f for f in l1['forks'] if self._is_unscheduled(f)])

@@ -200,17 +200,17 @@ Fork schedule of the devnet, checked against the source of the clients and packa
 
 Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`src/l1/ethereum.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/l1/ethereum.star). Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/ethereum-package/blob/5795b77e65235ad223d4d3b413b2739190bf60cc/src/package_io/input_parser.star), [geth v1.17.10](https://github.com/ethereum/go-ethereum/blob/v1.17.10/params/config.go) and [lighthouse v8.3.2](https://github.com/sigp/lighthouse/blob/v8.3.2/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml).
 
-| CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | geth | lighthouse | Devnet status |
-|------|---------|--------------|---------------|---------------|------|------------|--------|
-| altair | — | 0 | [50](https://beaconscan.com/sepolia/epoch/50) | [74240](https://beaconscan.com/epoch/74240) | — | ✅ | ✅ enabled |
-| bellatrix | — | 0 | [100](https://beaconscan.com/sepolia/epoch/100) | [144896](https://beaconscan.com/epoch/144896) | — | ✅ | ✅ enabled |
-| capella | shanghai | 0 | [56832](https://beaconscan.com/sepolia/epoch/56832) | [194048](https://beaconscan.com/epoch/194048) | ✅ | ✅ | ✅ enabled |
-| deneb | cancun | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) | ✅ | ✅ | ✅ enabled |
-| electra | prague | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) | ✅ | ✅ | ✅ enabled |
-| fulu | osaka | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) | ✅ | ✅ | ✅ enabled |
-| gloas | amsterdam | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | unscheduled | ✅ | ✅ | ✅ enabled |
-| bpo_1 | bpo1 | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) | ✅ | ✅ | ✅ enabled |
-| bpo_2 | bpo2 | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) | ✅ | ✅ | ✅ enabled |
+| CL fork | EL fork | Devnet epoch | Sepolia epoch | Mainnet epoch | Devnet status |
+|------|---------|--------------|---------------|---------------|--------|
+| altair | — | 0 | [50](https://beaconscan.com/sepolia/epoch/50) | [74240](https://beaconscan.com/epoch/74240) | ✅ enabled |
+| bellatrix | — | 0 | [100](https://beaconscan.com/sepolia/epoch/100) | [144896](https://beaconscan.com/epoch/144896) | ✅ enabled |
+| capella | shanghai | 0 | [56832](https://beaconscan.com/sepolia/epoch/56832) | [194048](https://beaconscan.com/epoch/194048) | ✅ enabled |
+| deneb | cancun | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) | ✅ enabled |
+| electra | prague | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) | ✅ enabled |
+| fulu | osaka | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) | ✅ enabled |
+| gloas | amsterdam | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | unscheduled | ✅ enabled |
+| bpo_1 | bpo1 | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) | ✅ enabled |
+| bpo_2 | bpo2 | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) | ✅ enabled |
 
 Not scheduled on mainnet yet: `heze` (💤 not enabled), `bpo_3` (💤 not enabled), `bpo_4` (💤 not enabled), `bpo_5` (💤 not enabled).
 
