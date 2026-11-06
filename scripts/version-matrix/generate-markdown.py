@@ -20,6 +20,8 @@ REPO_URL = "https://github.com/0xPolygon/kurtosis-cdk"
 
 # Hard fork rows never use 🚨: the bump workflow acts on 🚨 rows, and a fork is
 # not something to bump.
+L1_EPOCH_URL = "https://beaconscan.com/epoch/{}"
+
 FORK_STATUSES = {
     "enabled": ("✅", "Activated by the devnet and known to the pinned clients."),
     "not enabled": ("💤", "Known to the pinned clients, but the devnet leaves it off."),
@@ -210,7 +212,7 @@ sidebar_position: 3
             support = fork['support']
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
-                f" | {self._activation(fork['devnet'])} | {self._mainnet(fork)}"
+                f" | {self._activation(fork['devnet'])} | {self._mainnet(fork, L1_EPOCH_URL)}"
                 f" | {self._support(support.get('geth'))}"
                 f" | {self._support(support.get('lighthouse'))}"
                 f" | {self._fork_status(fork)} |\n"
@@ -247,9 +249,10 @@ sidebar_position: 3
         return "—" if value is None else str(value)
 
     @staticmethod
-    def _mainnet(fork: Dict) -> str:
+    def _mainnet(fork: Dict, url: Optional[str] = None) -> str:
         if fork.get('mainnet') is not None:
-            return str(fork['mainnet'])
+            value = str(fork['mainnet'])
+            return f"[{value}]({url.format(value)})" if url else value
         # A fork no pinned client knows has no mainnet schedule to speak of.
         if False in fork.get('support', {}).values():
             return "—"

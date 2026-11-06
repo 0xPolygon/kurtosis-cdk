@@ -202,16 +202,16 @@ Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`
 
 | Fork | EL fork | Devnet epoch | Mainnet epoch | geth | lighthouse | Status |
 |------|---------|--------------|---------------|------|------------|--------|
-| altair | — | 0 | 74240 | — | yes | ✅ enabled |
-| bellatrix | — | 0 | 144896 | — | yes | ✅ enabled |
-| capella | shanghai | 0 | 194048 | yes | yes | ✅ enabled |
-| deneb | cancun | 0 | 269568 | yes | yes | ✅ enabled |
-| electra | prague | 0 | 364032 | yes | yes | ✅ enabled |
-| fulu | osaka | 0 | 411392 | yes | yes | ✅ enabled |
+| altair | — | 0 | [74240](https://beaconscan.com/epoch/74240) | — | yes | ✅ enabled |
+| bellatrix | — | 0 | [144896](https://beaconscan.com/epoch/144896) | — | yes | ✅ enabled |
+| capella | shanghai | 0 | [194048](https://beaconscan.com/epoch/194048) | yes | yes | ✅ enabled |
+| deneb | cancun | 0 | [269568](https://beaconscan.com/epoch/269568) | yes | yes | ✅ enabled |
+| electra | prague | 0 | [364032](https://beaconscan.com/epoch/364032) | yes | yes | ✅ enabled |
+| fulu | osaka | 0 | [411392](https://beaconscan.com/epoch/411392) | yes | yes | ✅ enabled |
 | gloas | amsterdam | 0 | unscheduled | yes | yes | ✅ enabled |
 | heze | bogota | — | unscheduled | yes | yes | 💤 not enabled |
-| bpo_1 | bpo1 | 0 | 412672 | yes | yes | ✅ enabled |
-| bpo_2 | bpo2 | 0 | 419072 | yes | yes | ✅ enabled |
+| bpo_1 | bpo1 | 0 | [412672](https://beaconscan.com/epoch/412672) | yes | yes | ✅ enabled |
+| bpo_2 | bpo2 | 0 | [419072](https://beaconscan.com/epoch/419072) | yes | yes | ✅ enabled |
 | bpo_3 | bpo3 | — | unscheduled | yes | yes | 💤 not enabled |
 | bpo_4 | bpo4 | — | unscheduled | yes | yes | 💤 not enabled |
 | bpo_5 | bpo5 | — | unscheduled | yes | yes | 💤 not enabled |
