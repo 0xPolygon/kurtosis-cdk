@@ -204,15 +204,15 @@ Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/e
 
 | CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |
 |------|---------|---------------|--------------|---------------|---------------|
-| altair | — | ✅ enabled | 0 | [50](https://beaconscan.com/sepolia/epoch/50) | [74240](https://beaconscan.com/epoch/74240) |
-| bellatrix | — | ✅ enabled | 0 | [100](https://beaconscan.com/sepolia/epoch/100) | [144896](https://beaconscan.com/epoch/144896) |
-| capella | shanghai | ✅ enabled | 0 | [56832](https://beaconscan.com/sepolia/epoch/56832) | [194048](https://beaconscan.com/epoch/194048) |
-| deneb | cancun | ✅ enabled | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) |
-| electra | prague | ✅ enabled | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) |
-| fulu | osaka | ✅ enabled | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) |
 | gloas | amsterdam | ✅ enabled | 0 | [353024](https://beaconscan.com/sepolia/epoch/353024) | not scheduled yet |
-| bpo_1 | bpo1 | ✅ enabled | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) |
 | bpo_2 | bpo2 | ✅ enabled | 0 | [275712](https://beaconscan.com/sepolia/epoch/275712) | [419072](https://beaconscan.com/epoch/419072) |
+| bpo_1 | bpo1 | ✅ enabled | 0 | [274176](https://beaconscan.com/sepolia/epoch/274176) | [412672](https://beaconscan.com/epoch/412672) |
+| fulu | osaka | ✅ enabled | 0 | [272640](https://beaconscan.com/sepolia/epoch/272640) | [411392](https://beaconscan.com/epoch/411392) |
+| electra | prague | ✅ enabled | 0 | [222464](https://beaconscan.com/sepolia/epoch/222464) | [364032](https://beaconscan.com/epoch/364032) |
+| deneb | cancun | ✅ enabled | 0 | [132608](https://beaconscan.com/sepolia/epoch/132608) | [269568](https://beaconscan.com/epoch/269568) |
+| capella | shanghai | ✅ enabled | 0 | [56832](https://beaconscan.com/sepolia/epoch/56832) | [194048](https://beaconscan.com/epoch/194048) |
+| bellatrix | — | ✅ enabled | 0 | [100](https://beaconscan.com/sepolia/epoch/100) | [144896](https://beaconscan.com/epoch/144896) |
+| altair | — | ✅ enabled | 0 | [50](https://beaconscan.com/sepolia/epoch/50) | [74240](https://beaconscan.com/epoch/74240) |
 
 Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, `bpo_4`, `bpo_5`.
 
@@ -224,11 +224,11 @@ Checked against [optimism-package v2.0.0](https://github.com/agglayer/optimism-p
 
 | Fork | Devnet status | Devnet offset (s) |
 |------|---------------|-------------------|
-| fjord | ✅ enabled | 0 |
-| granite | ✅ enabled | 0 |
+| interop | ⏳ not supported yet | — |
+| lagoon | ⚙️ op-deployer default — no knob in optimism-package | — |
+| karst | ⚙️ op-deployer default — no knob in optimism-package | — |
+| jovian | ⚙️ op-deployer default | — |
 | holocene | ⚙️ op-deployer default | — |
 | isthmus | ✅ enabled | 0 |
-| jovian | ⚙️ op-deployer default | — |
-| karst | ⚙️ op-deployer default — no knob in optimism-package | — |
-| lagoon | ⚙️ op-deployer default — no knob in optimism-package | — |
-| interop | ⏳ not supported yet | — |
+| granite | ✅ enabled | 0 |
+| fjord | ✅ enabled | 0 |

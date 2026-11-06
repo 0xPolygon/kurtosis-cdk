@@ -190,6 +190,16 @@ sidebar_position: 3
 
         return md
 
+    @staticmethod
+    def _newest_first(forks: list) -> list:
+        """Latest activation first; a fork not scheduled yet comes before any scheduled one."""
+        def key(fork):
+            return tuple(
+                float("inf") if fork.get(field) is None else fork[field]
+                for field in ("mainnet", "testnet", "devnet")
+            )
+        return sorted(reversed(forks), key=key, reverse=True)
+
     def _generate_hard_forks(self, forks: Dict) -> str:
         md = "\n## Hard Forks\n\n"
         md += "Fork schedule of the devnet, checked against the source of the "
@@ -209,7 +219,7 @@ sidebar_position: 3
         md = md.rstrip() + f"\n\n{self._sources(l1)}\n\n"
         md += "| CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |\n"
         md += "|------|---------|---------------|--------------|---------------|---------------|\n"
-        scheduled = [f for f in l1['forks'] if not self._is_unscheduled(f)]
+        scheduled = self._newest_first([f for f in l1['forks'] if not self._is_unscheduled(f)])
         for fork in scheduled:
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
@@ -228,7 +238,7 @@ sidebar_position: 3
         md = md.rstrip() + f"\n\n{self._sources(op)}\n\n"
         md += "| Fork | Devnet status | Devnet offset (s) |\n"
         md += "|------|---------------|-------------------|\n"
-        for fork in op['forks']:
+        for fork in self._newest_first(op['forks']):
             md += (
                 f"| {fork['name']} | {self._fork_status(fork)}"
                 f" | {self._activation(fork['devnet'])} |\n"
