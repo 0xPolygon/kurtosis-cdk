@@ -38,7 +38,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
