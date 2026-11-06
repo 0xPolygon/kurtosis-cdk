@@ -200,7 +200,11 @@ Fork schedule of the devnet, checked against the source of the clients and packa
 
 Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`src/l1/ethereum.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/l1/ethereum.star).
 
-Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/ethereum-package/blob/5795b77e65235ad223d4d3b413b2739190bf60cc/src/package_io/input_parser.star), [geth v1.17.10](https://github.com/ethereum/go-ethereum/blob/v1.17.10/params/config.go) and [lighthouse v8.3.2](https://github.com/sigp/lighthouse/blob/v8.3.2/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml).
+Checked against:
+
+- [ethereum-package 5795b77e6523](https://github.com/ethpandaops/ethereum-package/blob/5795b77e65235ad223d4d3b413b2739190bf60cc/src/package_io/input_parser.star)
+- [geth v1.17.10](https://github.com/ethereum/go-ethereum/blob/v1.17.10/params/config.go)
+- [lighthouse v8.3.2](https://github.com/sigp/lighthouse/blob/v8.3.2/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml)
 
 | CL fork | EL fork | Devnet status | Devnet epoch | Sepolia epoch | Mainnet epoch |
 |------|---------|---------------|--------------|---------------|---------------|
@@ -220,7 +224,10 @@ Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, 
 
 Fork times are offsets in seconds from the L2 genesis: the optimism-package defaults, overridden in [`src/package_io/op_input_parser.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/op_input_parser.star). Forks before Fjord always activate at genesis.
 
-Checked against [optimism-package v2.0.0](https://github.com/agglayer/optimism-package/blob/v2.0.0/src/l2/input_parser.star) and [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go).
+Checked against:
+
+- [optimism-package v2.0.0](https://github.com/agglayer/optimism-package/blob/v2.0.0/src/l2/input_parser.star)
+- [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go)
 
 | Fork | Devnet status | Devnet offset (s) |
 |------|---------------|-------------------|

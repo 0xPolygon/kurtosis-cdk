@@ -250,9 +250,7 @@ sidebar_position: 3
         """Name the pinned versions a fork table was checked against."""
         links = [f"[{s['name']} {_short_ref(s['ref'])}]({s['url']})"
                  for s in section['sources']]
-        if len(links) > 1:
-            links = [", ".join(links[:-1]), links[-1]]
-        return f"Checked against {' and '.join(links)}."
+        return "Checked against:\n\n" + "\n".join(f"- {link}" for link in links)
 
     @staticmethod
     def _activation(value: Optional[int]) -> str:
