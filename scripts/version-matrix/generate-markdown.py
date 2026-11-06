@@ -21,6 +21,7 @@ REPO_URL = "https://github.com/0xPolygon/kurtosis-cdk"
 # Hard fork rows never use 🚨: the bump workflow acts on 🚨 rows, and a fork is
 # not something to bump.
 L1_EPOCH_URL = "https://beaconscan.com/epoch/{}"
+SEPOLIA_EPOCH_URL = "https://beaconscan.com/sepolia/epoch/{}"
 
 FORK_STATUSES = {
     "enabled": ("✅", "Activated by the devnet and known to the pinned clients."),
@@ -213,7 +214,7 @@ sidebar_position: 3
             support = fork['support']
             md += (
                 f"| {fork['name']} | {fork.get('el_name') or '—'}"
-                f" | {self._activation(fork['devnet'])} | {self._testnet(fork)}"
+                f" | {self._activation(fork['devnet'])} | {self._testnet(fork, SEPOLIA_EPOCH_URL)}"
                 f" | {self._mainnet(fork, L1_EPOCH_URL)}"
                 f" | {self._support(support.get('geth'))}"
                 f" | {self._support(support.get('lighthouse'))}"
