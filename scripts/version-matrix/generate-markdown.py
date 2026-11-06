@@ -203,7 +203,7 @@ sidebar_position: 3
             md += f"| {emoji} {status} | {meaning} |\n"
 
         l1 = forks['l1']
-        md += "\n### L1\n\n"
+        md += "\n### L1 (Ethereum)\n\n"
         md += "Fork epochs are the ethereum-package `minimal` preset defaults, "
         md += f"overridden in [`src/l1/ethereum.star`]({REPO_URL}/blob/main/src/l1/ethereum.star). "
         md = md.rstrip() + f"\n\n{self._sources(l1)}\n\n"
@@ -220,7 +220,7 @@ sidebar_position: 3
         md += self._unscheduled_note([f for f in l1['forks'] if self._is_unscheduled(f)])
 
         op = forks['op']
-        md += "\n### OP Stack\n\n"
+        md += "\n### L2 (OP Stack)\n\n"
         md += "Fork times are offsets in seconds from the L2 genesis: the "
         md += "optimism-package defaults, overridden in "
         md += f"[`src/package_io/op_input_parser.star`]({REPO_URL}/blob/main/src/package_io/op_input_parser.star). "

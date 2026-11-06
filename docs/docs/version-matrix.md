@@ -196,7 +196,7 @@ Fork schedule of the devnet, checked against the source of the clients and packa
 | ❌ enabled but unsupported | Configured by the devnet, but a pinned client does not know it and ignores the setting. |
 | ⚙️ op-deployer default | Left unset by the devnet, so op-deployer's standard schedule decides when it activates. |
 
-### L1
+### L1 (Ethereum)
 
 Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`src/l1/ethereum.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/l1/ethereum.star).
 
@@ -216,7 +216,7 @@ Checked against [ethereum-package 5795b77e6523](https://github.com/ethpandaops/e
 
 Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, `bpo_4`, `bpo_5`.
 
-### OP Stack
+### L2 (OP Stack)
 
 Fork times are offsets in seconds from the L2 genesis: the optimism-package defaults, overridden in [`src/package_io/op_input_parser.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/package_io/op_input_parser.star). Forks before Fjord always activate at genesis.
 
