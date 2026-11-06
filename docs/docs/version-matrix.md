@@ -46,11 +46,11 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| op-batcher | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | ✅ matches stable |
-| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | ✅ matches stable |
-| op-node | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | ✅ matches stable |
+| op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ matches stable |
+| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ newer than stable |
+| op-node | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | ✅ matches stable |
 | op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ matches stable |
-| op-reth | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | ✅ matches stable |
+| op-reth | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ### cdk-opreth-sovereign-pessimistic
@@ -62,11 +62,11 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | 📌 pinned — Only supports aggkit 0.5.x so far. |
 | agglayer | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | 📌 pinned — aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+. |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| op-batcher | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | ✅ matches stable |
-| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | ✅ matches stable |
-| op-node | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | ✅ matches stable |
+| op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ matches stable |
+| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ newer than stable |
+| op-node | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | ✅ matches stable |
 | op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ matches stable |
-| op-reth | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | ✅ matches stable |
+| op-reth | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ### cdk-opreth-zkrollup
@@ -79,10 +79,10 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit-prover | [2.2.1](https://github.com/agglayer/provers/releases/tag/v2.2.1) | [2.2.1](https://github.com/agglayer/provers/releases/tag/v2.2.1) | ✅ matches stable |
 | agglayer | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | [0.6.2](https://github.com/agglayer/agglayer/releases/tag/v0.6.2) | ✅ matches stable |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
-| op-batcher | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | [1.18.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.0) | ✅ matches stable |
-| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | ✅ matches stable |
-| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.20.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.0) | 📌 pinned — op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2). |
-| op-reth | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | [2.8.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.0) | ✅ matches stable |
+| op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ matches stable |
+| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ newer than stable |
+| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | 📌 pinned — op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2). |
+| op-reth | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | ✅ matches stable |
 | op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.13.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.13.0-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
@@ -168,7 +168,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 | anvil | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | ✅ matches stable |
 | geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ matches stable |
 | lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ matches stable |
-| reth | [2.9.0](https://github.com/paradigmxyz/reth/releases/tag/v2.9.0) | [2.9.0](https://github.com/paradigmxyz/reth/releases/tag/v2.9.0) | ✅ matches stable |
+| reth | [2.10.0](https://github.com/paradigmxyz/reth/releases/tag/v2.10.0) | [2.10.0](https://github.com/paradigmxyz/reth/releases/tag/v2.10.0) | ✅ matches stable |
 | status-checker | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | ✅ matches stable |
 
 ## Kurtosis Packages
