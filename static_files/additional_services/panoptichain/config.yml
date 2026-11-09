@@ -52,7 +52,7 @@ networks:
 
   - name: "L2"
     chain_id: "{{.l2_chain_id}}"
-    polygon_zkevm: true
+    polygon_zkevm: {{.l2_polygon_zkevm}}
 
 logs:
   verbosity: "{{.log_level}}"

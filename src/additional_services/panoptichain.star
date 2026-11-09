@@ -1,3 +1,4 @@
+constants = import_module("../package_io/constants.star")
 ports_package = import_module("../package_io/ports.star")
 contracts_util = import_module("../contracts/util.star")
 wallet_module = import_module("../wallet/wallet.star")
@@ -51,6 +52,10 @@ def get_panoptichain_config(plan, args, contract_setup_addresses):
         # cast wallet address --mnemonic "code code code code code code code code code code code quality"
         "l1_receiver_address": "0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6",
         "l2_receiver_address": "0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6",
+        # Only cdk-erigon serves the zkevm_* batch methods.
+        "l2_polygon_zkevm": "true"
+        if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon
+        else "false",
     }
 
     return plan.render_templates(
