@@ -2,7 +2,7 @@ prometheus_package = import_module(
     "github.com/kurtosis-tech/prometheus-package/main.star"
 )  # Version pinned in kurtosis.yml
 
-PROMETHEUS_IMAGE = "prom/prometheus:v3.0.1"
+PROMETHEUS_IMAGE = "prom/prometheus:v3.16.0"
 
 
 def run(plan, args):
