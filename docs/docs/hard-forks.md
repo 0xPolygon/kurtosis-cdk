@@ -28,7 +28,7 @@ Checked against:
 
 - [ethereum-package 5795b77e6523](https://github.com/ethpandaops/ethereum-package/blob/5795b77e65235ad223d4d3b413b2739190bf60cc/src/package_io/input_parser.star)
 - [geth v1.17.10](https://github.com/ethereum/go-ethereum/blob/v1.17.10/params/config.go)
-- [lighthouse v8.3.2](https://github.com/sigp/lighthouse/blob/v8.3.2/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml)
+- [lighthouse v8.3.3](https://github.com/sigp/lighthouse/blob/v8.3.3/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml)
 
 Not enabled on devnet and not scheduled on testnet or mainnet: `heze`, `bpo_3`, `bpo_4`, `bpo_5`.
 
