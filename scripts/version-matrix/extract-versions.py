@@ -126,7 +126,8 @@ EXTRA_IMAGES = {
     "PROMETHEUS_IMAGE": {"name": "prometheus", "repo": "prometheus/prometheus", "tag_prefix": "v"},
     "GRAFANA_IMAGE": {"name": "grafana", "repo": "grafana/grafana", "tag_prefix": "v"},
     "PANOPTICHAIN_IMAGE": {"name": "panoptichain", "repo": "0xPolygon/panoptichain", "tag_prefix": "v"},
-    "ASSERTOOR_IMAGE": {"name": "assertoor", "repo": "ethpandaops/assertoor", "tag_prefix": "v"},
+    # Pinned to a master build, see ASSERTOOR_IMAGE.
+    "ASSERTOOR_IMAGE": {"name": "assertoor", "commit_repo": "ethpandaops/assertoor", "tag_prefix": "master-"},
     "ERPC_IMAGE": {"name": "erpc", "repo": "erpc/erpc"},
     "BLUTGANG_IMAGE": {"name": "blutgang", "repo": "rainshowerLabs/blutgang", "tag_prefix": "Blutgang-"},
     "ARPEGGIO_IMAGE": {"name": "arpeggio"},
