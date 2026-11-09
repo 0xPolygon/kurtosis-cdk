@@ -174,7 +174,7 @@ The L1 clients: the devnet does not start without them.
 | anvil | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | ✅ up to date |
 | geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ up to date |
 | lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ up to date |
-| reth | [2.10.0](https://github.com/paradigmxyz/reth/releases/tag/v2.10.0) | [2.10.0](https://github.com/paradigmxyz/reth/releases/tag/v2.10.0) | ✅ up to date |
+| reth | [2.10.1](https://github.com/paradigmxyz/reth/releases/tag/v2.10.1) | [2.10.1](https://github.com/paradigmxyz/reth/releases/tag/v2.10.1) | ✅ up to date |
 
 ### Additional
 
