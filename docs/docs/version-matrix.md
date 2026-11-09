@@ -173,7 +173,7 @@ The L1 clients: the devnet does not start without them.
 |-----------|-------------------------------|-----------------------|--------|
 | anvil | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | [1.9.0](https://github.com/foundry-rs/foundry/releases/tag/v1.9.0) | ✅ up to date |
 | geth | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | [1.17.10](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.10) | ✅ up to date |
-| lighthouse | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | [8.3.2](https://github.com/sigp/lighthouse/releases/tag/v8.3.2) | ✅ up to date |
+| lighthouse | [8.3.3](https://github.com/sigp/lighthouse/releases/tag/v8.3.3) | [8.3.3](https://github.com/sigp/lighthouse/releases/tag/v8.3.3) | ✅ up to date |
 | reth | [2.10.1](https://github.com/paradigmxyz/reth/releases/tag/v2.10.1) | [2.10.1](https://github.com/paradigmxyz/reth/releases/tag/v2.10.1) | ✅ up to date |
 
 ### Additional
@@ -186,20 +186,20 @@ Everything else: databases, observability, utility images and the status checker
 | agglayer-dev-ui | 844bfbc | 844bfbc | ✅ up to date |
 | agglogger | bf1f8c1 | bf1f8c1 | ✅ up to date |
 | arpeggio | v0.0.1 | N/A | N/A |
-| assertoor | [0.0.11](https://github.com/ethpandaops/assertoor/releases/tag/v0.0.11) | [0.1.2](https://github.com/ethpandaops/assertoor/releases/tag/v0.1.2) | 🚨 behind |
+| assertoor | [0.1.2](https://github.com/ethpandaops/assertoor/releases/tag/v0.1.2) | [0.1.2](https://github.com/ethpandaops/assertoor/releases/tag/v0.1.2) | ✅ up to date |
 | blutgang | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | ✅ up to date |
 | bridge-hub-api | 2a71905 | 2a71905 | ✅ up to date |
 | bridge-hub-autoclaim | 2a71905 | 2a71905 | ✅ up to date |
 | bridge-hub-consumer | 2a71905 | 2a71905 | ✅ up to date |
 | e2e-test-runner | [dda31ee](https://github.com/agglayer/e2e/commit/dda31ee) | N/A | N/A |
-| erpc | [0.0.24](https://github.com/erpc/erpc/releases/tag/0.0.24) | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | 🚨 behind |
-| grafana | [11.1.4](https://github.com/grafana/grafana/releases/tag/v11.1.4) | [13.3.0](https://github.com/grafana/grafana/releases/tag/v13.3.0) | 🚨 behind |
+| erpc | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | ✅ up to date |
+| grafana | [13.3.0](https://github.com/grafana/grafana/releases/tag/v13.3.0) | [13.3.0](https://github.com/grafana/grafana/releases/tag/v13.3.0) | ✅ up to date |
 | haproxy | 3.2-bookworm | N/A | N/A |
-| mitmproxy | [12.2.3](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.2.3) | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | 🚨 behind |
+| mitmproxy | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | ✅ up to date |
 | mongodb | 7.0.29 | N/A | N/A |
-| panoptichain | [3.0.4](https://github.com/0xPolygon/panoptichain/releases/tag/v3.0.4) | [8.1.4](https://github.com/0xPolygon/panoptichain/releases/tag/v8.1.4) | 🚨 behind |
+| panoptichain | [8.1.4](https://github.com/0xPolygon/panoptichain/releases/tag/v8.1.4) | [8.1.4](https://github.com/0xPolygon/panoptichain/releases/tag/v8.1.4) | ✅ up to date |
 | postgres | 17.6 | N/A | N/A |
-| prometheus | [3.0.1](https://github.com/prometheus/prometheus/releases/tag/v3.0.1) | [3.16.0](https://github.com/prometheus/prometheus/releases/tag/v3.16.0) | 🚨 behind |
+| prometheus | [3.16.0](https://github.com/prometheus/prometheus/releases/tag/v3.16.0) | [3.16.0](https://github.com/prometheus/prometheus/releases/tag/v3.16.0) | ✅ up to date |
 | status-checker | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | ✅ up to date |
 | zkevm-bridge-ui | 3f1a3a0 | 3f1a3a0 | ✅ up to date |
 

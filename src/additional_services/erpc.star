@@ -1,7 +1,7 @@
 ports_package = import_module("../package_io/ports.star")
 contracts_util = import_module("../contracts/util.star")
 
-ERPC_IMAGE = "ghcr.io/erpc/erpc:0.0.24"
+ERPC_IMAGE = "ghcr.io/erpc/erpc:0.5.0"
 
 SERVICE_NAME = "erpc"
 RPC_PORT = 8080

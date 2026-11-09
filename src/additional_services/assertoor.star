@@ -1,6 +1,6 @@
 HTTP_PORT_NUMBER = 8080
 
-ASSERTOOR_IMAGE = "ethpandaops/assertoor:v0.0.11"
+ASSERTOOR_IMAGE = "ethpandaops/assertoor:v0.1.2"
 
 ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE = "/config"
 

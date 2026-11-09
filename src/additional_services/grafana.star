@@ -3,7 +3,7 @@ grafana_package = import_module(
     "github.com/kurtosis-tech/grafana-package/main.star"
 )  # Version pinned in kurtosis.yml
 
-GRAFANA_IMAGE = "grafana/grafana-enterprise:11.1.4"
+GRAFANA_IMAGE = "grafana/grafana-enterprise:13.3.0"
 GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/dashboards"
 GRAFANA_ALERTING_TEMPLATE = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/alerting.yml.tmpl"
 
