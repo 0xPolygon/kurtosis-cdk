@@ -1,5 +1,7 @@
+constants = import_module("../package_io/constants.star")
 ports_package = import_module("../package_io/ports.star")
 contracts_util = import_module("../contracts/util.star")
+wallet_module = import_module("../wallet/wallet.star")
 
 # https://github.com/0xPolygon/panoptichain/releases
 PANOPTICHAIN_IMAGE = "ghcr.io/0xpolygon/panoptichain:v8.1.4"
@@ -27,19 +29,33 @@ def get_panoptichain_config(plan, args, contract_setup_addresses):
     )
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
 
-    # Ensure that the `l2_accounts_to_fund` parameter is > 0 or else the l2 time
-    # to mine provider will fail.
+    # cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}"
+    sender_address = "0x8943545177806ED17B9F23F0a21ee5948eCaa776"
+
+    # The L2 time to mine provider sends a transaction every interval. The sender is only
+    # prefunded on L2 for cdk-erigon chains (see `l2_accounts_to_fund`).
+    wallet_module.fund(
+        plan,
+        address=sender_address,
+        rpc_url=l2_rpc_url.http,
+        funder_private_key=args["l2_admin_private_key"],
+        value="10ether",
+    )
+
     panoptichain_data = {
         "l2_rpc_url": l2_rpc_url.http,
-        # cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}"
-        "l1_sender_address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
-        "l2_sender_address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+        "l1_sender_address": sender_address,
+        "l2_sender_address": sender_address,
         # cast wallet private-key "{{.l1_preallocated_mnemonic}}" | cut -c3-
         "l1_sender_private_key": "bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
         "l2_sender_private_key": "bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
         # cast wallet address --mnemonic "code code code code code code code code code code code quality"
         "l1_receiver_address": "0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6",
         "l2_receiver_address": "0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6",
+        # Only cdk-erigon serves the zkevm_* batch methods.
+        "l2_polygon_zkevm": "true"
+        if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon
+        else "false",
     }
 
     return plan.render_templates(

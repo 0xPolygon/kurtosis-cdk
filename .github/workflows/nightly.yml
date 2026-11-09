@@ -359,25 +359,32 @@ jobs:
 
       - name: Verify that prometheus collects panoptichain metrics
         run: |
-          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            echo "Wait for one minute while Prometheus gathers metrics..."
-            sleep 60
-
-            echo "Retrieve Panoptichain metrics from Prometheus..."
-            panoptichain_metric="panoptichain_system_uptime"
-            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
-            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
-            echo $prometheus_query | jq
-            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
-              echo "✅ Prometheus collects panoptichain metrics!"
-            else
-              echo "❌ Prometheus does not collect panoptichain metrics..."
-              exit 1
-            fi
-          else
-            echo "Prometheus is not deployed."
+          result=$(yq '.args.additional_services | contains(["observability"])' ./.github/tests/additional-services.yml)
+          if [ "$result" != "true" ]; then
+            echo "Observability is not deployed."
+            exit 0
           fi
+
+          prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+          # Panoptichain follows both chains, and its L2 time to mine sender is funded.
+          queries=(
+            'panoptichain_system_uptime'
+            'panoptichain_rpc_height{network="L1"} > 0'
+            'panoptichain_rpc_height{network="L2"} > 0'
+            'panoptichain_rpc_time_to_mine_count{network="L2"} > 0'
+          )
+          deadline=$((SECONDS + 180))
+          for query in "${queries[@]}"; do
+            until [[ "$(curl -sf --get "${prometheus_url}/api/v1/query" --data-urlencode "query=${query}" | jq '.data.result | length' || true)" -gt 0 ]]; do
+              if [[ "${SECONDS}" -ge "${deadline}" ]]; then
+                echo "❌ Prometheus returns no result for: ${query}"
+                curl -sf "${prometheus_url}/api/v1/targets?scrapePool=panoptichain-001" | jq '.data.activeTargets' || true
+                exit 1
+              fi
+              sleep 10
+            done
+            echo "✅ ${query}"
+          done
 
       - name: Post kurtosis run
         if: always()

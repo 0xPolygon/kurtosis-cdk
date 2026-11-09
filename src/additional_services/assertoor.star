@@ -1,6 +1,7 @@
 HTTP_PORT_NUMBER = 8080
 
-ASSERTOOR_IMAGE = "ethpandaops/assertoor:v0.1.2"
+# Releases up to v0.1.2 cannot decode the blocks of an L1 running Gloas from genesis.
+ASSERTOOR_IMAGE = "ethpandaops/assertoor:master-49a91cd"
 
 ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE = "/config"
 

@@ -31,7 +31,11 @@ def run(plan, args):
     postgres_url = "{}:{}".format(
         postgres_service.ip_address, postgres_service.ports["postgres"].number
     )
-    for db in databases_package.DATABASES.values():
+    # Only the databases created for this sequencer type, or grafana fails to log into the others.
+    db_configs = databases_package.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
+    for db in db_configs.values():
         postgres_databases.append(
             {
                 "URL": postgres_url,

@@ -186,7 +186,7 @@ Everything else: databases, observability, utility images and the status checker
 | agglayer-dev-ui | 844bfbc | 844bfbc | ✅ up to date |
 | agglogger | bf1f8c1 | bf1f8c1 | ✅ up to date |
 | arpeggio | v0.0.1 | N/A | N/A |
-| assertoor | [0.1.2](https://github.com/ethpandaops/assertoor/releases/tag/v0.1.2) | [0.1.2](https://github.com/ethpandaops/assertoor/releases/tag/v0.1.2) | ✅ up to date |
+| assertoor | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | 📌 pinned — v0.1.2 cannot decode Gloas blocks of the local L1, pinned to a master build until a release does. |
 | blutgang | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | ✅ up to date |
 | bridge-hub-api | 2a71905 | 2a71905 | ✅ up to date |
 | bridge-hub-autoclaim | 2a71905 | 2a71905 | ✅ up to date |
