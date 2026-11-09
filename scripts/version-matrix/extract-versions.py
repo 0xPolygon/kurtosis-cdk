@@ -59,6 +59,8 @@ PINNED_VERSIONS = {
     ("cdk-erigon-zkrollup", "agglayer"): "Only supports agglayer 0.6.0-rc.5 so far.",
     ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
     ("cdk-opreth-zkrollup", "op-node"): "op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2).",
+    # "additional" holds the EXTRA_IMAGES rows of the default images tables.
+    ("additional", "assertoor"): "v0.1.2 cannot decode Gloas blocks of the local L1, pinned to a master build until a release does.",
 }
 
 
@@ -108,6 +110,8 @@ CORE_PACKAGES = {
 #   repo:        GitHub repository whose latest release is the latest version
 #   tag_prefix:  prefix of its release tags (the image tag has none)
 #   commit_repo: repository the commit-sha image tag points into
+#   head:        the image is a build of the commit_repo default branch, so the
+#                latest version is that branch's HEAD
 #   registry:    the image is tagged with commit shas on Artifact Registry, so
 #                the latest version is the last tag uploaded there
 # An image without any of these is listed with no latest version and no status.
@@ -126,8 +130,8 @@ EXTRA_IMAGES = {
     "PROMETHEUS_IMAGE": {"name": "prometheus", "repo": "prometheus/prometheus", "tag_prefix": "v"},
     "GRAFANA_IMAGE": {"name": "grafana", "repo": "grafana/grafana", "tag_prefix": "v"},
     "PANOPTICHAIN_IMAGE": {"name": "panoptichain", "repo": "0xPolygon/panoptichain", "tag_prefix": "v"},
-    # Pinned to a master build, see ASSERTOOR_IMAGE.
-    "ASSERTOOR_IMAGE": {"name": "assertoor", "commit_repo": "ethpandaops/assertoor", "tag_prefix": "master-"},
+    "ASSERTOOR_IMAGE": {"name": "assertoor", "commit_repo": "ethpandaops/assertoor",
+                        "tag_prefix": "master-", "head": True},
     "ERPC_IMAGE": {"name": "erpc", "repo": "erpc/erpc"},
     "BLUTGANG_IMAGE": {"name": "blutgang", "repo": "rainshowerLabs/blutgang", "tag_prefix": "Blutgang-"},
     "ARPEGGIO_IMAGE": {"name": "arpeggio"},
@@ -352,15 +356,25 @@ class VersionMatrixExtractor:
             latest = self._get_latest_uploaded_tag(image)
             status = (None if not latest else
                       "up to date" if version == latest else "behind")
+        elif spec.get("head"):
+            head, _ = self._get_head_version(spec["commit_repo"])
+            if head:
+                latest = head[:len(version)]
+                latest_url = f"https://github.com/{spec['commit_repo']}/commit/{latest}"
+            status = ("up to date" if head and head.startswith(version) else
+                      self._determine_head_tracked_status(spec["commit_repo"], version, head)[0])
         else:
             status = None
         if spec.get("commit_repo"):
             version_url = f"https://github.com/{spec['commit_repo']}/commit/{version}"
-        return ComponentVersion(
+        component = ComponentVersion(
             version=version, image=image, latest_version=latest,
             version_source_url=version_url, latest_version_source_url=latest_url,
             status=status, core=False,
         )
+        self._apply_pins("additional", {spec["name"]: component},
+                         head_tracked=bool(spec.get("head")))
+        return component
 
     def _get_latest_release(self, repo: str, tag_prefix: str) -> Optional[str]:
         """Latest stable GitHub release of a repo, without its tag prefix."""
@@ -734,7 +748,8 @@ class VersionMatrixExtractor:
 
         return environments
 
-    def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion]):
+    def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion],
+                    head_tracked: bool = False):
         """Re-label deliberately held-back components as pinned.
 
         Downgrades a "behind" status: if a pinned component ever catches
@@ -745,12 +760,16 @@ class VersionMatrixExtractor:
         default moved ahead (e.g. agglayer pinned to 0.6.0-rc.5 for cdk-node
         environments). Those still read "ahead" against the latest
         stable tag, so the pin would otherwise stay invisible in the matrix.
+
+        A head-tracked pin stays pinned at HEAD too: it waits for a release,
+        which reaching HEAD does not bring.
         """
         for name, component in components.items():
             reason = PINNED_VERSIONS.get((environment_name, name))
             if not reason:
                 continue
-            if component.status == "behind":
+            if component.status == "behind" or (
+                    head_tracked and component.status == "up to date"):
                 component.status = "pinned"
                 component.pin_reason = reason
             elif component.status == "ahead" and component.version in reason:
