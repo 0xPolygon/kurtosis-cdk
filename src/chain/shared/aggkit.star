@@ -496,6 +496,11 @@ def _get_aggkit_ports(args):
             application_protocol="http",
             wait=None,
         ),
+        "rest": PortSpec(
+            args.get("aggkit_node_rest_api_port"),
+            application_protocol="http",
+            wait=None,
+        ),
         "pprof": PortSpec(
             args.get("aggkit_pprof_port"),
             application_protocol="http",
@@ -506,13 +511,7 @@ def _get_aggkit_ports(args):
 
 def _get_aggkit_bridge_ports(args):
     """Get port configuration for aggkit bridge services."""
-    ports = _get_aggkit_ports(args)
-    ports["rest"] = PortSpec(
-        args.get("aggkit_node_rest_api_port"),
-        application_protocol="http",
-        wait=None,
-    )
-    return ports
+    return _get_aggkit_ports(args)
 
 
 def _get_aggkit_validator_ports(args):
