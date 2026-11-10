@@ -40,12 +40,12 @@ assert_fails() {
 # --- snapshot_extract_image_tag: real base_image values captured in
 # K1-evidence's IMAGE_INFO.json (all 9 post-merge services) ---
 assert_eq "anvil tag" "$(snapshot_extract_image_tag 'ghcr.io/foundry-rs/foundry:v1.5.1')" "v1.5.1"
-assert_eq "aggkit tag" "$(snapshot_extract_image_tag 'ghcr.io/agglayer/aggkit:0.11.0-rc5')" "0.11.0-rc5"
-assert_eq "agglayer tag (no v prefix, post-K3)" "$(snapshot_extract_image_tag 'ghcr.io/agglayer/agglayer:0.6.0-rc.8')" "0.6.0-rc.8"
+assert_eq "aggkit tag" "$(snapshot_extract_image_tag 'ghcr.io/agglayer/aggkit:0.11.1')" "0.11.1"
+assert_eq "agglayer tag (no v prefix, post-K3)" "$(snapshot_extract_image_tag 'ghcr.io/agglayer/agglayer:0.6.2')" "0.6.2"
 assert_eq "haproxy tag (no registry host at all)" "$(snapshot_extract_image_tag 'haproxy:3.2-bookworm')" "3.2-bookworm"
 assert_eq "dev-ui long non-semver tag" \
-    "$(snapshot_extract_image_tag 'ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-dd070d7db256-31574163188')" \
-    "dispatch-feat-aggkit-backend-dd070d7db256-31574163188"
+    "$(snapshot_extract_image_tag 'ghcr.io/agglayer/agglayer-dev-ui:feature-aggkit-backend-branch-9f3c2a1b7d0e-31574163188')" \
+    "feature-aggkit-backend-branch-9f3c2a1b7d0e-31574163188"
 
 # --- registry:port must not be mistaken for a tag separator ---
 assert_fails "registry:port with no tag is rejected, not misread as a tag" \
@@ -62,34 +62,34 @@ assert_fails "tagless ref rejected" snapshot_extract_image_tag "ghcr.io/agglayer
 assert_fails "empty-tag ref rejected" snapshot_extract_image_tag "ghcr.io/agglayer/agglayer:"
 
 # --- snapshot_sanitize_tag_component ---
-assert_eq "already-legal string passes through unchanged" "$(snapshot_sanitize_tag_component '0.11.0-rc5')" "0.11.0-rc5"
+assert_eq "already-legal string passes through unchanged" "$(snapshot_sanitize_tag_component '0.11.1')" "0.11.1"
 assert_eq "disallowed chars (/ and :) become dashes" "$(snapshot_sanitize_tag_component 'foo/bar:baz')" "foo-bar-baz"
 assert_eq "illegal leading char gets a 'v' prefix instead of being dropped" "$(snapshot_sanitize_tag_component '.1.2.3')" "v.1.2.3"
 assert_fails "empty string rejected" snapshot_sanitize_tag_component ""
 
-# --- length cap: the one real-world case designed to exercise it (53 chars,
-# well within the OCI 128-char hard limit but over our readability cap) ---
-long_devui_tag="dispatch-feat-aggkit-backend-dd070d7db256-31574163188"
-assert_eq "long tag length before cap" "${#long_devui_tag}" "53"
+# --- length cap: a branch/commit/run-number-derived tag (54 chars, well
+# within the OCI 128-char hard limit but over our readability cap) ---
+long_devui_tag="feature-aggkit-backend-branch-9f3c2a1b7d0e-31574163188"
+assert_eq "long tag length before cap" "${#long_devui_tag}" "54"
 capped=$(snapshot_sanitize_tag_component "$long_devui_tag")
 assert_eq "long tag truncated to SNAPSHOT_MAX_VERSION_LEN" "${#capped}" "${SNAPSHOT_MAX_VERSION_LEN}"
 assert_eq "truncation keeps the prefix (deterministic, not random)" "$capped" "${long_devui_tag:0:$SNAPSHOT_MAX_VERSION_LEN}"
 
 # --- snapshot_resolve_component_version: the one entry point publish-images.sh uses ---
 assert_eq "resolve: anvil" "$(snapshot_resolve_component_version 'ghcr.io/foundry-rs/foundry:v1.5.1')" "v1.5.1"
-assert_eq "resolve: aggkit" "$(snapshot_resolve_component_version 'ghcr.io/agglayer/aggkit:0.11.0-rc5')" "0.11.0-rc5"
-assert_eq "resolve: agglayer" "$(snapshot_resolve_component_version 'ghcr.io/agglayer/agglayer:0.6.0-rc.8')" "0.6.0-rc.8"
+assert_eq "resolve: aggkit" "$(snapshot_resolve_component_version 'ghcr.io/agglayer/aggkit:0.11.1')" "0.11.1"
+assert_eq "resolve: agglayer" "$(snapshot_resolve_component_version 'ghcr.io/agglayer/agglayer:0.6.2')" "0.6.2"
 assert_eq "resolve: dev-ui (truncated)" \
-    "$(snapshot_resolve_component_version 'ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-dd070d7db256-31574163188')" \
+    "$(snapshot_resolve_component_version 'ghcr.io/agglayer/agglayer-dev-ui:feature-aggkit-backend-branch-9f3c2a1b7d0e-31574163188')" \
     "${long_devui_tag:0:$SNAPSHOT_MAX_VERSION_LEN}"
 assert_fails "resolve: empty base_image fails loudly, no 'unknown' fallback" snapshot_resolve_component_version ""
 assert_fails "resolve: tagless base_image fails loudly" snapshot_resolve_component_version "ghcr.io/agglayer/agglayer"
 
 # --- snapshot_versioned_tag: version + shared unix-ts ---
 assert_eq "versioned tag: anvil" "$(snapshot_versioned_tag 'ghcr.io/foundry-rs/foundry:v1.5.1' 1755100800)" "v1.5.1-1755100800"
-assert_eq "versioned tag: aggkit" "$(snapshot_versioned_tag 'ghcr.io/agglayer/aggkit:0.11.0-rc5' 1755100800)" "0.11.0-rc5-1755100800"
-assert_fails "versioned tag: non-numeric unix_ts rejected" snapshot_versioned_tag 'ghcr.io/agglayer/aggkit:0.11.0-rc5' "not-a-number"
-assert_fails "versioned tag: empty unix_ts rejected" snapshot_versioned_tag 'ghcr.io/agglayer/aggkit:0.11.0-rc5' ""
+assert_eq "versioned tag: aggkit" "$(snapshot_versioned_tag 'ghcr.io/agglayer/aggkit:0.11.1' 1755100800)" "0.11.1-1755100800"
+assert_fails "versioned tag: non-numeric unix_ts rejected" snapshot_versioned_tag 'ghcr.io/agglayer/aggkit:0.11.1' "not-a-number"
+assert_fails "versioned tag: empty unix_ts rejected" snapshot_versioned_tag 'ghcr.io/agglayer/aggkit:0.11.1' ""
 assert_fails "versioned tag: unresolvable version still fails even with a valid ts" snapshot_versioned_tag "" 1755100800
 
 # --- Idempotent source guard ---
@@ -97,7 +97,7 @@ assert_fails "versioned tag: unresolvable version still fails even with a valid 
 # shellcheck disable=SC1090,SC1091 # script_dir is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
 source "${script_dir}/version-tag.sh"
 assert_eq "double-source is a no-op (guard held)" "${_SNAPSHOT_LIB_VERSION_TAG_SOURCED}" "1"
-assert_eq "double-source: still resolves" "$(snapshot_resolve_component_version 'ghcr.io/agglayer/aggkit:0.11.0-rc5')" "0.11.0-rc5"
+assert_eq "double-source: still resolves" "$(snapshot_resolve_component_version 'ghcr.io/agglayer/aggkit:0.11.1')" "0.11.1"
 
 echo
 if [ "${fail_count}" -gt 0 ]; then

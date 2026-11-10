@@ -140,33 +140,32 @@ DEFAULT_IMAGES = {
     # agglayer_dev_ui_aggkit_image below for why this key and that one are
     # NOT the same image.
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
-    # S5 (dev-ui-ci-snapshot plan, D4): the published GHCR image built from
-    # agglayer/agglayer-dev-ui's feat/aggkit-backend branch (PR #24), which
-    # understands the aggkit bridge REST API and is configured at runtime via
-    # a mounted /etc/agglayer-dev-ui/config.json (contract: dev-ui
-    # docs/docker.md -- nginx:alpine runtime, no Node, no config.ts support).
-    # Consumed as a published tag only -- no source build here.
+    # agglayer/agglayer-dev-ui, which understands the aggkit bridge REST API
+    # and is configured at runtime through a mounted
+    # /etc/agglayer-dev-ui/config.json (contract: dev-ui docs/docker.md --
+    # nginx:alpine runtime, no Node, no config.ts support). Consumed as a
+    # published tag only -- no source build here.
     #
     # Deliberately a SEPARATE constant from agglayer_dev_ui_image above, not
     # a bump of it: that key is also read by run_server() (bridge_ui_backend
     # "bridge_hub" mode), which mounts a rendered config.ts for a
     # Next-dev-server-style container -- a different runtime contract that
-    # this GHCR image's nginx:alpine runtime cannot serve (no Node.js, no
-    # config.ts support, and it requires config.json at a different path).
+    # this nginx:alpine runtime cannot serve (no Node.js, no config.ts
+    # support, and it requires config.json at a different path).
     # Point-bumping the shared key would silently break
     # .github/tests/additional-services.yml's bridge_hub-mode bridge_ui
-    # deployment (wired into .github/workflows/test.yml and nightly.yml) --
-    # the exact regression this step's "no behavior change to existing"
-    # acceptance criterion forbids. See
-    # src/additional_services/bridge_ui/ui.star's new run_dev_ui(), used only
+    # deployment (wired into .github/workflows/test.yml and nightly.yml).
+    # See src/additional_services/bridge_ui/ui.star's run_dev_ui(), used only
     # by the opt-in aggkit-mode dev-ui deployment (aggkit_deploy_dev_ui).
-    # K9: bumped to D0c's published image, which understands the single
-    # `aggkitProxy` string field
-    # (static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl)
-    # -- dev-ui's config schema is `.strict()` and D0c's build removed the old
-    # per-network `aggkitBridgeApis` map entirely, so it hard-rejects it. Any
-    # older tag here would fail to load the generated config.
-    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-8563dd4ba876-31732860787",
+    #
+    # The 0.1.x config schema is `.strict()` and validates the mounted config
+    # at browser start-up: it takes a single `aggkitProxy` string per mode
+    # (the per-network `aggkitBridgeApis` map was removed upstream) and
+    # requires `walletConnect`, `externalLinks` and each mode's
+    # `etaL1Minutes`/`etaL2Minutes`, all of which
+    # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl
+    # renders.
+    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.1",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     # foundry >= v1.5.0 is REQUIRED when the L1 is anvil: agglayer's settlement
     # task probes nonce inclusion with `eth_getTransactionBySenderAndNonce`

@@ -41,10 +41,9 @@ _SNAPSHOT_LIB_VERSION_TAG_SOURCED=1
 # `[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}`), which leaves enormous headroom even
 # after reserving space for a 10-digit unix timestamp plus its separating
 # dash. This cap is deliberately much tighter than that hard limit, purely
-# for human readability in the GHCR package listing: the longest real
-# upstream tag known today is agglayer-dev-ui's 53-character branch/commit/
-# run-number ref (dispatch-feat-aggkit-backend-dd070d7db256-31574163188),
-# which this cap truncates. Truncation is safe because the tag is
+# for human readability in the GHCR package listing: some upstream tags
+# (branch-, commit- or run-number-derived refs) run well past it, and this
+# cap truncates them. Truncation is safe because the tag is
 # informational only -- the LOAD-BEARING pin is the `@sha256:<digest>`
 # recorded alongside it (see apply-digests.sh), not this string, so a
 # theoretical truncation collision between two different long upstream tags
@@ -53,7 +52,7 @@ SNAPSHOT_MAX_VERSION_LEN=40
 
 # snapshot_extract_image_tag <image-ref>
 # Echo the bare tag portion of a docker image reference, e.g.
-#   ghcr.io/agglayer/aggkit:0.11.0-rc5   -> 0.11.0-rc5
+#   ghcr.io/agglayer/aggkit:0.11.1       -> 0.11.1
 #   haproxy:3.2-bookworm                 -> 3.2-bookworm
 # Fails (non-zero, stderr message, nothing echoed) if <image-ref> is empty,
 # has no explicit tag, or the only colon present belongs to a registry

@@ -17,13 +17,7 @@ deployment_stages:
 args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
-  # S2 (bridge-tracker plan): bumped to the upstream rc4 release image, same
-  # as run1 -- the L2->L2 claim readiness bug (upstream fix:
-  # https://github.com/agglayer/aggkit/pull/1761) is fixed in rc4, so the
-  # locally-built patched image is no longer needed.
-  # S2 (bridge-tracker-rc5 plan): bumped to rc5, same as run1 -- see
-  # https://github.com/agglayer/aggkit/pull/1784 for the rc4->rc5 delta.
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc8
+  # aggkit_image is left at the package default, same as run1.
   # "bridge" so this same process serves the bridge REST API (port 5577) --
   # there is no longer a separate aggkit-002-bridge service.
   aggkit_components: "aggsender,aggoracle,bridge"

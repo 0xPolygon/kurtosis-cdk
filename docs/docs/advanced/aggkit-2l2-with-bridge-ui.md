@@ -42,8 +42,8 @@ This guide sets up a **two-rollup L2 enclave** with AggKit bridge services and t
 ### Prerequisites
 
 This setup requires an AggKit image that includes both the `aggkit` and `aggkit-proxy` binaries.
-The params files below pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc5` — no local
-build is needed. See [Image Version](#image-version) for details.
+The params files below use the package default image, `ghcr.io/agglayer/aggkit:0.11.1` — no
+local build is needed. See [Image Version](#image-version) for details.
 
 ## Deployment
 
@@ -58,9 +58,8 @@ args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
 
-  # AggKit image: registry release, includes the aggkit-proxy binary and the
-  # bridge-tracker (see Image Version below)
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  # AggKit image: inherited from the package default, 0.11.1 -- it includes the
+  # aggkit-proxy binary and the bridge-tracker (see Image Version below)
 
   # AggKit components: aggsender, aggoracle and bridge on the main service
   # (the bridge REST API is served by this SAME process/container --
@@ -94,8 +93,7 @@ args:
   sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig
 
-  # Same registry image as run1
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  # Same image as run1: inherited from the package default
 
   # Create a second rollup (L2-2)
   deployment_suffix: "-002"
@@ -321,17 +319,17 @@ A single `aggkitProxy` URL fronts every network — routing to different backend
 
 ### Image Version
 
-Both params files pin the registry image `ghcr.io/agglayer/aggkit:0.11.0-rc5`. No local build is
-required — `kurtosis run` pulls it like any other image.
+Both params files use the package default image, `ghcr.io/agglayer/aggkit:0.11.1`. No local
+build is required — `kurtosis run` pulls it like any other image.
 
-`aggkit:0.11.0-rc5` bundles both the `aggkit` and `aggkit-proxy` binaries; the proxy service
+`aggkit:0.11.1` bundles both the `aggkit` and `aggkit-proxy` binaries; the proxy service
 overrides the image's `aggkit` entrypoint to run `aggkit-proxy` (see
 `src/additional_services/aggkit_proxy.star`). You can confirm both binaries are present with:
 
 ```bash
-docker run --rm ghcr.io/agglayer/aggkit:0.11.0-rc5 version
+docker run --rm ghcr.io/agglayer/aggkit:0.11.1 version
 docker run --rm --entrypoint /usr/local/bin/aggkit-proxy \
-  ghcr.io/agglayer/aggkit:0.11.0-rc5 version
+  ghcr.io/agglayer/aggkit:0.11.1 version
 ```
 
 **Why not `develop`:** an earlier iteration of this guide pinned a locally-built patched image

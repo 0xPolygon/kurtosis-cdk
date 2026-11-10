@@ -34,7 +34,6 @@ args:
   sequencer_type: anvil
   consensus_contract_type: ecdsa-multisig
 
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc9
   # "bridge" so this same process also serves the bridge REST API (port
   # 5577) -- there is no longer a separate aggkit-002-bridge service.
   aggkit_components: "aggsender,aggoracle,bridge"

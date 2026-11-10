@@ -264,7 +264,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # ${SNAPSHOT_IMAGE_PREFIX:-...}<svc>:${SNAPSHOT_IMAGE_TAG:-...} pattern
     # as docker-compose.yml) but is a no-op, by design, for agglayer/
     # aggkit-00X/aggkit-proxy-001 (their refs here are bare upstream image
-    # strings, e.g. ghcr.io/agglayer/aggkit:0.11.0-rc5 -- already a complete,
+    # strings, e.g. ghcr.io/agglayer/aggkit:0.11.1 -- already a complete,
     # non-derived reference this repo never republishes, so there is no
     # digest of OUR OWN for apply-digests.sh to pin over it).
     # ========================================================================

@@ -111,9 +111,8 @@ deliberate, not an oversight, and not a version bump of one into the other:
 is exercised by `.github/tests/additional-services.yml` (wired into `test.yml` and
 `nightly.yml`); it was deliberately left unbumped so this flavor's work does not touch
 bridge-hub mode at all. `agglayer_dev_ui_aggkit_image` is the published
-`ghcr.io/agglayer/agglayer-dev-ui:dispatch-feat-aggkit-backend-*` tag from
-`agglayer/agglayer-dev-ui`'s `feat/aggkit-backend` branch (PR #24), consumed as an
-image reference only — no source build happens in kurtosis-cdk. Deploying it is opt-in:
+`ghcr.io/agglayer/agglayer-dev-ui:0.1.1` release image, consumed as an image
+reference only — no source build happens in kurtosis-cdk. Deploying it is opt-in:
 `aggkit_deploy_dev_ui: true` (set by `params-aggkit-anvil-l2l2-run2.yml`), so every
 other `bridge_ui_backend: aggkit` deployment is unaffected by default.
 
@@ -287,8 +286,8 @@ tree actually contains):
 
 | Service(s) | Override env var | Default (bare upstream image) | Healthcheck |
 |---|---|---|---|
-| `agglayer` | `AGGLAYER_IMAGE` | recorded `agglayer` `base_image` (e.g. `ghcr.io/agglayer/agglayer:0.6.0-rc.8`) | compose-level `bash -c 'exec 3<>/dev/tcp/127.0.0.1/<grpc-port>'` TCP-connect probe (K5c) |
-| `aggkit-001` / `aggkit-002` / `aggkit-proxy-001` | `AGGKIT_IMAGE` (one var shared by all three — the proxy binary ships in the same image, entrypoint overridden) | recorded `aggkit-proxy-001` `base_image` (e.g. `ghcr.io/agglayer/aggkit:0.11.0-rc5`) | **none** |
+| `agglayer` | `AGGLAYER_IMAGE` | recorded `agglayer` `base_image` (e.g. `ghcr.io/agglayer/agglayer:0.6.2`) | compose-level `bash -c 'exec 3<>/dev/tcp/127.0.0.1/<grpc-port>'` TCP-connect probe (K5c) |
+| `aggkit-001` / `aggkit-002` / `aggkit-proxy-001` | `AGGKIT_IMAGE` (one var shared by all three — the proxy binary ships in the same image, entrypoint overridden) | recorded `aggkit-proxy-001` `base_image` (e.g. `ghcr.io/agglayer/aggkit:0.11.1`) | **none** |
 
 Two design decisions worth stating explicitly (K5/K5c), because they're easy to get
 wrong by inference:
@@ -458,15 +457,15 @@ devnet state under **your own** aggkit build rather than the pinned snapshot ver
 use `docker-compose.mounts.yml` and override `AGGKIT_IMAGE`:
 
 ```bash
-AGGKIT_IMAGE=ghcr.io/agglayer/aggkit:0.11.0-rc4 \
+AGGKIT_IMAGE=ghcr.io/agglayer/aggkit:0.11.1 \
   docker compose -f docker-compose.mounts.yml up -d --wait
 ```
 
-This seam is proven, not aspirational: K5c re-ran this exact override (rc4 against a
-bundle captured with rc5) and confirmed `aggkit-001`/`aggkit-002`/`aggkit-proxy-001`
-all come up against the mounted `./config/<svc>/` tree and reach the same healthy state
-as the un-overridden default. Point `AGGKIT_IMAGE` at a local build the same way
-aggkit's own `op-pp-2chains` e2e env points its `aggkit-001` service at `aggkit:local`
+This seam is proven, not aspirational: re-running the override against a bundle
+captured with a different aggkit release confirmed `aggkit-001`/`aggkit-002`/
+`aggkit-proxy-001` all come up against the mounted `./config/<svc>/` tree and reach the
+same healthy state as the un-overridden default. Point `AGGKIT_IMAGE` at a local build
+the same way aggkit's own `op-pp-2chains` e2e env points its `aggkit-001` service at `aggkit:local`
 — the mechanism is identical (bind-mounted config, no compose healthcheck on the
 aggkit-role services, `condition: service_started` from anything that merely needs the
 process running).
@@ -501,17 +500,18 @@ under `plans/snapshot-v2-aggkit-e2e/K6-evidence/` (`06`–`17`), including the n
 ### AggKit-side overrides
 
 **`aggkit_image`** — which upstream aggkit build the capture pipeline deploys.
-`params-aggkit-anvil-l2l2-run1.yml`/`run2.yml` already override this away from the
-package default (`ghcr.io/agglayer/aggkit:0.10.0-rc7`, `src/package_io/constants.star`)
-to `ghcr.io/agglayer/aggkit:0.11.0-rc5`:
+`params-aggkit-anvil-l2l2-run1.yml`/`run2.yml` leave this at the package default
+(`ghcr.io/agglayer/aggkit:0.11.1`, `src/package_io/constants.star`). Set it in your own
+args file to capture the state under a different build:
 
 ```yaml
 args:
-  aggkit_image: ghcr.io/agglayer/aggkit:0.11.0-rc5
+  aggkit_image: ghcr.io/agglayer/aggkit:0.11.1
 ```
 
 Confirmed live: `docker inspect` on the running `aggkit-001` container reports exactly
-that image string (`K6-evidence/07-image-override-confirmation.log`).
+the image string rendered from `aggkit_image`
+(`K6-evidence/07-image-override-confirmation.log`).
 
 **`aggkit_components`** — which aggkit sub-processes run in the same container. This
 flavor sets `"aggsender,aggoracle,bridge"` on both L2s (`run1.yml`/`run2.yml`)
@@ -572,15 +572,15 @@ duplicated here.
 ### Agglayer overrides
 
 **`agglayer_image`** — which upstream agglayer build the capture pipeline deploys
-(package default `ghcr.io/agglayer/agglayer:0.6.0-rc.8`):
+(package default `ghcr.io/agglayer/agglayer:0.6.2`):
 
 ```yaml
 args:
-  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.7
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.2
 ```
 
-Confirmed live: the running `agglayer` container's image is exactly `0.6.0-rc.7`
-(`K6-evidence/07-image-override-confirmation.log`).
+Confirmed live: the running `agglayer` container's image is exactly the string rendered
+from `agglayer_image` (`K6-evidence/07-image-override-confirmation.log`).
 
 **The `[settlement.pessimistic-proof-tx-config]` knobs (K3).** Two input args, both
 validated at Starlark time:

@@ -21,7 +21,7 @@ def test_get_agglayer_endpoint(plan):
     # compare _extract_aggkit_version's collapsed float (`version >= 0.3`).
     # That collapses "<major>.<minor>" into a single float, so "0.11" becomes
     # 0.11, which is numerically LESS than 0.3 even though minor version 11 is
-    # ordinally newer than minor version 3. ghcr.io/agglayer/aggkit:0.11.0-rc4
+    # ordinally newer than minor version 3. ghcr.io/agglayer/aggkit:0.11.0
     # is exactly the case that tripped this -- it wrongly returned "readrpc",
     # which breaks certificate settlement against agglayer. Now uses
     # _aggkit_version_gte, which parses major/minor as integers and compares
@@ -30,7 +30,7 @@ def test_get_agglayer_endpoint(plan):
         ("ghcr.io/agglayer/aggkit:0.5.0-beta1", "grpc"),
         ("ghcr.io/agglayer/aggkit:local", "grpc"),
         ("ghcr.io/agglayer/aggkit:1.0.0", "grpc"),
-        ("ghcr.io/agglayer/aggkit:0.11.0-rc4", "grpc"),  # the bug case
+        ("ghcr.io/agglayer/aggkit:0.11.0", "grpc"),  # the bug case
         ("ghcr.io/agglayer/aggkit:0.2.14", "readrpc"),
         ("ghcr.io/agglayer/aggkit:0.1", "readrpc"),
         ("ghcr.io/agglayer/aggkit:0", "readrpc"),
@@ -45,7 +45,7 @@ def test_aggkit_version_gte_legacy_bridge_addr(plan):
     # cdk-config.toml templates used to do `{{- if lt .aggkit_version "0.8" }}`
     # inside Go's text/template, comparing a value Kurtosis stringifies --
     # i.e. a LEXICOGRAPHIC string comparison, under which "0.11" < "0.8" is
-    # (wrongly) true digit-by-digit. ghcr.io/agglayer/aggkit:0.11.0-rc4 is
+    # (wrongly) true digit-by-digit. ghcr.io/agglayer/aggkit:0.11.0 is
     # exactly the case that tripped this.
     #
     # Moving the comparison into Starlark as a plain `aggkit_version < 0.8`
@@ -59,8 +59,8 @@ def test_aggkit_version_gte_legacy_bridge_addr(plan):
     # `not _aggkit_version_gte(image, 0, 8)`, so `expect_legacy` below is the
     # negation of the raw gte(0, 8) result.
     cases = [
-        ("ghcr.io/agglayer/aggkit:0.11.0-rc4", False),  # the bug case
-        ("ghcr.io/agglayer/aggkit:0.9.0-rc3", False),
+        ("ghcr.io/agglayer/aggkit:0.11.0", False),  # the bug case
+        ("ghcr.io/agglayer/aggkit:0.9.0", False),
         ("ghcr.io/agglayer/aggkit:0.7.5", True),
         ("ghcr.io/agglayer/aggkit:0.4.5", True),
         ("ghcr.io/agglayer/aggkit:0.8", False),  # boundary: not < 0.8
