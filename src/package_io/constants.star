@@ -142,3 +142,12 @@ DEFAULT_IMAGES = {
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
 }
+
+# op-node image used by default when OP Succinct is deployed. op-node v1.19.6 and later
+# no longer return `cross_unsafe_l2` from `optimism_syncStatus`, which the OP Succinct
+# proposer (v3.10.0) still requires, so every range proof fails. Move this to the
+# default op-node image once the proposer image is bumped to a release that tolerates
+# the missing field.
+OP_SUCCINCT_OP_NODE_IMAGE = (
+    "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.5"
+)
