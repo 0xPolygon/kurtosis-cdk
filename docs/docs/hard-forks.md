@@ -51,6 +51,6 @@ The OP Mainnet column is the first block at the activation time listed in the [s
 
 Checked against:
 
-- [optimism-package v2.1.0](https://github.com/agglayer/optimism-package/blob/v2.1.0/src/l2/input_parser.star)
+- [optimism-package v2.1.1](https://github.com/agglayer/optimism-package/blob/v2.1.1/src/l2/input_parser.star)
 - [op-node v1.20.1](https://github.com/ethereum-optimism/optimism/blob/op-node/v1.20.1/op-core/forks/forks.go)
 - [superchain-registry main](https://github.com/ethereum-optimism/superchain-registry/blob/main/superchain/configs/mainnet/superchain.toml)
