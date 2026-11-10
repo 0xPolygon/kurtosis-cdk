@@ -1,4 +1,7 @@
 {
+  "walletConnect": {
+    "projectId": "YOUR_PROJECT_ID_HERE"
+  },
   "externalLinks": {
     "privacyPolicy": "",
     "termsOfUse": "",
@@ -31,7 +34,8 @@
       "iconUrl": "https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/ethereum.svg",
       "networkId": 0,
       "isTestnet": true,
-      "eta": 1
+      "etaL1Minutes": 1,
+      "etaL2Minutes": 1
     }{{ range .l2_chains }},
     "{{ .chain_key }}": {
       "id": {{ .chain_id }},
@@ -46,7 +50,8 @@
       "iconUrl": "https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/katana.svg",
       "networkId": {{ .network_id }},
       "isTestnet": true,
-      "eta": 1
+      "etaL1Minutes": 1,
+      "etaL2Minutes": 1
     }{{ end }}
   },
   "appModes": {
@@ -55,6 +60,8 @@
       "devnet": {
         "label": "Devnet",
         "bridgeAddress": "{{.l1_bridge_address}}",
+        "etaL1Minutes": 1,
+        "etaL2Minutes": 1,
         "aggkitProxy": "/aggkitapi",
         "chainKeys": [
           "DEVNET_L1"{{ range .l2_chains }}, "{{ .chain_key }}"{{ end }}
