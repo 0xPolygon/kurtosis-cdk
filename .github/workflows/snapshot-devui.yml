@@ -125,8 +125,10 @@ concurrency:
 env:
   ENCLAVE_NAME: cdk
   # Matches test.yml / kurtosis-pre-run's documented pin (1.15.2 stalls the
-  # aggkit L2 bridge syncer on the agglayer sovereign/FEP stacks).
-  KURTOSIS_VERSION: 1.18.2
+  # aggkit L2 bridge syncer on the agglayer sovereign/FEP stacks). 1.18.2 also
+  # cannot read the config-version 9 file that kurtosis-pre-run writes and
+  # aborts every `kurtosis run` while creating the metrics client.
+  KURTOSIS_VERSION: 1.22.2
   # Package + tag naming both deliberately contain "snapshot" (see the
   # ONE-TIME HUMAN STEP note above).
   GHCR_IMAGE_PREFIX: ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
