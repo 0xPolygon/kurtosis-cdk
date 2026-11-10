@@ -125,7 +125,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:12.3.1",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.18.1",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.9.0-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.8.1",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.8.2",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.1",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.17.0",
     # Pinned to v3.10.0: aggkit-prover 2.2.x embeds the op-succinct-elfs from this
