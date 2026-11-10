@@ -6,7 +6,6 @@ This document draws from the following resources:
 
 - [Polygon CDK Kurtosis Package](../README.md)
 - [Custom Docker Images for Kurtosis CDK](../docker/README.md)
-- [Video guide to the Polygon CDK](https://www.youtube.com/watch?v=6ykNLEhwxIs)
 
 ## Goals
 

@@ -1,6 +1,7 @@
 HTTP_PORT_NUMBER = 8080
 
-ASSERTOOR_IMAGE = "ethpandaops/assertoor:v0.0.11"
+# Releases up to v0.1.2 cannot decode the blocks of an L1 running Gloas from genesis.
+ASSERTOOR_IMAGE = "ethpandaops/assertoor:master-49a91cd"
 
 ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE = "/config"
 
@@ -38,7 +39,7 @@ def get_assertoor_config(plan, args):
     assertoor_data = {
         "assertoor_endpoint_name": "assertoor_web_ui",
         "execution_client_url": args["l1_rpc_url"],
-        "consensus_client_url": args["l1_consensus_rpc_url"],
+        "consensus_client_url": args["l1_beacon_url"],
         "http_port_number": HTTP_PORT_NUMBER,
     }
 

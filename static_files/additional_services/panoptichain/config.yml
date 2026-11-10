@@ -21,12 +21,12 @@ providers:
         gas_limit: 21000
         gas_price_factor: 3
       accounts:
-        - "{{.l1_sender_address}}"
-        - "{{.l2_sequencer_address}}"
-        - "{{.l2_aggregator_address}}"
-        - "{{.l2_claimsponsor_address}}"
-        - "{{.l2_admin_address}}"
-        - "{{.l2_dac_address}}"
+        - address: "{{.l1_sender_address}}"
+        - address: "{{.l2_sequencer_address}}"
+        - address: "{{.l2_aggregator_address}}"
+        - address: "{{.l2_claimsponsor_address}}"
+        - address: "{{.l2_admin_address}}"
+        - address: "{{.l2_dac_address}}"
 
     - name: "L2"
       url: "{{.l2_rpc_url}}"
@@ -42,9 +42,9 @@ providers:
         gas_limit: 21000
         gas_price_factor: 3
       accounts:
-        - "{{.l2_sender_address}}"
-        - "{{.l2_admin_address}}"
-        - "{{.l2_claimsponsor_address}}"
+        - address: "{{.l2_sender_address}}"
+        - address: "{{.l2_admin_address}}"
+        - address: "{{.l2_claimsponsor_address}}"
 
 networks:
   - name: "L1"
@@ -52,7 +52,7 @@ networks:
 
   - name: "L2"
     chain_id: "{{.l2_chain_id}}"
-    polygon_zkevm: true
+    polygon_zkevm: {{.l2_polygon_zkevm}}
 
 logs:
   verbosity: "{{.log_level}}"

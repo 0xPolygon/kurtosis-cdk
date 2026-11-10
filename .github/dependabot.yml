@@ -1,0 +1,42 @@
+version: 2
+
+multi-ecosystem-groups:
+  all-deps:
+    schedule:
+      interval: weekly
+
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    patterns:
+      - "*"
+    multi-ecosystem-group: all-deps
+
+  - package-ecosystem: docker
+    directories:
+      - "/docker"
+      - "/docker/agglayer-dev-ui"
+      - "/docker/zkevm-bridge-ui"
+    patterns:
+      - "*"
+    multi-ecosystem-group: all-deps
+
+  - package-ecosystem: npm
+    directory: "/docs"
+    patterns:
+      - "*"
+    multi-ecosystem-group: all-deps
+
+  - package-ecosystem: gomod
+    directory: "/static_files/additional_services/status-checker/checks/l1-info-tree"
+    patterns:
+      - "*"
+    multi-ecosystem-group: all-deps
+
+  - package-ecosystem: pip
+    directory: "/scripts/version-matrix"
+    patterns:
+      - "*"
+    multi-ecosystem-group: all-deps

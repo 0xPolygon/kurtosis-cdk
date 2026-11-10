@@ -99,7 +99,7 @@ FORK_ID_TO_NAME = {
 }
 
 TOOLBOX_IMAGE = (
-    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
+    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.14"
 )
 
 # Anvil's built-in development mnemonic. Used as the default for the anvil L2
@@ -130,10 +130,10 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.0",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2-rc.1",
-    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.1",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.1",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2",
+    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
     # bridge_ui_backend "bridge_hub" mode only (src/additional_services/
     # bridge_ui/ui.star run_server): mounts a rendered config.ts and expects
     # a Next-dev-server-style container. Deliberately left unbumped -- see
@@ -175,9 +175,9 @@ DEFAULT_IMAGES = {
     # "assumed non-recoverable" and panics on
     # (agglayer-settlement-service/src/settlement_task.rs:543), leaving every
     # certificate stuck in `InError` even though the settlement tx itself
-    # landed on L1. See plans/dev-ui-ci-snapshot/s4b-evidence/.
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.8.1",
-    "besu_image": "hyperledger/besu:26.9.0",
+    # landed on L1.
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.9.0",
+    "besu_image": "hyperledger/besu:26.11.0",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
@@ -190,25 +190,25 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk:v0.5.4-cdk-amsterdam",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
-    "geth_image": "ethereum/client-go:v1.17.8",
-    "reth_image": "ghcr.io/paradigmxyz/reth:v2.7.0",
-    "lighthouse_image": "sigp/lighthouse:v8.3.0-rc.0",
-    "mitm_image": "mitmproxy/mitmproxy:12.2.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.17.2",
-    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.8.1-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.6.0",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.9",
-    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.6",
-    # Pinned to v3.10.0: aggkit-prover 2.2.0 embeds the op-succinct-elfs from this
+    "geth_image": "ethereum/client-go:v1.17.10",
+    "reth_image": "ghcr.io/paradigmxyz/reth:v2.10.1",
+    "lighthouse_image": "sigp/lighthouse:v8.3.3",
+    "mitm_image": "mitmproxy/mitmproxy:12.3.1",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.18.1",
+    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.9.0-cdk",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.8.2",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.1",
+    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.17.0",
+    # Pinned to v3.10.0: aggkit-prover 2.2.x embeds the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
     # match its own. Bump both together once a newer aggkit-prover ships.
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.10.0-agglayer",
-    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.9",
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.10",
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
-    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC4",
+    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC5",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:3f1a3a0",
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",

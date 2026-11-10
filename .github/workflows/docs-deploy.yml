@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: npm
           cache-dependency-path: docs/package-lock.json
 
@@ -38,7 +38,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:

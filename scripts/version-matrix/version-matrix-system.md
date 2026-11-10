@@ -20,6 +20,7 @@ The version matrix system automates the process of tracking component versions a
    - Parses `input_parser.star` for default component versions
    - Scans `.github/tests/` for test environment configurations
    - Parses the `replace` block in `kurtosis.yml` for external Kurtosis package pins
+   - Reads the L1 and OP Stack hard fork schedules (`hard_forks.py`)
    - Fetches latest release information from GitHub APIs
    - Generates machine-readable version data (`version-matrix.json`)
 
@@ -61,7 +62,7 @@ export GITHUB_TOKEN="..."
 python3 scripts/version-matrix/extract-versions.py
 
 # Generate Markdown documentation
-# File saved to docs/docs/version-matrix.md
+# Files saved to docs/docs/version-matrix.md and docs/docs/hard-forks.md
 python3 scripts/version-matrix/generate-markdown.py
 ```
 
@@ -80,9 +81,9 @@ The system tracks status types for each component version:
 
 | Status | Icon | Description |
 |--------|------|-------------|
-| **matches stable** | ✅ | Current latest release, recommended for use |
-| **newer than stable** | ⚡️ | Newer than latest release, may be pre-release or beta |
-| **behind stable** | 🚨 | Older than latest release and should be bumped |
+| **up to date** | ✅ | Current latest release, recommended for use |
+| **ahead** | ⚡️ | Newer than latest release, may be pre-release or beta |
+| **behind** | 🚨 | Older than latest release and should be bumped |
 | **pinned** | 📌 | Deliberately held back — see the reason in the matrix |
 
 ### Pinned versions
@@ -106,11 +107,25 @@ PINNED_VERSIONS = {
 Keep every reason in the same short form — `Only supports <component> <line> so
 far.` — so the status column reads consistently and stays narrow.
 
-The pin only ever downgrades a `behind stable` result. Once the pinned
+The pin only ever downgrades a `behind` result. Once the pinned
 component catches up with (or overtakes) stable, its real status is reported
 again — that is the signal to delete the entry. Pins are scoped to a single
 environment, so a component pinned in one environment still reports 🚨 in the
 others.
+
+## Default Images: Core and Additional
+
+The default images (those not already shown in a test environment) are split in
+two tables. The core images are the ones the devnet cannot start without, the L1
+clients (`CORE_IMAGES` in `extract-versions.py`); everything else is additional.
+The additional images include the databases, the observability stack and the
+helper services, declared either in `DEFAULT_IMAGES` or as `*_IMAGE` constants in
+`src/additional_services/`. They are listed in `EXTRA_IMAGES`, which says how
+each one is tracked: the latest GitHub release of its repository (mind the tag
+prefix), the last tag uploaded to Artifact Registry for images tagged with commit
+shas, or nothing when there is no upstream signal (databases, an image tagged
+`v4fixed`). A new image that is in neither `EXTRA_IMAGES` nor `SKIPPED_IMAGES`
+makes the extractor print a warning, so it cannot be left out silently.
 
 ## External Kurtosis Packages
 
@@ -141,7 +156,8 @@ by *ancestry* rather than by date: the script asks the GitHub compare API
 whether the pinned commit is ahead of or behind the latest release, because a
 commit can be authored after a release was published while still being an
 ancestor of it. The resulting distance (e.g. `14 commits behind 1.0.0`) is shown
-in the matrix. Packages deliberately held back go in `PINNED_PACKAGES`, keyed by
+in the matrix. The packages are split like the images: `CORE_PACKAGES` (the L1 and
+the L2 OP stack) first, the others under Additional. Packages deliberately held back go in `PINNED_PACKAGES`, keyed by
 package locator, using the same short reason form as `PINNED_VERSIONS`.
 
 ### Release-tracked vs head-tracked packages
@@ -153,9 +169,41 @@ What "latest" means follows from how a package is pinned in `kurtosis.yml`:
 - A **commit** pin (`@6dd3f26…`) is head-tracked: compared against the default
   branch tip, and the matrix labels the column `HEAD (<sha>)` so a sha is never
   presented as a stable version. We pin commits when upstream ships faster than
-  it tags, so the latest tag would report `⚡️ newer than stable` forever.
+  it tags, so the latest tag would report `⚡️ ahead` forever.
 
-A head-tracked pin reports `🚨 behind stable` with its commit distance as soon as
+A head-tracked pin reports `🚨 behind` with its commit distance as soon as
 HEAD moves past it, so the nightly bump PR follows the branch tip: one refreshed
 PR per upstream change rather than a pin drifting unnoticed. A pin ahead of HEAD
-(an unmerged or rewritten commit) reports `⚡️ newer than stable`.
+(an unmerged or rewritten commit) reports `⚡️ ahead`.
+
+## Hard Forks
+
+`hard_forks.py` compares what the devnet activates with what the pinned clients
+support, for two domains. The result is written to its own page,
+`docs/docs/hard-forks.md`, by the same `generate-markdown.py`:
+
+| Domain   | Devnet schedule                                                                         | Checked against                                                    |
+|----------|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| L1       | ethereum-package `minimal` preset defaults, overridden in `src/l1/ethereum.star`        | geth `params/config.go`, lighthouse built-in mainnet `config.yaml` |
+| OP Stack | optimism-package `*_time_offset` defaults, overridden in `src/package_io/op_input_parser.star` | the mainline forks of op-node `op-core/forks/forks.go`             |
+
+Upstream files are read at the refs this repo pins (image tags, the `kurtosis.yml`
+package pins), never at upstream HEAD. The tables therefore only change when a
+pin or the package config changes: a fork that is merely announced or scheduled
+upstream never makes the nightly diff non-empty. A failed fetch fails the script
+instead of rendering a fork as unsupported.
+
+| Status                  | Icon | Description                                                               |
+|-------------------------|------|---------------------------------------------------------------------------|
+| enabled                 | ✅   | Activated by the devnet and known to the pinned clients                   |
+| not enabled             | 💤   | Known to the pinned clients, but the devnet leaves it off                 |
+| not supported yet       | ⏳   | Exposed by the package, but not known to a pinned client yet              |
+| enabled but unsupported | ❌   | Configured by the devnet, but a pinned client ignores the setting         |
+
+An OP Stack fork left unset is omitted from the op-deployer intent, so it is not
+scheduled at genesis: set its `*_time_offset` to enable it. The OP Mainnet column
+links the block of each activation, computed from the superchain registry (`main`) timestamps. Fork rows never use 🚨, so the bump
+workflow leaves them alone: enabling a fork is a decision, not a version bump.
+The L1 code is shared with kurtosis-pos's copy of `hard_forks.py`: keep both in
+sync. A new L1 fork needs its EL name in `L1_EL_FORKS`, or its geth column reads
+`—`.

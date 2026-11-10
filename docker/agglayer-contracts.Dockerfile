@@ -1,17 +1,19 @@
-FROM golang:1.24 AS polycli-builder
+FROM golang:1.27.3 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
-ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.97" # 2025-10-29
+ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.123" # 2026-10-22
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cli.git . \
   && git checkout ${POLYCLI_TAG_OR_COMMIT_SHA} \
   && make build
 
 
-FROM node:22-bookworm
+# Node 26 breaks the contracts deploy scripts: they load yargs 16 via `yargs/yargs`, an
+# extensionless CJS file that Node 26 parses as ESM. Stay on Node 24 until upstream bumps yargs.
+FROM node:26.13.0-bookworm
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
-ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v12.2.0" # 2025-10-30
+ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v12.2.3" # 2026-03-11
 ARG FOUNDRY_VERSION="v1.4.4" # 2025-10-30
 
 # STEP 1: Download agglayer contracts dependencies and compile contracts.
@@ -40,5 +42,5 @@ RUN apt-get update \
   && cp /root/.foundry/bin/* /usr/local/bin \
   && pip3 install --no-cache-dir --break-system-packages flask flask_wtf gunicorn
 
-# The `node` user (uid 1000) is created by the node:22-bookworm base image.
+# The `node` user (uid 1000) is created by the node base image.
 USER 1000

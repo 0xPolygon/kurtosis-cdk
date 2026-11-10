@@ -1,10 +1,18 @@
 logLevel: info
 database:
   evmJsonRpcCache:
-    driver: memory
+    connectors:
+      - id: memory-cache
+        driver: memory
+    policies:
+      - network: "*"
+        method: "*"
+        finality: finalized
+        connector: memory-cache
+        ttl: 0
 server:
   httpHostV4: 0.0.0.0
-  httpPort: {{.erpc_rpc_port}}
+  httpPortV4: {{.erpc_rpc_port}}
 metrics:
   enabled: true
   hostV4: 0.0.0.0
@@ -19,7 +27,7 @@ projects:
           timeout:
             duration: 30s
           retry:
-            maxCount: 3
+            maxAttempts: 3
             delay: 500ms
             backoffMaxDelay: 10s
             backoffFactor: 0.3
@@ -38,7 +46,7 @@ projects:
           timeout:
             duration: 15s
           retry:
-            maxCount: 2
+            maxAttempts: 2
             delay: 1000ms
             backoffMaxDelay: 10s
             backoffFactor: 0.3

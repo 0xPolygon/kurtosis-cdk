@@ -47,14 +47,14 @@ jobs:
         run: |
           echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
-          sudo apt install -y kurtosis-cli=1.18.2
+          sudo apt install -y kurtosis-cli=1.22.2
           kurtosis analytics disable
 
       - name: Bump pins
         id: claude
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        uses: anthropics/claude-code-action@8cf3482550831fb35a4fc3fbf7ca139cf8028b4c # v1.0.233
+        uses: anthropics/claude-code-action@4845bacbb38b3c4b15d948f035349786f678e068 # v1.0.267
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           # Read-only: the PR is opened below with another app's token.
@@ -62,7 +62,7 @@ jobs:
           prompt: |
             Read .claude/skills/update-version-matrix/SKILL.md and follow it in CI mode
             for ${{ github.repository }}: regenerate the matrix to find the drift and bump
-            what is behind stable. Return the PR title and body, or an empty title if
+            what is behind. Return the PR title and body, or an empty title if
             nothing was bumped. List every drifted row in `bumped` or `skipped`.
             Run each shell command as its own call, with no pipe, `;`, `&&`, `$(...)` or
             env prefix: compound commands are denied.
@@ -75,7 +75,7 @@ jobs:
       - name: Get app token
         id: app-token
         if: fromJSON(steps.claude.outputs.structured_output || '{"title":""}').title != ''
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           app-id: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_ID }}
           private-key: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_PRIVATE_KEY }}
@@ -99,14 +99,6 @@ jobs:
           commit-message: ${{ fromJSON(steps.claude.outputs.structured_output).title }}
           title: ${{ fromJSON(steps.claude.outputs.structured_output).title }}
           body: ${{ fromJSON(steps.claude.outputs.structured_output).body }}
-
-      # claude.yml answers this bot's @claude comments with a review.
-      - name: Ask Claude to review
-        if: contains(fromJSON('["created","updated"]'), steps.pr.outputs.pull-request-operation)
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
-        run: gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body "@claude please review"
 
       # Looked up rather than read from the step above, which is skipped when
       # nothing new was bumped while an earlier bump PR is still open.

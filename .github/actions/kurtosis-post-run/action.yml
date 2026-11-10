@@ -87,10 +87,26 @@ runs:
       if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
       shell: bash
       run: |
+        max_lines=50
+        max_line_length=500
         kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep RUNNING | grep -v "Status:" | awk '{print $2 "--" $1}' |
           while read -r container; do
+            # The rpc fuzzers log every fuzzed request with its (often huge) result and expected
+            # failures, so their logs always match and can flood the job log for tens of minutes.
+            if [[ "${container}" == *rpc-fuzzer* ]]; then
+              echo "Skipping logs for ${container}"
+              echo "------------------------------"
+              echo
+              continue
+            fi
             echo "Checking logs for ${container}"
-            if docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]|Failed to extract database schema, assuming empty, error: IO error: No such file or directory" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic"; then
+            matches="$(docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]|Failed to extract database schema, assuming empty, error: IO error: No such file or directory" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic" | cut -c "1-${max_line_length}" || true)"
+            if [[ -n "${matches}" ]]; then
+              count="$(wc -l <<<"${matches}")"
+              if [[ "${count}" -gt "${max_lines}" ]]; then
+                echo "Showing the last ${max_lines} of ${count} matching lines (see the enclave dump for the rest)."
+              fi
+              tail -n "${max_lines}" <<<"${matches}"
               echo "❌ Errors found in container logs!"
               echo "::warning title=${container}::Errors found in container logs"
             else

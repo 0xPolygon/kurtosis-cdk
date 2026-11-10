@@ -1,13 +1,13 @@
-FROM golang:1.23 AS polycli-builder
+FROM golang:1.27.3 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
-ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
+ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.123" # 2026-10-22
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cli.git . \
   && git checkout ${POLYCLI_TAG_OR_COMMIT_SHA} \
   && make build
 
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 ARG FOUNDRY_VERSION="v1.3.6"
@@ -27,5 +27,5 @@ RUN apt-get update \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
   && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
-  && ln -s /root/.foundry/bin/* /usr/local/bin/ \
+  && cp --dereference /root/.foundry/bin/* /usr/local/bin/ \
   && rm -fr /root/.foundry/versions/*

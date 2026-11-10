@@ -33,3 +33,26 @@
 code .token.comment, pre code span:has(.token.comment) {
   display: none;
 }
+
+/* Let tables fill the content column instead of shrinking to their content. */
+.markdown table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Same width for the name column in every table; the others share the rest. */
+.markdown table th:first-child {
+  width: 20%;
+}
+
+/* Package names are long module paths: give them most of the width. They are
+   the last tables of the version matrix page. */
+.markdown #kurtosis-packages ~ table th:first-child {
+  width: 45%;
+}
+
+/* Wider page so tables with many columns and links stay readable. */
+:root {
+  --ifm-container-width-xl: 1800px;
+}
