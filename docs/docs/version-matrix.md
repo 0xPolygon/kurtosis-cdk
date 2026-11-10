@@ -50,7 +50,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
 | op-node | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | ✅ up to date |
 | op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ up to date |
-| op-reth | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | ✅ up to date |
+| op-reth | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
 ### cdk-opreth-sovereign-pessimistic
@@ -66,7 +66,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
 | op-node | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | ✅ up to date |
 | op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ up to date |
-| op-reth | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | ✅ up to date |
+| op-reth | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
 ### cdk-opreth-zkrollup
@@ -82,7 +82,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
 | op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
 | op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | 📌 pinned — op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2). |
-| op-reth | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | [2.8.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.1) | ✅ up to date |
+| op-reth | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | ✅ up to date |
 | op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.13.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.13.0-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
