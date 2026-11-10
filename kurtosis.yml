@@ -13,7 +13,7 @@ description: |
 # `scripts/version-matrix/verify-package-pins.py` fails CI if a version is
 # pinned inline in a `.star` file, or if an entry here is missing a version.
 replace:
-  github.com/agglayer/optimism-package: github.com/agglayer/optimism-package@v2.1.0  # 2026-11-06
+  github.com/agglayer/optimism-package: github.com/agglayer/optimism-package@v2.1.1  # 2026-11-10
   github.com/ethpandaops/ethereum-package: github.com/ethpandaops/ethereum-package@5795b77e65235ad223d4d3b413b2739190bf60cc  # 2026-10-27, ahead of v6.1.0
   github.com/kurtosis-tech/prometheus-package: github.com/kurtosis-tech/prometheus-package@f3402ebad8cffe98eef990e41ca863f7e8746c21  # 2026-06-24
   github.com/kurtosis-tech/grafana-package: github.com/kurtosis-tech/grafana-package@c8ff0b52d25deb0bc4ec95971dcf25b2fca11287  # 2025-03-31

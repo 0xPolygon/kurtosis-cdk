@@ -211,7 +211,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 
 | Package | Pinned version | Latest stable version | Status |
 |---------|----------------|-----------------------|--------|
-| [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.1.0](https://github.com/agglayer/optimism-package/releases/tag/v2.1.0) | [v2.1.0](https://github.com/agglayer/optimism-package/releases/tag/v2.1.0) | ✅ up to date |
+| [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | ✅ up to date |
 | [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [5795b77e6523](https://github.com/ethpandaops/ethereum-package/tree/5795b77e65235ad223d4d3b413b2739190bf60cc) | [HEAD (5795b77e6523)](https://github.com/ethpandaops/ethereum-package/tree/5795b77e65235ad223d4d3b413b2739190bf60cc) | ✅ up to date |
 
 ### Additional
