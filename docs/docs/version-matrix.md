@@ -184,6 +184,7 @@ Everything else: databases, observability, utility images and the status checker
 |-----------|-------------------------------|-----------------------|--------|
 | agglayer-dashboard | v4fixed | N/A | N/A |
 | agglayer-dev-ui | 844bfbc | 844bfbc | ✅ up to date |
+| agglayer-dev-ui-aggkit | [0.1.1](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.1) | [0.1.1](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.1) | ✅ up to date |
 | agglogger | bf1f8c1 | bf1f8c1 | ✅ up to date |
 | arpeggio | v0.0.1 | N/A | N/A |
 | assertoor | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | 📌 pinned — v0.1.2 cannot decode Gloas blocks of the local L1, pinned to a master build until a release does. |
