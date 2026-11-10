@@ -106,7 +106,8 @@ esac
 # plain JSON file.
 decode_dump_state() {
     local hex_file="$1" out_file="$2"
-    local magic decoder
+    local magic
+    local -a decoder
 
     # Strip the 0x prefix in place.
     tail -c +3 "$hex_file" | tr -d '\n' > "$hex_file.stripped"
@@ -114,32 +115,24 @@ decode_dump_state() {
 
     magic=$(head -c 4 "$hex_file")
 
+    # xxd is preferred because it needs no interpreter; python3 is the
+    # fallback for environments where xxd is not installed.
     if command -v xxd &> /dev/null; then
-        decoder="xxd_decode"
+        decoder=(xxd -r -p)
     elif command -v python3 &> /dev/null; then
-        decoder="python_decode"
+        decoder=(python3 -c 'import sys
+with open(sys.argv[1]) as f:
+    sys.stdout.buffer.write(bytes.fromhex(f.read().strip()))')
     else
         log "ERROR: neither 'xxd' nor 'python3' available to decode the anvil state dump" >&2
         return 1
     fi
 
     if [ "$magic" = "1f8b" ]; then
-        "$decoder" "$hex_file" | gzip -dc > "$out_file"
+        "${decoder[@]}" "$hex_file" | gzip -dc > "$out_file"
     else
-        "$decoder" "$hex_file" > "$out_file"
+        "${decoder[@]}" "$hex_file" > "$out_file"
     fi
-}
-
-# shellcheck disable=SC2317 # invoked indirectly via "$decoder" in decode_dump_state
-xxd_decode() {
-    xxd -r -p "$1"
-}
-
-# shellcheck disable=SC2317 # invoked indirectly via "$decoder" in decode_dump_state
-python_decode() {
-    python3 -c 'import sys
-with open(sys.argv[1]) as f:
-    sys.stdout.buffer.write(bytes.fromhex(f.read().strip()))' "$1"
 }
 
 # capture_anvil_state <container> <host_port> <out_json> -> block number on stdout
