@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run ports.sh shell unit tests
         run: ./snapshot/scripts/lib/ports_test.sh
@@ -519,7 +519,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
