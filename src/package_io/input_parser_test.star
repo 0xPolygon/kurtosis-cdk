@@ -608,3 +608,167 @@ def test_parse_args_agglayer_settlement_policy_rejects_invalid(plan):
         lambda: input_parser.parse_args(plan, user_args),
         "Unsupported agglayer_settlement_policy",
     )
+
+
+def _aggkit_ui_user_args(extra_args):
+    return _with_args(
+        _minimal_anvil_user_args(),
+        {
+            "additional_services": ["aggkit_proxy", "bridge_ui"],
+            "bridge_ui_backend": "aggkit",
+            "aggkit_proxy_url": "http://aggkit-proxy-001:8080",
+        }
+        | extra_args,
+    )
+
+
+def test_parse_args_bridge_ui_backend_happy_path(plan):
+    user_args = _aggkit_ui_user_args(
+        {
+            "aggkit_deploy_dev_ui": True,
+            "bridge_ui_l2_rpc_urls": [
+                {
+                    "path_suffix": "-001",
+                    "url": "http://l2-anvil-001:8545",
+                    "chain_id": 20201,
+                    "network_id": 1,
+                },
+                {"path_suffix": "-002", "url": "http://l2-anvil-002:8545"},
+            ],
+            "aggkit_proxy_bridge_urls": [
+                {"network_id": 0, "bridge_url": "http://aggkit-001:5577"},
+            ],
+            "aggkit_proxy_rpc_urls": [
+                {"network_id": 0, "rpc_url": "http://anvil-001:8545"},
+            ],
+            "agglayer_extra_rollups": [
+                {
+                    "network_id": 2,
+                    "op_el_rpc_url": "http://l2-anvil-002:8545",
+                    "sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
+                },
+            ],
+        }
+    )
+    (_, args, _) = input_parser.parse_args(plan, user_args)
+    expect.eq(args["bridge_ui_backend"], "aggkit")
+
+
+def test_parse_args_bridge_ui_backend_rejects_invalid(plan):
+    user_args = _with_args(_minimal_anvil_user_args(), {"bridge_ui_backend": "bogus"})
+    expect.fails(
+        lambda: input_parser.parse_args(plan, user_args),
+        "Invalid bridge_ui_backend",
+    )
+
+
+def test_parse_args_aggkit_only_args_need_the_aggkit_backend(plan):
+    for extra_args, message in [
+        ({"aggkit_proxy_url": "http://aggkit-proxy-001:8080"}, "aggkit_proxy_url"),
+        ({"aggkit_deploy_dev_ui": True}, "aggkit_deploy_dev_ui"),
+    ]:
+        user_args = _with_args(_minimal_anvil_user_args(), extra_args)
+        expect.fails(
+            lambda ua=user_args: input_parser.parse_args(plan, ua),
+            message + " is only used with bridge_ui_backend",
+        )
+
+
+def test_parse_args_aggkit_proxy_url_must_be_plain_http(plan):
+    for bad_url in [
+        "https://aggkit-proxy-001:8080",
+        "aggkit-proxy-001:8080",
+        "http://aggkit-proxy-001:8080/",
+    ]:
+        user_args = _aggkit_ui_user_args({"aggkit_proxy_url": bad_url})
+        expect.fails(
+            lambda ua=user_args: input_parser.parse_args(plan, ua),
+            "aggkit_proxy_url must",
+        )
+
+
+def test_parse_args_aggkit_backend_needs_a_bridge_api(plan):
+    user_args = {
+        "args": {
+            "sequencer_type": constants.SEQUENCER_TYPE.cdk_erigon,
+            "consensus_contract_type": constants.CONSENSUS_TYPE.rollup,
+            "additional_services": ["bridge_ui"],
+            "bridge_ui_backend": "aggkit",
+        },
+    }
+    expect.fails(
+        lambda: input_parser.parse_args(plan, user_args),
+        "needs an aggkit bridge REST API",
+    )
+
+    user_args["args"]["aggkit_proxy_url"] = "http://aggkit-proxy-001:8080"
+    input_parser.parse_args(plan, user_args)
+
+
+def test_parse_args_bridge_ui_l2_rpc_urls_validation(plan):
+    good = {"path_suffix": "-001", "url": "http://l2-anvil-001:8545"}
+    for entries, message in [
+        ([{"url": "http://x:8545"}], "non-empty string 'path_suffix'"),
+        ([{"path_suffix": "-001"}], "non-empty string 'url'"),
+        ([{"path_suffix": "001", "url": "http://x:8545"}], "must start with '-'"),
+        ([good, good], "duplicate path_suffix"),
+        (
+            [{"path_suffix": "-001", "url": "https://x:8545"}],
+            "must start with 'http://'",
+        ),
+        ([good | {"chain_id": 1}], "both chain_id and network_id"),
+        ([good | {"network_id": 1}], "both chain_id and network_id"),
+        ([good | {"chain_id": "1", "network_id": 1}], "integer 'chain_id'"),
+        (["http://l2-anvil-001:8545"], "must be a mapping"),
+    ]:
+        user_args = _aggkit_ui_user_args({"bridge_ui_l2_rpc_urls": entries})
+        expect.fails(lambda ua=user_args: input_parser.parse_args(plan, ua), message)
+
+
+def test_parse_args_aggkit_proxy_maps_validation(plan):
+    for arg_name, url_key in [
+        ("aggkit_proxy_bridge_urls", "bridge_url"),
+        ("aggkit_proxy_rpc_urls", "rpc_url"),
+    ]:
+        for entries, message in [
+            ([{url_key: "http://x:1"}], "integer 'network_id'"),
+            ([{"network_id": 0, "bridge": "http://x:1"}], "non-empty string"),
+            ([{"network_id": -1, url_key: "http://x:1"}], "integer 'network_id'"),
+            (
+                [
+                    {"network_id": 0, url_key: "http://x:1"},
+                    {"network_id": 0, url_key: "http://y:1"},
+                ],
+                "duplicate network_id",
+            ),
+            ([{"network_id": 0, url_key: "x:1"}], "must be an http"),
+        ]:
+            user_args = _aggkit_ui_user_args({arg_name: entries})
+            expect.fails(
+                lambda ua=user_args: input_parser.parse_args(plan, ua), message
+            )
+
+
+def test_parse_args_agglayer_extra_rollups_validation(plan):
+    good = {
+        "network_id": 2,
+        "op_el_rpc_url": "http://l2-anvil-002:8545",
+        "sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
+    }
+    for entries, message in [
+        (
+            [{"network_id": 2, "rpc_url": "http://x:8545", "sequencer_address": "0x1"}],
+            "op_el_rpc_url",
+        ),
+        ([good | {"network_id": 1}], "integer 'network_id' >= 2"),
+        ([good | {"network_id": "2"}], "integer 'network_id' >= 2"),
+        ([good, good], "duplicate network_id"),
+        (
+            [{k: v for k, v in good.items() if k != "sequencer_address"}],
+            "sequencer_address",
+        ),
+    ]:
+        user_args = _with_args(
+            _minimal_anvil_user_args(), {"agglayer_extra_rollups": entries}
+        )
+        expect.fails(lambda ua=user_args: input_parser.parse_args(plan, ua), message)

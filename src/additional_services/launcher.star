@@ -1,6 +1,19 @@
 constants = import_module("../package_io/constants.star")
 
 
+def order_additional_services(additional_services):
+    """Put aggkit_proxy first: bridge_ui in aggkit mode routes to the
+    aggkit-proxy-001 service by name, so it has to exist before the proxy is
+    configured, whatever the order of the list."""
+    if constants.ADDITIONAL_SERVICES.aggkit_proxy not in additional_services:
+        return additional_services
+    return [constants.ADDITIONAL_SERVICES.aggkit_proxy] + [
+        svc
+        for svc in additional_services
+        if svc != constants.ADDITIONAL_SERVICES.aggkit_proxy
+    ]
+
+
 def launch(
     plan,
     args,
@@ -12,7 +25,9 @@ def launch(
     l1_context,
     l2_context,
 ):
-    for svc in args.get("additional_services", []):
+    additional_services = order_additional_services(args.get("additional_services", []))
+
+    for svc in additional_services:
         if svc == constants.ADDITIONAL_SERVICES.agglogger:
             import_module("./agglogger.star").run(
                 plan,

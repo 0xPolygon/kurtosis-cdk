@@ -656,6 +656,8 @@ def parse_args(plan, user_args):
     validate_additional_services(args.get("additional_services", []))
 
     validate_bridge_ui_backend(args.get("bridge_ui_backend"))
+    validate_bridge_ui_args(args)
+    validate_agglayer_extra_rollups(args.get("agglayer_extra_rollups", []))
 
     # Determine fork id from the agglayer contracts image tag.
     zkevm_prover_image = args.get("zkevm_prover_image")
@@ -1178,3 +1180,143 @@ def validate_bridge_ui_backend(bridge_ui_backend):
                 bridge_ui_backend, VALID_BRIDGE_UI_BACKENDS
             )
         )
+
+
+def validate_bridge_ui_args(args):
+    """Validate the bridge_ui and aggkit_proxy arguments, which are rendered into
+    the haproxy and aggkit-proxy configs without further checks."""
+    backend = args.get("bridge_ui_backend")
+    proxy_url = args.get("aggkit_proxy_url", "")
+    if backend == constants.BRIDGE_UI_BACKEND.bridge_hub:
+        if proxy_url:
+            fail(
+                "aggkit_proxy_url is only used with bridge_ui_backend '{}'".format(
+                    constants.BRIDGE_UI_BACKEND.aggkit
+                )
+            )
+        if args.get("aggkit_deploy_dev_ui", False):
+            fail(
+                "aggkit_deploy_dev_ui is only used with bridge_ui_backend '{}'".format(
+                    constants.BRIDGE_UI_BACKEND.aggkit
+                )
+            )
+
+    if proxy_url:
+        _validate_http_url("aggkit_proxy_url", proxy_url)
+
+    if (
+        backend == constants.BRIDGE_UI_BACKEND.aggkit
+        and constants.ADDITIONAL_SERVICES.bridge_ui
+        in args.get("additional_services", [])
+        and not proxy_url
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon
+        and args["consensus_contract_type"]
+        not in [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
+        ]
+    ):
+        fail(
+            "bridge_ui_backend 'aggkit' needs an aggkit bridge REST API: set aggkit_proxy_url, or use a pessimistic or ecdsa-multisig consensus_contract_type."
+        )
+
+    l2_rpc_urls = args.get("bridge_ui_l2_rpc_urls", [])
+    _validate_list_of_dicts("bridge_ui_l2_rpc_urls", l2_rpc_urls)
+    path_suffixes = []
+    for entry in l2_rpc_urls:
+        path_suffix = _required_string("bridge_ui_l2_rpc_urls", entry, "path_suffix")
+        if not path_suffix.startswith("-") or len(path_suffix) < 2:
+            fail(
+                "bridge_ui_l2_rpc_urls: path_suffix '{}' must start with '-' and be followed by a name, e.g. '-001'".format(
+                    path_suffix
+                )
+            )
+        if path_suffix in path_suffixes:
+            fail(
+                "bridge_ui_l2_rpc_urls: duplicate path_suffix '{}'".format(path_suffix)
+            )
+        path_suffixes.append(path_suffix)
+        _validate_http_url(
+            "bridge_ui_l2_rpc_urls url",
+            _required_string("bridge_ui_l2_rpc_urls", entry, "url"),
+        )
+        if ("chain_id" in entry) != ("network_id" in entry):
+            fail(
+                "bridge_ui_l2_rpc_urls: entry '{}' must set both chain_id and network_id, or neither".format(
+                    path_suffix
+                )
+            )
+        for key in ["chain_id", "network_id"]:
+            if key in entry:
+                _required_int("bridge_ui_l2_rpc_urls", entry, key, 0)
+
+    for arg_name, url_key in [
+        ("aggkit_proxy_bridge_urls", "bridge_url"),
+        ("aggkit_proxy_rpc_urls", "rpc_url"),
+    ]:
+        entries = args.get(arg_name, [])
+        _validate_list_of_dicts(arg_name, entries)
+        network_ids = []
+        for entry in entries:
+            network_id = _required_int(arg_name, entry, "network_id", 0)
+            if network_id in network_ids:
+                fail("{}: duplicate network_id {}".format(arg_name, network_id))
+            network_ids.append(network_id)
+            _validate_url(
+                "{} {}".format(arg_name, url_key),
+                _required_string(arg_name, entry, url_key),
+            )
+
+
+def validate_agglayer_extra_rollups(extra_rollups):
+    _validate_list_of_dicts("agglayer_extra_rollups", extra_rollups)
+    network_ids = []
+    for entry in extra_rollups:
+        # network_id 1 is the rollup this run deploys.
+        network_id = _required_int("agglayer_extra_rollups", entry, "network_id", 2)
+        if network_id in network_ids:
+            fail("agglayer_extra_rollups: duplicate network_id {}".format(network_id))
+        network_ids.append(network_id)
+        _validate_url(
+            "agglayer_extra_rollups op_el_rpc_url",
+            _required_string("agglayer_extra_rollups", entry, "op_el_rpc_url"),
+        )
+        _required_string("agglayer_extra_rollups", entry, "sequencer_address")
+
+
+def _validate_list_of_dicts(arg_name, entries):
+    if type(entries) != "list":
+        fail("{} must be a list, got {}".format(arg_name, type(entries)))
+    for entry in entries:
+        if type(entry) != "dict":
+            fail("{}: every entry must be a mapping, got {}".format(arg_name, entry))
+
+
+def _required_string(arg_name, entry, key):
+    value = entry.get(key)
+    if type(value) != "string" or not value:
+        fail("{}: every entry needs a non-empty string '{}'".format(arg_name, key))
+    return value
+
+
+def _required_int(arg_name, entry, key, minimum):
+    value = entry.get(key)
+    if type(value) != "int" or value < minimum:
+        fail(
+            "{}: every entry needs an integer '{}' >= {}".format(arg_name, key, minimum)
+        )
+    return value
+
+
+def _validate_url(name, url):
+    if not (url.startswith("http://") or url.startswith("https://")):
+        fail("{} must be an http(s) URL, got '{}'".format(name, url))
+
+
+# The bridge_ui haproxy config strips the 'http://' prefix to build its
+# server lines, so these URLs must be plain http without a trailing slash.
+def _validate_http_url(name, url):
+    if not url.startswith("http://"):
+        fail("{} must start with 'http://', got '{}'".format(name, url))
+    if url.endswith("/"):
+        fail("{} must not end with '/', got '{}'".format(name, url))
