@@ -753,6 +753,10 @@ def _aggkit_version_gte(aggkit_image, major, minor):
 
     parts = ver.split(".")
 
+    # Non-numeric tags (CI builds named after a branch) are treated like "local".
+    if not parts[0].isdigit():
+        return True
+
     v_major = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 0
     v_minor = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
     return (v_major, v_minor) >= (major, minor)

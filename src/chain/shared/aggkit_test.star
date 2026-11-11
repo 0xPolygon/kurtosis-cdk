@@ -49,6 +49,16 @@ def test_aggkit_version_gte_legacy_bridge_addr(plan):
         expect.eq(result, expect_legacy)
 
 
+def test_aggkit_version_gte_non_numeric_tags_are_latest(plan):
+    for image in [
+        "ghcr.io/agglayer/aggkit:develop_2026_08_03_13_20_56c849c",
+        "ghcr.io/agglayer/aggkit:feat-some-branch_20260803",
+        "ghcr.io/agglayer/aggkit:latest",
+    ]:
+        expect.eq(aggkit._aggkit_version_gte(image, 0, 11), True)
+        expect.eq(aggkit._get_agglayer_endpoint(image), "grpc")
+
+
 def test_has_component(plan):
     cases = [
         ("aggsender,aggoracle", "bridge", False),
