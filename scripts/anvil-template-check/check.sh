@@ -158,6 +158,8 @@ assert_present_nonempty "${aggkit_out}" "GlobalExitRootAddr"
 assert_present_nonempty "${aggkit_out}" "BridgeAddr"
 assert_present_nonempty "${aggkit_out}" "GlobalExitRootL2"
 assert_present_nonempty "${aggkit_out}" "SovereignRollupAddr"
+# The fixture's trigger_cert_mode ("ASAP") must reach the rendered config.
+assert_contains "${aggkit_out}" '^TriggerCertMode = "ASAP"$' "TriggerCertMode rendered from the trigger_cert_mode argument"
 # aggkit_legacy_bridge_addr=false in the fixture -> the deprecated
 # polygonBridgeAddr key must NOT render.
 assert_not_contains "${aggkit_out}" '^polygonBridgeAddr = ' "deprecated polygonBridgeAddr key (aggkit_legacy_bridge_addr fixture=false)"
