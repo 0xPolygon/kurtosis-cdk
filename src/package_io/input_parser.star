@@ -679,6 +679,7 @@ def parse_args(plan, user_args):
         "deploy_agglayer": deployment_stages.get(
             "deploy_agglayer", False
         ),  # hacky but works fine for now.
+        "deploy_op_succinct": deployment_stages.get("deploy_op_succinct", False),
     }
 
     # Parse and sanity check op args

@@ -7,7 +7,10 @@ def _sort_dict_by_values(d):
     return {k: v for k, v in sorted_items}
 
 
-def _default_participant(log_format=constants.LOG_FORMAT.json):
+def _default_participant(
+    log_format=constants.LOG_FORMAT.json,
+    op_node_image=constants.DEFAULT_IMAGES.get("op_node_image"),
+):
     return _sort_dict_by_values(
         {
             "el": {
@@ -21,7 +24,7 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
             },
             "cl": {
                 "type": "op-node",
-                "image": constants.DEFAULT_IMAGES.get("op_node_image"),
+                "image": op_node_image,
                 "extra_params": [
                     "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14 and greater
                     # This devnet runs a fast L1 (default 2s slots), but op-node's L1 head HTTP poll
@@ -43,12 +46,17 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
     )
 
 
-def _default_chain(log_format=constants.LOG_FORMAT.json):
+def _default_chain(
+    log_format=constants.LOG_FORMAT.json,
+    op_node_image=constants.DEFAULT_IMAGES.get("op_node_image"),
+):
     return _sort_dict_by_values(
         {
             "participants": {
-                "sequencer1": _default_participant(log_format) | {"sequencer": True},
-                "rpc1": _default_participant(log_format) | {"sequencer": "sequencer1"},
+                "sequencer1": _default_participant(log_format, op_node_image)
+                | {"sequencer": True},
+                "rpc1": _default_participant(log_format, op_node_image)
+                | {"sequencer": "sequencer1"},
             },
             "batcher_params": _sort_dict_by_values(
                 {
@@ -90,11 +98,14 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
     )
 
 
-def _default_args(log_format=constants.LOG_FORMAT.json):
+def _default_args(
+    log_format=constants.LOG_FORMAT.json,
+    op_node_image=constants.DEFAULT_IMAGES.get("op_node_image"),
+):
     return _sort_dict_by_values(
         {
             "chains": {
-                "001": _default_chain(log_format),
+                "001": _default_chain(log_format, op_node_image),
             },
             "op_contract_deployer_params": _sort_dict_by_values(
                 {
@@ -120,7 +131,14 @@ DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
 
 def parse_args(plan, args, op_args):
     log_format = args.get("log_format")
-    default_op_args = _default_args(log_format)
+
+    # OP Succinct cannot read the sync status of newer op-node releases, so its
+    # deployments default to the newest compatible one. An image set explicitly
+    # by the user still takes precedence.
+    op_node_image = constants.DEFAULT_IMAGES.get("op_node_image")
+    if args.get("deploy_op_succinct", False):
+        op_node_image = constants.OP_SUCCINCT_OP_NODE_IMAGE
+    default_op_args = _default_args(log_format, op_node_image)
 
     # Get L1 network configuration
     external_l1_network_params = _get_l1_config(plan, args)
@@ -130,7 +148,7 @@ def parse_args(plan, args, op_args):
         op_args = dict(
             default_op_args | DEFAULT_NON_NATIVE_ARGS
         )  # create a mutable copy
-        op_args["chains"] = _parse_chains(op_args["chains"], log_format)
+        op_args["chains"] = _parse_chains(op_args["chains"], log_format, op_node_image)
         source = op_args.pop("source")
         predeployed_contracts = op_args.pop("predeployed_contracts")
         return _sort_dict_by_values(
@@ -146,7 +164,7 @@ def parse_args(plan, args, op_args):
     for k, v in (default_op_args | DEFAULT_NON_NATIVE_ARGS).items():
         if k in op_args:
             if k == "chains":
-                op_args[k] = _parse_chains(op_args[k], log_format)
+                op_args[k] = _parse_chains(op_args[k], log_format, op_node_image)
             elif type(v) == type({}):
                 # Apply defaults
                 for kk, vv in v.items():
@@ -174,8 +192,12 @@ def parse_args(plan, args, op_args):
     )
 
 
-def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
-    default_op_chain = _default_chain(log_format)
+def _parse_chains(
+    chains,
+    log_format=constants.LOG_FORMAT.json,
+    op_node_image=constants.DEFAULT_IMAGES.get("op_node_image"),
+):
+    default_op_chain = _default_chain(log_format, op_node_image)
 
     if len(chains.keys()) == 0:
         return {"001": default_op_chain}
@@ -186,7 +208,7 @@ def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
         for kk, vv in default_op_chain.items():
             if kk in c:
                 if kk == "participants":
-                    c[kk] = _parse_participants(c[kk], log_format)
+                    c[kk] = _parse_participants(c[kk], log_format, op_node_image)
                 else:
                     # Apply defaults
                     for kkk, vvv in default_op_chain[kk].items():
@@ -202,11 +224,15 @@ def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
     return sorted_chains
 
 
-def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
-    default_participant = _default_participant(log_format)
+def _parse_participants(
+    participants,
+    log_format=constants.LOG_FORMAT.json,
+    op_node_image=constants.DEFAULT_IMAGES.get("op_node_image"),
+):
+    default_participant = _default_participant(log_format, op_node_image)
 
     if len(participants.keys()) == 0:
-        default_chain = _default_chain(log_format)
+        default_chain = _default_chain(log_format, op_node_image)
         default_participants = default_chain.get("participants")
         return default_participants
 
