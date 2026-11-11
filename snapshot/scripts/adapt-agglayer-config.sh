@@ -53,17 +53,21 @@ log "  ✓ Updated L1 RPC endpoints to use 'geth' hostname"
 sed -i 's|^\(\s*\)\([0-9]\+\s*=\s*"http://cdk-erigon-rpc\)|# NOTE: L2 RPC not included in snapshot - uncomment when L2 is available\n\1# \2|g' "$CONFIG_FILE"
 log "  ✓ Commented out L2 RPC references (L2 not included in L1-only snapshot)"
 
-# 3. Add gas price configuration for settlement
-# This ensures settlement transactions have sufficient gas fees to be mined on L1
-# The L1 geth default miner.gasprice is 1000000 wei, so we need at least that
-if ! grep -q '\[outbound\.rpc\.settle\.gas-price\]' "$CONFIG_FILE"; then
+# 3. Add gas price configuration for settlement, for agglayer versions that
+# read [outbound.rpc.settle] (the section is rendered only for those; from
+# agglayer 0.6.0-rc.7 on the settlement knobs live under
+# [settlement.pessimistic-proof-tx-config] and this step does not apply).
+# This ensures settlement transactions have sufficient gas fees to be mined
+# on L1. The L1 geth default miner.gasprice is 1000000 wei, so we need at
+# least that.
+GAS_PRICE_ADDED=false
+if grep -q '\[outbound\.rpc\.settle\.gas-price\]' "$CONFIG_FILE"; then
+    log "  ✓ Gas price configuration already exists, skipping"
+elif grep -q '\[outbound\.rpc\.settle\]' "$CONFIG_FILE"; then
     log "Adding gas price configuration to [outbound.rpc.settle]..."
-
-    # Find the [outbound.rpc.settle] section and add gas-price config after it
-    if grep -q '\[outbound\.rpc\.settle\]' "$CONFIG_FILE"; then
-        # Add the gas-price subsection after the settle section settings
-        sed -i '/^\[outbound\.rpc\.settle\]/,/^\[/ {
-            /gas-multiplier-factor/a\
+    # Add the gas-price subsection after the settle section settings
+    sed -i '/^\[outbound\.rpc\.settle\]/,/^\[/ {
+        /gas-multiplier-factor/a\
 \
 # Gas price configuration for settlement transactions\
 # Ensures fees are high enough to be accepted by L1 miners\
@@ -71,13 +75,11 @@ if ! grep -q '\[outbound\.rpc\.settle\.gas-price\]' "$CONFIG_FILE"; then
 floor = "1gwei"        # 1 gwei minimum (L1 default miner.gasprice is 0.001 gwei)\
 ceiling = "100gwei"    # 100 gwei maximum\
 multiplier = 1000      # 1.0x multiplier (scaled by 1000)
-        }' "$CONFIG_FILE"
-        log "  ✓ Added gas price configuration with floor=1gwei"
-    else
-        log "  WARNING: [outbound.rpc.settle] section not found, skipping gas price config"
-    fi
+    }' "$CONFIG_FILE"
+    GAS_PRICE_ADDED=true
+    log "  ✓ Added gas price configuration with floor=1gwei"
 else
-    log "  ✓ Gas price configuration already exists, skipping"
+    log "  ✓ No [outbound.rpc.settle] section (agglayer >= 0.6.0-rc.7), no gas price configuration to add"
 fi
 
 # 4. Add a header comment explaining the adaptation
@@ -90,7 +92,13 @@ cat > "$CONFIG_FILE.tmp" << 'EOF'
 #
 # - L1 RPC endpoints changed to use 'geth' hostname (from Kurtosis service name)
 # - L2 RPC endpoints commented out (L2 stack not included in L1-only snapshot)
+EOF
+if [ "$GAS_PRICE_ADDED" = true ]; then
+    cat >> "$CONFIG_FILE.tmp" << 'EOF'
 # - Gas price floor configured (1 gwei minimum to ensure L1 miners accept txs)
+EOF
+fi
+cat >> "$CONFIG_FILE.tmp" << 'EOF'
 # - All contract addresses and keys preserved from original deployment
 #
 # To use with L2:
@@ -115,10 +123,8 @@ log "  L1 WS URL: $(grep 'ws-node-url.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*=
 log "  Rollup Manager: $(grep 'rollup-manager-contract.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*= *//')"
 log "  GER Contract: $(grep 'polygon-zkevm-global-exit-root-v2-contract.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*= *//')"
 
-# Check if gas price floor was added
-GAS_FLOOR=$(grep -A5 '\[outbound\.rpc\.settle\.gas-price\]' "$CONFIG_FILE" | grep '^floor' | sed 's/^.*= *//' | sed 's/ *#.*//' | tr -d '"' || echo "not set")
-if [ "$GAS_FLOOR" != "not set" ]; then
-    log "  Gas price floor: $GAS_FLOOR"
+if [ "$GAS_PRICE_ADDED" = true ]; then
+    log "  Gas price floor: 1gwei"
 fi
 
 exit 0
