@@ -304,11 +304,11 @@ printf '%s\n' "$COMPOSE_CONTENT" > "$WORK_COMPOSE"
 
 # The patched compose file must resolve, and every republished image must
 # appear in it exactly as <repo>@<digest>. Validated before touching the real
-# files -- never leave a broken docker-compose.yml behind. --profile devui
+# files -- never leave a broken docker-compose.yml behind. --profile '*'
 # includes the profile-gated dev-ui service.
 check_resolved_images() {
     local compose="$1" file="$2" mode="$3" resolved expected missing
-    if ! resolved=$(docker compose --profile devui -f "$compose" config --format json); then
+    if ! resolved=$(docker compose --profile '*' -f "$compose" config --format json); then
         echo "ERROR: patched $file fails 'docker compose config' -- not writing it" >&2
         exit 1
     fi
