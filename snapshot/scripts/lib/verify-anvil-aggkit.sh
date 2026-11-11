@@ -511,7 +511,7 @@ run_anvil_aggkit_verification() {
         RETENTION=$(grep -E '^RetentionPeriod[[:space:]]*=' "$PROXY_CFG/config.toml" | sed -E 's/.*"([^"]*)".*/\1/')
         log_info "  RetentionPeriod = $RETENTION"
         RETENTION_SECONDS=$(duration_to_seconds "$RETENTION")
-        log_info "  = ${RETENTION_SECONDS:-unparseable} seconds"
+        log_info "  = ${RETENTION_SECONDS:-unparsable} seconds"
         if [ -n "$RETENTION_SECONDS" ] && [ "$RETENTION_SECONDS" -ge 1800 ]; then
             RETENTION_OK=true
         fi
