@@ -1018,8 +1018,8 @@ fund_addresses() {
     EXPECT_URL="http://op-el-1-op-reth-op-node$DEPLOYMENT_SUFFIX:8545"
 
     # Set private key based on RPC_URL.
-    # An explicit FUNDER_MNEMONIC always wins: the anvil L2 prefunds its dev
-    # accounts from l2_anvil_mnemonic and its RPC URL never matches EXPECT_URL.
+    # An explicit FUNDER_MNEMONIC always wins: the anvil L2's RPC URL never
+    # matches EXPECT_URL.
     if [[ -n "$FUNDER_MNEMONIC" ]]; then
         if ! private_key=$(cast wallet private-key --mnemonic "$FUNDER_MNEMONIC" 2>/dev/null) || [[ -z "$private_key" ]]; then
             echo "Error: Failed to derive private key from FUNDER_MNEMONIC."

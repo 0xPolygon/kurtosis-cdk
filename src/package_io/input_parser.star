@@ -410,11 +410,6 @@ DEFAULT_ROLLUP_ARGS = {
     "l2_anvil_block_time": 1,
     # l2_anvil_slots_in_epoch: number of slots in an epoch
     "l2_anvil_slots_in_epoch": 1,
-    # The mnemonic used to prefund the anvil L2 dev accounts. It is also passed
-    # as FUNDER_MNEMONIC when funding the kurtosis role accounts on the anvil
-    # L2. Keep the default: contracts.sh's initialize_rollup hard-codes this
-    # very mnemonic when funding sovereignadmin/aggoracle/claimsponsor on L2.
-    "l2_anvil_mnemonic": constants.ANVIL_DEFAULT_MNEMONIC,
     # The amount of ether prefunded to each anvil L2 dev account.
     "l2_anvil_balance": 1000000000,
     # Max time the test_runner bridge bats wait for an L2->L1 claim to become ready
@@ -1103,22 +1098,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         # is nonsense.
         if args["l2_anvil_block_time"] < 1 or args["l2_anvil_slots_in_epoch"] < 1:
             fail("l2_anvil_block_time / l2_anvil_slots_in_epoch must be >= 1")
-
-        # V6: the mnemonic is both the chain's prefund source and the L2 funder.
-        if not args["l2_anvil_mnemonic"]:
-            fail("l2_anvil_mnemonic must not be empty")
-
-        # V7: initialize_rollup funds l2_sovereignadmin/aggoracle/claimsponsor on
-        # the L2 with a HARD-CODED "test test ... junk" key
-        # (static_files/contracts/contracts.sh, the `private_key=$(cast wallet
-        # private-key --mnemonic 'test test ...')` line). That mnemonic must
-        # therefore be the one anvil prefunded the chain from, or those three
-        # `cast send` calls run from a zero-balance account and fail deep inside
-        # the contracts service. Reject up front instead.
-        if args["l2_anvil_mnemonic"] != constants.ANVIL_DEFAULT_MNEMONIC:
-            fail(
-                "l2_anvil_mnemonic must currently stay at the default anvil dev mnemonic: contracts.sh's initialize_rollup hard-codes that same mnemonic when funding the sovereignadmin/aggoracle/claimsponsor accounts on the anvil L2, so a custom value leaves the funder with a zero balance."
-            )
 
     # agglayer_settle_confirmations must be a sane (non-negative, non-zero)
     # number of L1 block confirmations to wait for.

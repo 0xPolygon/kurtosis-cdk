@@ -131,7 +131,7 @@ def run(plan, args={}):
                 args,
                 contracts_util.get_l2_addresses_to_fund(args),
                 args["op_el_rpc_url"],
-                funder_mnemonic=args["l2_anvil_mnemonic"],
+                funder_mnemonic=constants.ANVIL_DEFAULT_MNEMONIC,
             )
         elif sequencer_type == constants.SEQUENCER_TYPE.op_reth:
             # Deploy OP Stack infrastructure

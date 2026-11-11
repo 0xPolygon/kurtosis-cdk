@@ -97,16 +97,6 @@ def test_parse_args_anvil_rejects_nonpositive_block_time_or_slots(plan):
         )
 
 
-def test_parse_args_anvil_requires_mnemonic(plan):
-    # V6: the mnemonic is both the chain's prefund source and the L2 funder;
-    # an empty one must be rejected rather than producing an unfundable chain.
-    user_args = _with_args(_minimal_anvil_user_args(), {"l2_anvil_mnemonic": ""})
-    expect.fails(
-        lambda: input_parser.parse_args(plan, user_args),
-        "l2_anvil_mnemonic must not be empty",
-    )
-
-
 def test_parse_args_anvil_deployment_stage_coupling(plan):
     # V2: the anvil L2 node is launched inside the deploy_agglayer_contracts_on_l1
     # stage (main.star), because initialize_rollup needs a live L2. Disabling
@@ -555,23 +545,6 @@ def test_parse_args_anvil_l1_rejects_op_reth(plan):
             },
         ),
         "cannot be combined with sequencer_type 'op-reth'",
-    )
-
-
-def test_parse_args_anvil_rejects_custom_mnemonic(plan):
-    # V7: contracts.sh's initialize_rollup hard-codes the default anvil dev
-    # mnemonic when funding sovereignadmin/aggoracle/claimsponsor on the L2, so
-    # a custom l2_anvil_mnemonic leaves that funder with a zero balance and the
-    # three `cast send` calls fail deep inside the contracts service.
-    user_args = _with_args(
-        _minimal_anvil_user_args(),
-        {
-            "l2_anvil_mnemonic": "custom custom custom custom custom custom custom custom custom custom custom custom"
-        },
-    )
-    expect.fails(
-        lambda: input_parser.parse_args(plan, user_args),
-        "must currently stay at the default anvil dev mnemonic",
     )
 
 

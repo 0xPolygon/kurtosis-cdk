@@ -113,8 +113,7 @@ def fund_addresses(plan, args, contract_addresses, rpc_url, funder_mnemonic=None
 
     # An explicit funder mnemonic takes precedence over both the hard-coded
     # optimism-package mnemonic and L1_PREALLOCATED_MNEMONIC. Used by the anvil
-    # L2, whose prefunded dev accounts derive from l2_anvil_mnemonic and whose
-    # RPC URL never matches the op-reth EXPECT_URL in contracts.sh.
+    # L2, whose RPC URL never matches the op-reth EXPECT_URL in contracts.sh.
     if funder_mnemonic:
         env_vars["FUNDER_MNEMONIC"] = funder_mnemonic
 

@@ -40,7 +40,7 @@ def run(plan, args, genesis_artifact):
         + " --balance "
         + str(args["l2_anvil_balance"])
         + ' --mnemonic "'
-        + args["l2_anvil_mnemonic"]
+        + constants.ANVIL_DEFAULT_MNEMONIC
         + '"'
         + " --init "
         + GENESIS_PATH
