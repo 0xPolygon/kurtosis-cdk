@@ -62,8 +62,15 @@ log() {
 
 log "Starting container discovery for enclave: $ENCLAVE_NAME"
 
+# Enclave UUID (short) for an exact enclave name: the NAME column is compared
+# whole, so enclave "cdk" does not match "cdk-old".
+enclave_uuid_short() {
+    kurtosis enclave ls | awk -v name="$1" 'NR > 1 && $2 == name { print $1; exit }'
+}
+
 # Validate enclave exists
-if ! kurtosis enclave ls | grep -q "$ENCLAVE_NAME"; then
+ENCLAVE_UUID_SHORT=$(enclave_uuid_short "$ENCLAVE_NAME")
+if [ -z "$ENCLAVE_UUID_SHORT" ]; then
     log "ERROR: Enclave '$ENCLAVE_NAME' not found"
     log "Available enclaves:"
     kurtosis enclave ls | tail -n +2 | awk '{print "  - " $2}'
@@ -71,7 +78,6 @@ if ! kurtosis enclave ls | grep -q "$ENCLAVE_NAME"; then
 fi
 
 # Get enclave UUID (short and full versions)
-ENCLAVE_UUID_SHORT=$(kurtosis enclave ls | grep "$ENCLAVE_NAME" | awk '{print $1}')
 log "Enclave UUID (short): $ENCLAVE_UUID_SHORT"
 
 # Find any container from this enclave to get the full UUID
@@ -147,8 +153,6 @@ component_json() {
           entrypoint: $entrypoint, cmd: $cmd, ports: $ports}'
 }
 
-NOT_FOUND_JSON='{"found": false}'
-
 # eth_chainId (decimal) for an anvil container, or null if unreachable.
 anvil_chain_id() {
     local container="$1"
@@ -208,8 +212,8 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
 
         # aggkit-<prefix>--<hash>, NOT aggkit-proxy-<prefix>--<hash>: excluded
         # by anchoring the kurtosis hash suffix directly after the numeric
-        # prefix. This same container now also serves the bridge REST API
-        # (--components=...,bridge) -- there is no separate -bridge sibling.
+        # prefix. This container also serves the bridge REST API
+        # (--components=...,bridge), as listed in the anvil params files.
         aggkit=$(find_containers "^aggkit-$prefix$KURTOSIS_SUFFIX_RE" | head -1)
 
         if [ -z "$aggkit" ]; then
@@ -237,37 +241,38 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     log "Found agglayer: $AGGLAYER_CONTAINER"
     AGGLAYER_JSON=$(component_json "$AGGLAYER_CONTAINER")
 
-    # ---- aggkit-proxy (proxy,tracker) --------------------------------------
+    # ---- aggkit-proxy (proxy,tracker; mandatory) -----------------------------
+    # The bundle is exactly nine services (L1 anvil, two L2 anvils, two
+    # aggkit, agglayer, aggkit-proxy, haproxy, dev-ui), and the build, the
+    # compose generator and the verification all need every one of them: a
+    # missing component is an error here instead of a "null" path later.
     AGGKIT_PROXY_CONTAINER=$(find_containers "^aggkit-proxy-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
-    if [ -n "$AGGKIT_PROXY_CONTAINER" ]; then
-        log "Found aggkit-proxy: $AGGKIT_PROXY_CONTAINER"
-        AGGKIT_PROXY_JSON=$(component_json "$AGGKIT_PROXY_CONTAINER")
-    else
-        log "WARNING: aggkit-proxy not found (dev-ui tracker routes will be unavailable)"
-        AGGKIT_PROXY_JSON="$NOT_FOUND_JSON"
+    if [ -z "$AGGKIT_PROXY_CONTAINER" ]; then
+        log "ERROR: aggkit-proxy (aggkit-proxy-00X) not found in enclave $ENCLAVE_NAME"
+        exit 1
     fi
+    log "Found aggkit-proxy: $AGGKIT_PROXY_CONTAINER"
+    AGGKIT_PROXY_JSON=$(component_json "$AGGKIT_PROXY_CONTAINER")
 
-    # ---- bridge-ui haproxy (the single CORS origin) ------------------------
+    # ---- bridge-ui haproxy (the single CORS origin; mandatory) ----------------
     HAPROXY_CONTAINER=$(find_containers "^agglayer-dev-ui-proxy-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
-    if [ -n "$HAPROXY_CONTAINER" ]; then
-        log "Found bridge-ui haproxy: $HAPROXY_CONTAINER"
-        HAPROXY_JSON=$(component_json "$HAPROXY_CONTAINER")
-    else
-        log "WARNING: bridge-ui haproxy not found (dev-ui has no CORS origin)"
-        HAPROXY_JSON="$NOT_FOUND_JSON"
+    if [ -z "$HAPROXY_CONTAINER" ]; then
+        log "ERROR: bridge-ui haproxy (agglayer-dev-ui-proxy-00X) not found in enclave $ENCLAVE_NAME"
+        exit 1
     fi
+    log "Found bridge-ui haproxy: $HAPROXY_CONTAINER"
+    HAPROXY_JSON=$(component_json "$HAPROXY_CONTAINER")
 
-    # ---- dev-ui ------------------------------------------------------------
+    # ---- dev-ui (mandatory) ---------------------------------------------------
     # "^agglayer-dev-ui-[0-9]{3}--" cannot match the haproxy above, whose name
     # is "agglayer-dev-ui-proxy-00X--<hash>".
     DEV_UI_CONTAINER=$(find_containers "^agglayer-dev-ui-[0-9]{3}$KURTOSIS_SUFFIX_RE" | head -1)
-    if [ -n "$DEV_UI_CONTAINER" ]; then
-        log "Found dev-ui: $DEV_UI_CONTAINER"
-        DEV_UI_JSON=$(component_json "$DEV_UI_CONTAINER")
-    else
-        log "WARNING: dev-ui container not found"
-        DEV_UI_JSON="$NOT_FOUND_JSON"
+    if [ -z "$DEV_UI_CONTAINER" ]; then
+        log "ERROR: dev-ui (agglayer-dev-ui-00X) not found in enclave $ENCLAVE_NAME"
+        exit 1
     fi
+    log "Found dev-ui: $DEV_UI_CONTAINER"
+    DEV_UI_JSON=$(component_json "$DEV_UI_CONTAINER")
 
     NETWORK_NAME=$(docker inspect "$L1_ANVIL" --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}')
 

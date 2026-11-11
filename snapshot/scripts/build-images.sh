@@ -107,6 +107,20 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         exit 1
     fi
 
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # shellcheck disable=SC1090,SC1091 # SCRIPT_DIR is resolved at runtime relative to this file (SC1090 on older shellcheck, SC1091 on newer)
+    source "$SCRIPT_DIR/lib/ports.sh"
+
+    # Every component below is baked into the bundle, so a discovery that
+    # did not find one is an error here, not a path that dies later on a copy
+    # from a "null" directory.
+    for component in agglayer aggkit_proxy haproxy dev_ui; do
+        if [ "$(jq -r --arg c "$component" '.[$c].found // false' "$DISCOVERY_JSON")" != "true" ]; then
+            log "ERROR: discovery.json reports no '$component' component; the anvil-aggkit bundle needs it"
+            exit 1
+        fi
+    done
+
     # Healthchecks have to run inside images that ship no shell (aggkit is
     # distroless) and no HTTP client (foundry, agglayer and haproxy all lack
     # curl/wget). A single statically linked busybox is COPYed in from this
@@ -141,7 +155,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     #
     #   --dump-state <path>   L1 only; the snapshot already holds the dump
     #   --init <path>         L2 only; genesis is superseded by the dump, and
-    #                         it is what makes --dump-state impossible (S2/S4b)
+    #                         it is what makes --dump-state impossible
     #   --timestamp <value>   L2 only; `$(date +%s)` at enclave-launch time,
     #                         meaningless once real blocks are loaded
     #
@@ -159,8 +173,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             -e 's/[[:space:]]+$//')
         derived="$derived --load-state $state_path"
 
-        # Fail loudly rather than bake a subtly wrong node. Every one of these
-        # has bitten this plan at least once.
+        # Fail loudly rather than bake a subtly wrong node.
         # NOTE: this function's stdout is captured by the caller
         # (RESTORE_CMD=$(derive_anvil_restore_cmd ...)), so every diagnostic
         # below MUST go to stderr -- `log` writes to stdout, and an error
@@ -191,7 +204,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     #
     # The base image is read from the captured metadata, never hardcoded:
     # foundry v1.4.3 lacks eth_getTransactionBySenderAndNonce, which makes
-    # agglayer panic and permanently mark certificates InError (S4b). Pinning
+    # agglayer panic and permanently mark certificates InError. Pinning
     # a literal tag here would silently reintroduce that in the restored
     # snapshot while the source enclave looked healthy.
     # ------------------------------------------------------------------
@@ -218,7 +231,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             exit 1
         fi
 
-        # S9b: the dump MUST carry historical states. Without them a restored
+        # The dump MUST carry historical states. Without them a restored
         # anvil serves blocks/txs/receipts/logs for the whole captured history
         # but only ONE state (the tip), so every eth_call / eth_getCode /
         # eth_getTransactionCount pinned to a pre-snapshot block returns
@@ -235,7 +248,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         if [ -z "$HIST_COUNT" ] || [ "$HIST_COUNT" = "null" ] || [ "$HIST_COUNT" -eq 0 ]; then
             log "ERROR: $STATE_FILE has no historical_states -- it was captured with"
             log "       anvil_dumpState() instead of anvil_dumpState(true). A bundle built"
-            log "       from it cannot settle certificates after restore (S9b). Re-capture."
+            log "       from it cannot settle certificates after restore. Re-capture."
             exit 1
         fi
         log "  $SVC: $HIST_COUNT historical states, $(du -h "$OUTPUT_DIR/$STATE_FILE" | cut -f1) state file"
@@ -335,37 +348,24 @@ DOCKER_EOF
     record_image "$AGGLAYER_SVC" "${IMAGE_PREFIX}${AGGLAYER_SVC}:$TAG" "$AGGLAYER_IMAGE"
 
     # ------------------------------------------------------------------
-    # NO RESTORE-TIME CONFIG ADAPTATION (S9b).
+    # NO RESTORE-TIME CONFIG ADAPTATION.
     #
-    # Every captured config is baked in verbatim. S8 used to repoint aggkit's
-    # `rollupCreationBlockNumber` / `RollupCreationBlockL1` at the L1 snapshot
-    # block, because a restored `anvil --load-state` carried blocks, txs,
-    # receipts and logs for the whole captured history but only ONE state (the
-    # tip), so aggkit's `[Validator.LerQuerierConfig]` eth_call at the rollup's
-    # creation block died with `BlockOutOfRangeError`.
-    #
-    # That rewrite was a point-patch on one symptom of a general defect: the
-    # SAME limitation made agglayer panic in
-    # crates/agglayer-settlement-service/src/settlement_task.rs when it probed
-    # its settlement signer's nonce inclusion at the pre-snapshot block holding
-    # that wallet's earlier tx -- which no config rewrite could reach, and which
-    # meant L2->L1 exits could never settle on a restored bundle.
-    #
-    # extract-state.sh now captures with `anvil_dumpState(true)`, so the
-    # restored chain serves state reads at EVERY captured height. Both symptoms
-    # disappear at the source, the configs stay faithful to the enclave, and
-    # aggkit reads the rollup's genuine creation-time LER instead of an
-    # "equal only while settlement_free" substitute.
+    # Every captured config is baked in verbatim. extract-state.sh captures
+    # with `anvil_dumpState(true)`, so the restored chain serves state reads
+    # at EVERY captured height: aggkit's eth_call at the rollup's creation
+    # block and agglayer's settlement-signer nonce probe at a pre-snapshot
+    # block both work without rewriting `rollupCreationBlockNumber` /
+    # `RollupCreationBlockL1` or any other setting. The configs stay faithful
+    # to the enclave.
     # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # aggkit x N
     #
-    # Each aggkit-00X process now runs --components=...,bridge itself (K1:
-    # the aggkit-00X-bridge sibling was merged into the main process/image),
-    # so its healthcheck must prove BOTH that the process booted AND that the
-    # bridge REST API is actually synced -- not just the pprof-only check
-    # that was previously sufficient for the non-bridge sibling.
+    # Each aggkit-00X process runs --components=...,bridge itself (the anvil
+    # params files list `bridge` among aggkit_components), so its healthcheck
+    # must prove BOTH that the process booted AND that the bridge REST API is
+    # actually synced.
     # ------------------------------------------------------------------
     log "Building aggkit images..."
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
@@ -377,10 +377,10 @@ DOCKER_EOF
         mkdir -p "$BUILD_DIR"
         cp "$OUTPUT_DIR/config/$SVC/config.toml" "$BUILD_DIR/"
         cp "$OUTPUT_DIR/config/$SVC"/*.keystore "$BUILD_DIR/"
-        # Baked verbatim -- see the "NO RESTORE-TIME CONFIG ADAPTATION"
-        # note above (S9b).
+        # Baked verbatim -- see the "NO RESTORE-TIME CONFIG ADAPTATION" note
+        # above.
 
-        # The bar S9/dev-ui hold: is_synced AND is_active on BOTH l1_info and
+        # The bar dev-ui holds: is_synced AND is_active on BOTH l1_info and
         # l2_info, hence the >= 2 occurrences.
         cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
 #!/bin/sh
@@ -459,13 +459,11 @@ DOCKER_EOF
 
     cat > "$BUILD_DIR/healthcheck.sh" << HC_EOF
 #!/bin/sh
-# Two real routes must answer 200 through the proxy: the aggkit REST route
-# dev-ui's bridge suite uses, and the default backend (the dev-ui itself).
-# The JSON-RPC routes are POST-only and cannot be probed with busybox wget.
+# The aggkit REST route dev-ui's bridge suite uses must answer 200 through
+# the proxy. The JSON-RPC routes are POST-only and cannot be probed with
+# busybox wget, and the captured haproxy.cfg has no default backend.
 BB=/snapshot/busybox
-\$BB wget -q -O /dev/null "http://127.0.0.1:80/aggkitapi/bridge/v1/sync-status?network_id=${FIRST_L2_NETWORK_ID}" || exit 1
-\$BB wget -q -O /dev/null "http://127.0.0.1:80/" || exit 1
-exit 0
+exec \$BB wget -q -O /dev/null "http://127.0.0.1:80/aggkitapi/bridge/v1/sync-status?network_id=${FIRST_L2_NETWORK_ID}"
 HC_EOF
 
     cat > "$BUILD_DIR/Dockerfile" << DOCKER_EOF
@@ -489,7 +487,26 @@ DOCKER_EOF
     log "Building dev-ui image..."
     BUILD_DIR="$OUTPUT_DIR/images/$DEVUI_SVC"
     mkdir -p "$BUILD_DIR"
-    cp "$OUTPUT_DIR/config/$DEVUI_SVC/config.json" "$BUILD_DIR/"
+
+    # The dev-ui runs in a browser on the host, so the rpcUrl of every chain
+    # has to be reachable from there: the captured config carries the
+    # enclave-internal DNS names. Point each chain at its haproxy route on the
+    # published proxy port (loopback, as the compose files bind it; the
+    # route is picked by chain id from the captured chain list).
+    DEVNET_PROXY_BASE="http://127.0.0.1:$(snapshot_fixed_port devnet_proxy)"
+    if ! jq --slurpfile meta "$STATE_METADATA" --arg base "$DEVNET_PROXY_BASE" '
+            ($meta[0].chains) as $captured
+            | .chains |= with_entries(
+                .value as $c
+                | ([$captured[] | select(.chain_id == $c.id)] | first) as $m
+                | if $m == null then error("no captured chain has id \($c.id)")
+                  else .value.rpcUrl = ($base + (if $m.role == "l1" then "/l1rpc" else "/l2rpc-" + $m.prefix end))
+                  end)' \
+            "$OUTPUT_DIR/config/$DEVUI_SVC/config.json" > "$BUILD_DIR/config.json"; then
+        log "ERROR: could not point the dev-ui chains at the proxy routes (see above)"
+        exit 1
+    fi
+    log "  dev-ui chains now use: $(jq -r '[.chains[] | .rpcUrl] | join(" ")' "$BUILD_DIR/config.json")"
 
     cat > "$BUILD_DIR/healthcheck.sh" << 'HC_EOF'
 #!/bin/sh
