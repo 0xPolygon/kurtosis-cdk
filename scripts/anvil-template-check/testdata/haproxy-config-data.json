@@ -1,0 +1,8 @@
+{
+  "agglayer_dev_ui_url": "",
+  "aggkit_backends": [],
+  "bridge_hub_api_url": "bridge-hub-api-001:8080",
+  "l1_rpc_url": "anvil-001:8545",
+  "l2_rpc_backends": [],
+  "l2_rpc_url": "l2-anvil-001:8545"
+}

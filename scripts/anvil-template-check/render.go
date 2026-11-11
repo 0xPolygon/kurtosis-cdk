@@ -2,13 +2,15 @@
 // real Go text/template (the same engine Kurtosis's plan.render_templates
 // uses) against a fixed JSON data fixture, and writes the result to stdout.
 //
-// This exists to give the anvil-L2 template branches (S4/S4b of the
-// dev-ui-ci-snapshot plan: aggkit/config.toml, agglayer/config.toml,
-// zkevm-bridge-service/config.toml) a FAST, hermetic regression check that
-// does not require a live kurtosis enclave: check.sh feeds this the
-// checked-in testdata/*.json fixtures (captured once from a real anvil-L2
-// enclave render, see plans/dev-ui-ci-snapshot/s15-evidence/) and asserts on
-// the rendered output.
+// This gives the anvil-L2 template branches (aggkit/config.toml,
+// agglayer/config.toml, zkevm-bridge-service/config.toml and the haproxy and
+// aggkit-proxy templates) a fast, hermetic regression check that does not
+// require a live kurtosis enclave: check.sh feeds this the checked-in
+// testdata/*.json fixtures and asserts on the rendered output.
+//
+// Rendering is strict (missingkey=error): a key the template reads but the
+// fixture lacks is an error instead of the literal text "<no value>", so a
+// template that grows a new key forces the fixture to grow with it.
 //
 // Usage: go run render.go <template-path> <data-json-path>
 package main
@@ -62,7 +64,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	tmpl, err := template.New("cfg").Parse(string(tmplBytes))
+	tmpl, err := template.New("cfg").Option("missingkey=error").Parse(string(tmplBytes))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "template parse error: %v\n", err)
 		os.Exit(1)
