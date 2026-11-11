@@ -70,7 +70,9 @@ Options:
   --flavor <FLAVOR>      Snapshot flavor: default | anvil-aggkit
                          (default: default -- geth/lighthouse L1)
   --skip-verify          Skip automated verification step
-  --skip-seed            anvil-aggkit only: do not seed dev-ui fixtures
+  --skip-seed            anvil-aggkit only: do not seed dev-ui fixtures. The
+                         bundle then has no e2e wallet, so verify.sh fails its
+                         bridge round trip: combine with --skip-verify
   --erc20-address <ADDR> anvil-aggkit only: reuse this ERC20 instead of
                          deploying a fresh one
   --keep-intermediates   Keep artifacts/, datadirs/, images/, metadata/ and
