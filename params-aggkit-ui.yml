@@ -15,6 +15,8 @@ args:
   agg_sender_validator_total_number: 1
   agg_sender_multisig_threshold: 1
 
+  aggkit_components: "aggsender,aggoracle,bridge"
+
   additional_services:
     - bridge_spammer
     - bridge_ui
