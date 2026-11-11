@@ -138,6 +138,14 @@ EOF
     exit 0
 }
 
+# need_value <option> <argc>: an option that takes a value must have one.
+need_value() {
+    if [ "$2" -lt 2 ]; then
+        log_error "Option $1 requires a value"
+        exit 1
+    fi
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -145,10 +153,12 @@ while [[ $# -gt 0 ]]; do
             usage
             ;;
         --out)
+            need_value "$1" "$#"
             OUTPUT_BASE_DIR="$2"
             shift 2
             ;;
         --tag)
+            need_value "$1" "$#"
             TAG_SUFFIX="$2"
             shift 2
             ;;
@@ -157,6 +167,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --flavor)
+            need_value "$1" "$#"
             FLAVOR="$2"
             shift 2
             ;;
@@ -169,6 +180,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --erc20-address)
+            need_value "$1" "$#"
             ERC20_ADDRESS="$2"
             shift 2
             ;;
@@ -384,7 +396,8 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # ------------------------------------------------------------------
     # Snapshot soundness
     # ------------------------------------------------------------------
-    if [ "$(jq -r '.settlement_free' "$STATE_METADATA")" = "false" ]; then
+    SETTLEMENT_FREE=$(jq -r '.settlement_free' "$STATE_METADATA")
+    if [ "$SETTLEMENT_FREE" = "false" ]; then
         log_warn "=================================================================="
         log_warn "THIS CAPTURE IS NOT SETTLEMENT-FREE."
         log_warn "agglayer/aggkit internal databases are not part of the snapshot,"
@@ -395,8 +408,11 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
         jq -r '.agglayer_certificates[] | "  network \(.network_id): latest known certificate height \(.latest_known_certificate_height) (\(.status))"' \
             "$STATE_METADATA" | tee -a "$LOG_FILE"
         log_warn "=================================================================="
-    else
+    elif [ "$SETTLEMENT_FREE" = "true" ]; then
         log "Capture is settlement-free (no certificates known to agglayer)"
+    else
+        log_warn "Settlement-freeness was NOT checked for this capture (settlement_free=$SETTLEMENT_FREE);"
+        log_warn "the soundness gate will refuse to publish it."
     fi
 
     # ------------------------------------------------------------------
@@ -456,7 +472,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # Step 8: cleanup
     #
     # images/ is only a docker build context (it duplicates state/ and
-    # config/); the capture inputs themselves are kept because S9's verify and
+    # config/); the capture inputs themselves are kept because verify.sh and
     # any re-build need them.
     # ------------------------------------------------------------------
     if [ "$KEEP_INTERMEDIATES" = true ]; then
