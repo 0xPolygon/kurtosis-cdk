@@ -193,7 +193,7 @@ Everything else: databases, observability, utility images and the status checker
 | bridge-hub-consumer | 2a71905 | 2a71905 | ✅ up to date |
 | e2e-test-runner | [dda31ee](https://github.com/agglayer/e2e/commit/dda31ee) | N/A | N/A |
 | erpc | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | ✅ up to date |
-| grafana | [13.3.0](https://github.com/grafana/grafana/releases/tag/v13.3.0) | [13.3.0](https://github.com/grafana/grafana/releases/tag/v13.3.0) | ✅ up to date |
+| grafana | [13.3.1](https://github.com/grafana/grafana/releases/tag/v13.3.1) | [13.3.1](https://github.com/grafana/grafana/releases/tag/v13.3.1) | ✅ up to date |
 | haproxy | 3.2-bookworm | N/A | N/A |
 | mitmproxy | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | ✅ up to date |
 | mongodb | 7.0.29 | N/A | N/A |
