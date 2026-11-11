@@ -1,0 +1,160 @@
+# Reusable pipeline of the snapshot-devui workflow: bring up the two-L2 anvil
+# enclave, capture the anvil-aggkit snapshot, gate and verify it and, when
+# `publish` is true, push the images to GHCR and pin the compose file to their
+# digests. Triggers, permissions and concurrency live in snapshot-devui.yml;
+# this file declares no permissions so that it runs with exactly the ones its
+# caller grants. See docs/docs/advanced/anvil-devnet-snapshot.md.
+
+name: snapshot-devui-pipeline
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: "Push the images to GHCR (false: rehearse the tag and push commands only)"
+        type: boolean
+        default: false
+      tag:
+        description: "Local image build tag (not pushed; default: short commit SHA)"
+        type: string
+        default: ""
+
+env:
+  ENCLAVE_NAME: cdk
+  # Same version as test.yml.
+  KURTOSIS_VERSION: 1.22.2
+  GHCR_IMAGE_PREFIX: ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          kurtosis_version: ${{ env.KURTOSIS_VERSION }}
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Resolve image build tag
+        id: tag
+        env:
+          TAG_INPUT: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -n "${TAG_INPUT}" ]; then
+            if ! [[ "${TAG_INPUT}" =~ ^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$ ]]; then
+              echo "::error::tag must match ^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$ (got: ${TAG_INPUT})"
+              exit 1
+            fi
+            base_tag="${TAG_INPUT}"
+          else
+            base_tag="${GITHUB_SHA:0:12}"
+          fi
+          echo "base_tag=${base_tag}" >> "${GITHUB_OUTPUT}"
+          echo "Local image build tag: ${base_tag}"
+
+      - name: Disk usage (before bring-up)
+        run: df -h
+
+      - name: Kurtosis run 1/2 (L1 + agglayer + L2-001)
+        run: kurtosis run --enclave="${ENCLAVE_NAME}" --args-file=params-aggkit-anvil-l2l2-run1.yml .
+
+      - name: Kurtosis run 2/2 (L2-002)
+        run: kurtosis run --enclave="${ENCLAVE_NAME}" --args-file=params-aggkit-anvil-l2l2-run2.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect "${ENCLAVE_NAME}"
+
+      - name: Snapshot (seed fixtures, capture, build images, compose, summary)
+        env:
+          BASE_TAG: ${{ steps.tag.outputs.base_tag }}
+        run: snapshot/snapshot.sh "${ENCLAVE_NAME}" --flavor anvil-aggkit --tag "${BASE_TAG}"
+
+      - name: Locate snapshot output directory
+        id: snap
+        run: |
+          set -euo pipefail
+          mapfile -t dirs < <(find snapshots -maxdepth 1 -type d -name "${ENCLAVE_NAME}-*")
+          if [ "${#dirs[@]}" -ne 1 ]; then
+            echo "::error::expected exactly one snapshot output directory under snapshots/${ENCLAVE_NAME}-*, found ${#dirs[@]}" >&2
+            printf '%s\n' "${dirs[@]}" >&2
+            exit 1
+          fi
+          echo "dir=${dirs[0]}" >> "${GITHUB_OUTPUT}"
+          echo "Snapshot output directory: ${dirs[0]}"
+
+      - name: Disk usage (after snapshot build)
+        run: df -h
+
+      - name: Gate on soundness (settlement free, historical states, chain set)
+        env:
+          SNAPSHOT_DIR: ${{ steps.snap.outputs.dir }}
+        run: snapshot/scripts/gate-snapshot-soundness.sh --expect-l2 2 "${SNAPSHOT_DIR}/state/state-metadata.json"
+
+      - name: Verify snapshot (anvil-aggkit contract, incl. bridge round trip)
+        env:
+          SNAPSHOT_DIR: ${{ steps.snap.outputs.dir }}
+        run: snapshot/verify.sh "${SNAPSHOT_DIR}"
+
+      - name: Publish images to GHCR
+        if: inputs.publish
+        env:
+          SNAPSHOT_DIR: ${{ steps.snap.outputs.dir }}
+        run: |
+          set -euo pipefail
+          snapshot/scripts/publish-images.sh \
+            --registry-prefix "${GHCR_IMAGE_PREFIX}" \
+            --tag snapshot-latest-devui \
+            "${SNAPSHOT_DIR}/images/IMAGE_INFO.json"
+
+      - name: Rehearse the publish (no push)
+        if: ${{ !inputs.publish }}
+        env:
+          SNAPSHOT_DIR: ${{ steps.snap.outputs.dir }}
+        run: |
+          set -euo pipefail
+          snapshot/scripts/publish-images.sh --dry-run \
+            --registry-prefix "${GHCR_IMAGE_PREFIX}" \
+            --tag snapshot-latest-devui \
+            "${SNAPSHOT_DIR}/images/IMAGE_INFO.json"
+
+      - name: Pin the compose files to the published digests
+        if: inputs.publish
+        env:
+          SNAPSHOT_DIR: ${{ steps.snap.outputs.dir }}
+        run: |
+          set -euo pipefail
+          snapshot/scripts/apply-digests.sh \
+            --registry-prefix "${GHCR_IMAGE_PREFIX}" \
+            --smoke-test \
+            "${SNAPSHOT_DIR}"
+
+      - name: Upload compose bundle and summary
+        if: inputs.publish
+        uses: actions/upload-artifact@v7
+        with:
+          name: devui-snapshot-${{ steps.tag.outputs.base_tag }}
+          path: |
+            ${{ steps.snap.outputs.dir }}/docker-compose.yml
+            ${{ steps.snap.outputs.dir }}/docker-compose.mounts.yml
+            ${{ steps.snap.outputs.dir }}/summary.json
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: true
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+      - name: Tear down enclave
+        if: always()
+        run: kurtosis enclave rm -f "${ENCLAVE_NAME}" || true
