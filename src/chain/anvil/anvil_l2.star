@@ -10,24 +10,20 @@ GENESIS_FILE = "l2-anvil-genesis.json"
 def run(plan, args, genesis_artifact):
     """Start the L2 anvil node seeded with the sovereign predeployed allocs.
 
-    Called from main.star BETWEEN create_sovereign_predeployed_genesis() and
-    init_rollup(): the allocs must exist before the node boots, and the node
-    must be live before initialize_rollup funds accounts and bytecode-checks
-    the L2 contracts (static_files/contracts/contracts.sh:808-810, 942).
+    Called from main.star between create_sovereign_predeployed_genesis() and
+    init_rollup(): the allocs must exist before the node boots, and the node must
+    be live before initialize_rollup funds accounts and checks the L2 contracts.
     """
     service_name = (
         constants.L2_RPC_MAPPING[constants.SEQUENCER_TYPE.anvil]
         + args["deployment_suffix"]
     )
 
-    # NOTE: --dump-state is intentionally absent. anvil rejects `--init`
-    # together with `--dump-state` ("the argument '--init <PATH>' cannot be
-    # used with '--dump-state <PATH>'"); re-verified on v1.4.3 and v1.5.1 in
-    # plans/dev-ui-ci-snapshot/s4b-evidence/15-init-dumpstate-check.txt.
-    # Snapshot capture uses the anvil_dumpState RPC instead.
-    # NOTE: --timestamp $(date +%s) is required. The image entrypoint is
-    # ["/bin/sh","-c"], so the substitution happens in-container. Without it
-    # the chain inherits the genesis file's timestamp (0) and runs in 1970.
+    # --dump-state is not passed: anvil rejects it together with --init. State is
+    # captured through the anvil_dumpState RPC instead.
+    # --timestamp $(date +%s) is required: the image entrypoint is
+    # ["/bin/sh","-c"], so the substitution runs in the container. Without it the
+    # chain inherits the genesis timestamp (0) and runs in 1970.
     cmd = (
         "anvil --block-time "
         + str(args["l2_anvil_block_time"])
@@ -63,6 +59,5 @@ def run(plan, args, genesis_artifact):
         ),
     )
 
-    # Same string shape as src/chain/op-reth/launcher.star:26-30 so every
-    # template that reads it resolves inside the enclave network.
+    # Same shape as the op-reth L2 URL, resolvable inside the enclave network.
     return "http://{}:{}".format(service_name, ports_package.HTTP_RPC_PORT_NUMBER)

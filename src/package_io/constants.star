@@ -17,13 +17,11 @@ ADDITIONAL_SERVICES = struct(
     zkevm_bridge_ui="zkevm_bridge_ui",
 )
 
-# Which backend the "bridge_ui" additional service should use to source
-# bridge/claim data:
-# - bridge_hub: deploy the full bridge-hub stack (mongo + L1/L2 consumers +
-#   api) fronted by the haproxy proxy. This is the legacy
-#   default.
-# - aggkit: skip the bridge-hub stack entirely and have the haproxy proxy
-#   forward directly to the aggkit bridge REST API.
+# Which backend the "bridge_ui" additional service uses for bridge/claim data:
+# - bridge_hub (default): the bridge-hub stack (mongo, L1/L2 consumers, api)
+#   behind the haproxy proxy.
+# - aggkit: no bridge-hub stack, the haproxy proxy forwards to the aggkit bridge
+#   REST API.
 BRIDGE_UI_BACKEND = struct(
     bridge_hub="bridge_hub",
     aggkit="aggkit",
@@ -102,9 +100,8 @@ TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.14"
 )
 
-# Anvil's built-in development mnemonic. Used as the default for the anvil L2
-# (sequencer_type: anvil) because static_files/contracts/contracts.sh's
-# initialize_rollup derives its L2 funding key from exactly this mnemonic.
+# Anvil's built-in development mnemonic. The anvil L2 is prefunded from it, and
+# contracts.sh derives its L2 funding key from the same mnemonic.
 ANVIL_DEFAULT_MNEMONIC = "test test test test test test test test test test test junk"
 
 L1_ENGINE = struct(
@@ -134,47 +131,18 @@ DEFAULT_IMAGES = {
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.2",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
-    # bridge_ui_backend "bridge_hub" mode only (src/additional_services/
-    # bridge_ui/ui.star run_server): mounts a rendered config.ts and expects
-    # a Next-dev-server-style container. Deliberately left unbumped -- see
-    # agglayer_dev_ui_aggkit_image below for why this key and that one are
-    # NOT the same image.
+    # Used by bridge_ui_backend "bridge_hub" (ui.star run_server): a container that
+    # reads a rendered config.ts. Not the same image as agglayer_dev_ui_aggkit_image.
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
-    # agglayer/agglayer-dev-ui, which understands the aggkit bridge REST API
-    # and is configured at runtime through a mounted
-    # /etc/agglayer-dev-ui/config.json (contract: dev-ui docs/docker.md --
-    # nginx:alpine runtime, no Node, no config.ts support). Consumed as a
-    # published tag only -- no source build here.
-    #
-    # Deliberately a SEPARATE constant from agglayer_dev_ui_image above, not
-    # a bump of it: that key is also read by run_server() (bridge_ui_backend
-    # "bridge_hub" mode), which mounts a rendered config.ts for a
-    # Next-dev-server-style container -- a different runtime contract that
-    # this nginx:alpine runtime cannot serve (no Node.js, no config.ts
-    # support, and it requires config.json at a different path).
-    # Point-bumping the shared key would silently break
-    # .github/tests/additional-services.yml's bridge_hub-mode bridge_ui
-    # deployment (wired into .github/workflows/test.yml and nightly.yml).
-    # See src/additional_services/bridge_ui/ui.star's run_dev_ui(), used only
-    # by the opt-in aggkit-mode dev-ui deployment (aggkit_deploy_dev_ui).
-    #
-    # The 0.1.x config schema is `.strict()` and validates the mounted config
-    # at browser start-up: it takes a single `aggkitProxy` string per mode
-    # (the per-network `aggkitBridgeApis` map was removed upstream) and
-    # requires `walletConnect`, `externalLinks` and each mode's
-    # `etaL1Minutes`/`etaL2Minutes`, all of which
-    # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl
-    # renders.
+    # agglayer-dev-ui for bridge_ui_backend "aggkit" (ui.star run_dev_ui): an
+    # nginx image configured through a mounted /etc/agglayer-dev-ui/config.json,
+    # whose strict schema is rendered by
+    # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl.
     "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.1",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
-    # foundry >= v1.5.0 is REQUIRED when the L1 is anvil: agglayer's settlement
-    # task probes nonce inclusion with `eth_getTransactionBySenderAndNonce`
-    # after sending the verify tx. anvil only gained that method in v1.5.0
-    # (v1.4.x answers -32601 "Method not found"), which agglayer treats as
-    # "assumed non-recoverable" and panics on
-    # (agglayer-settlement-service/src/settlement_task.rs:543), leaving every
-    # certificate stuck in `InError` even though the settlement tx itself
-    # landed on L1.
+    # Anvil >= v1.5.0 is required: agglayer's settlement task calls
+    # eth_getTransactionBySenderAndNonce, which older versions answer with
+    # "Method not found" and agglayer then panics.
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.9.0",
     "besu_image": "hyperledger/besu:26.11.0",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",

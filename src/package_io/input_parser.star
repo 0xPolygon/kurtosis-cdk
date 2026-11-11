@@ -198,12 +198,9 @@ DEFAULT_L1_ARGS = {
     "l1_anvil_block_time": 1,
     # l1_anvil_slots_in_epoch: number of slots in an epoch
     "l1_anvil_slots_in_epoch": 1,
-    # L1 anvil block gas limit. anvil's built-in default is smaller than the
-    # 60M overrideGasLimit that static_files/contracts/contracts.sh writes into
-    # the bridge-implementation deploy since the Amsterdam (EIP-8037) bump, so
-    # a default-limited anvil L1 rejects that tx with "intrinsic gas too high
-    # -- tx.gas_limit > env.block.gas_limit". Match the ethereum-package
-    # posture of a 200M L1 gas limit under Gloas (src/l1/ethereum.star).
+    # L1 anvil block gas limit. anvil's default is below the 60M gas override that
+    # contracts.sh sets for the bridge-implementation deploy, which would be
+    # rejected as "intrinsic gas too high".
     "l1_anvil_gas_limit": 200000000,
     # Set this to true if the L1 contracts for the rollup are already
     # deployed. This also means that you'll need some way to run
@@ -320,35 +317,19 @@ DEFAULT_ROLLUP_ARGS = {
     # The URL where the agglayer can be reached for ReadRPC
     "agglayer_readrpc_url": "http://agglayer:"
     + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
-    # Additional rollups to register in the agglayer's [full-node-rpcs] /
-    # [proof-signers] config tables, beyond the rollup that this run itself
-    # deploys (which always gets network_id 1 in those tables). Needed for
-    # multi-L2-into-one-enclave setups: when a second (or later) `kurtosis run`
-    # adds another rollup via deploy_agglayer=false (it reuses the agglayer
-    # deployed by the first run), that rollup is never rendered into
-    # agglayer/config.toml unless the FIRST run's agglayer already knew about
-    # it. Since op_el_rpc_url and the default signer keys are deterministic
-    # given deployment_suffix, later rollups can be declared here ahead of
-    # time on the run that deploys the agglayer.
-    # Each entry: {"network_id": <int>, "op_el_rpc_url": <str>, "sequencer_address": <str>}.
+    # Rollups registered in the agglayer's [full-node-rpcs] and [proof-signers]
+    # beyond the one this run deploys (network_id 1). A later `kurtosis run` with
+    # deploy_agglayer=false reuses the agglayer of the first run, so the extra
+    # rollups must be declared on that first run.
+    # Each entry: {"network_id": <int >= 2>, "op_el_rpc_url": <str>, "sequencer_address": <str>}.
     "agglayer_extra_rollups": [],
-    # Number of L1 block confirmations agglayer requires before considering a
-    # settlement tx's receipt resolved. Units: L1 blocks. Maps to
-    # [settlement.pessimistic-proof-tx-config] confirmations in
-    # static_files/agglayer/config.toml. Upstream default is 12; this devnet
-    # defaults to 1 -- the actual fix for the settlement-latency bug that the
-    # old (dead since agglayer PR #1393) [outbound.rpc.settle] confirmations
-    # key was supposed to provide.
+    # L1 block confirmations agglayer requires before a settlement receipt is
+    # resolved ([settlement.pessimistic-proof-tx-config] confirmations, agglayer
+    # v0.6.0-rc.1 and later). The upstream default is 12.
     "agglayer_settle_confirmations": 1,
-    # Finality level agglayer requires before considering a settlement tx
-    # settled. Valid values: "latest", "safe", "finalized" (see
-    # VALID_AGGLAYER_SETTLEMENT_POLICIES below), translated in the config
-    # template to the upstream SettlementPolicy enum's LatestBlock/SafeBlock/
-    # FinalizedBlock wire names. Upstream default is "safe". On an anvil L1,
-    # the latest->safe->finalized lag is l1_anvil_block_time *
-    # l1_anvil_slots_in_epoch seconds per step -- with both at 1 (this
-    # package's anvil defaults), that lag is only ~1s, so "latest" buys
-    # little here versus on a real L1 with multi-minute safe/finalized lag.
+    # Finality level agglayer requires before a settlement tx is settled: one of
+    # VALID_AGGLAYER_SETTLEMENT_POLICIES, translated to agglayer's
+    # LatestBlock/SafeBlock/FinalizedBlock in the config template.
     "agglayer_settlement_policy": "safe",
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
@@ -369,16 +350,12 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
-    # Static network_id -> bridge service base URL map for the standalone
-    # aggkit-proxy service's BridgeServiceFinder (additional service
-    # "aggkit_proxy"). There is no on-chain BRIDGE_SERVICE_URL registration in
-    # this package, and network
-    # 0 (L1) is never enumerated on-chain at all, so every network the proxy
-    # should route (including 0) must be listed here explicitly.
+    # network_id -> bridge service URL map of the aggkit_proxy additional
+    # service. Every network the proxy routes must be listed, including 0 (L1),
+    # which is never enumerated on-chain.
     # Each entry: {"network_id": <int>, "bridge_url": <str>}.
     "aggkit_proxy_bridge_urls": [],
-    # Static network_id -> JSON-RPC URL map for the standalone aggkit-proxy
-    # service's BridgeServiceFinder. Same rationale as aggkit_proxy_bridge_urls.
+    # network_id -> JSON-RPC URL map of the aggkit_proxy additional service.
     # Each entry: {"network_id": <int>, "rpc_url": <str>}.
     "aggkit_proxy_rpc_urls": [],
     "use_agg_oracle_committee": False,
@@ -403,9 +380,9 @@ DEFAULT_ROLLUP_ARGS = {
     # ASAP: this mode try to generate a new certificate after a successful settled certificate
     # NewBridge: Each time that a new bridge is done in L2 it generate a certificate (if it's possible) (experimental)
     "trigger_cert_mode": "ASAP",
-    # Anvil L2 (sequencer_type: anvil). l2_anvil_block_time * l2_anvil_slots_in_epoch
-    # is the latest -> finalized lag; aggkit's [ReorgDetectorL2] tracks the
-    # finalized tag on this stack, so keep the product small.
+    # Anvil L2 (sequencer_type: anvil). aggkit's [ReorgDetectorL2] tracks the
+    # finalized tag, which lags latest by l2_anvil_block_time * l2_anvil_slots_in_epoch
+    # seconds: keep the product small.
     # l2_anvil_block_time: seconds per block
     "l2_anvil_block_time": 1,
     # l2_anvil_slots_in_epoch: number of slots in an epoch
@@ -444,9 +421,9 @@ DEFAULT_ARGS = (
         # Options:
         # - 'cdk-erigon': Use the cdk-erigon sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
         # - 'op-reth': Use the OP stack sequencer (https://github.com/paradigmxyz/op-reth).
-        # - 'anvil': Use a self-producing anvil node as the L2, seeded with the
-        #   sovereign predeployed contracts through its genesis allocs. No
-        #   optimism-package is deployed. Requires 'ecdsa-multisig' consensus.
+        # - 'anvil': Use an anvil node as the L2, seeded with the sovereign predeployed
+        #   contracts through its genesis allocs. No optimism-package is deployed.
+        #   Requires 'ecdsa-multisig' consensus.
         # - 'besu': Use a vanilla single-validator QBFT Hyperledger Besu chain
         #   (https://github.com/hyperledger/besu). Only 'ecdsa-multisig' consensus is supported.
         "sequencer_type": constants.SEQUENCER_TYPE.op_reth,
@@ -459,57 +436,40 @@ DEFAULT_ARGS = (
         # - 'ecdsa-multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
         "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
-        # Which backend the "bridge_ui" additional service uses to source
-        # bridge/claim data. Only relevant when "bridge_ui" is included in
-        # additional_services.
+        # Backend of the "bridge_ui" additional service.
         # Options:
-        # - 'bridge_hub': deploy the full bridge-hub stack (mongo + L1/L2
-        #   consumers + api) fronted by the haproxy proxy.
-        # - 'aggkit': skip the bridge-hub stack and have the haproxy proxy
-        #   forward directly to the aggkit bridge REST API.
+        # - 'bridge_hub': the bridge-hub stack (mongo, L1/L2 consumers, api) behind
+        #   the haproxy proxy.
+        # - 'aggkit': no bridge-hub stack, the haproxy proxy forwards to the aggkit
+        #   bridge REST API.
         "bridge_ui_backend": constants.BRIDGE_UI_BACKEND.bridge_hub,
-        # Only relevant when bridge_ui_backend is "aggkit". When set, the
-        # haproxy proxy's single /aggkitapi backend forwards to this URL
-        # instead of this run's own l2_context.aggkit_bridge_url. Use this to
-        # point at a standalone multi-network "aggkit_proxy" additional
-        # service (e.g. "http://aggkit-proxy-001:8080") so one haproxy
-        # backend fronts every participating L2's bridge REST API, instead of
-        # only the L2 that happens to be this run's own chain. Leave empty
-        # ("") to keep the original single-L2 behavior (falls back to
-        # l2_context.aggkit_bridge_url).
+        # bridge_ui_backend 'aggkit' only: URL of the aggkit-proxy additional
+        # service (e.g. "http://aggkit-proxy-001:8080"), used by the proxy's
+        # /aggkitapi backend instead of this run's own aggkit bridge REST API so
+        # that one backend serves every L2. Plain http, no trailing slash.
         "aggkit_proxy_url": "",
-        # Only relevant when "bridge_ui" is in additional_services. Per-chain
-        # L2 JSON-RPC routes rendered by the haproxy proxy in ADDITION to the
-        # bare /l2rpc route (which stays aliased to the "-001" entry here, if
-        # present, for back-compat with the existing dev-ui script -- see the
-        # "HAProxy Route Map" section of
-        # docs/docs/advanced/aggkit-2l2-with-bridge-ui.md). Each entry renders an
-        # `/l2rpc{path_suffix}` route, e.g. path_suffix "-001" -> /l2rpc-001.
-        # Each entry: {"path_suffix": <str>, "url": <str>}. To also catalog
-        # this L2 in the aggkit-mode dev-ui config.json (see
-        # aggkit_deploy_dev_ui below), additionally set "chain_id": <int> and
-        # "network_id": <int> on the entry -- entries missing either key are
-        # used for the haproxy route map only and are skipped by the dev-ui
-        # chain catalog.
+        # bridge_ui only: per-chain L2 JSON-RPC routes of the haproxy proxy, in
+        # addition to the bare /l2rpc route, which is an alias of the "-001" entry.
+        # Each entry renders /l2rpc<path_suffix>.
+        # Each entry: {"path_suffix": <str, e.g. "-001">, "url": <str>}. Adding
+        # "chain_id" and "network_id" (both) also lists the chain in the dev-ui
+        # config of aggkit_deploy_dev_ui.
         "bridge_ui_l2_rpc_urls": [],
-        # Only relevant when bridge_ui_backend is "aggkit". When true, also
-        # deploys the published agglayer-dev-ui container (see
-        # constants.DEFAULT_IMAGES["agglayer_dev_ui_aggkit_image"]) configured at
-        # runtime with a rendered devnet config.json, and routes it through
-        # the same haproxy proxy as the default backend (exactly like the
-        # bridge_hub backend's own agglayer-dev-ui-url wiring). Defaults to
-        # False so existing aggkit-mode deployments (haproxy proxy only, no
-        # dev-ui container) are unchanged -- this is an opt-in addition, not
-        # a behavior change. See src/additional_services/bridge_ui/ui.star.
+        # bridge_ui_backend 'aggkit' only: also deploy the agglayer-dev-ui container
+        # (constants.DEFAULT_IMAGES["agglayer_dev_ui_aggkit_image"]), configured with
+        # a rendered config.json and served through the haproxy proxy.
         "aggkit_deploy_dev_ui": False,
         # Additional services to run alongside the network.
         # Options:
+        # - agglayer_dashboard
         # - agglogger
+        # - aggkit_proxy
         # - arpeggio
         # - assertoor
         # - blockscout
         # - blutgang
         # - bridge_spammer
+        # - bridge_ui
         # - erpc
         # - observability
         # - rpc_fuzzer
@@ -598,10 +558,8 @@ VALID_AGGKIT_TRIGGER_CERT_MODES = [
     constants.VALID_AGGKIT_TRIGGER_CERT_MODES.auto,
 ]
 
-# Valid values for agglayer_settlement_policy. These are the lowercase
-# user-facing tokens; static_files/agglayer/config.toml translates them to
-# agglayer's upstream SettlementPolicy wire enum names
-# (LatestBlock/SafeBlock/FinalizedBlock).
+# Valid values for agglayer_settlement_policy; static_files/agglayer/config.toml
+# translates them to agglayer's LatestBlock/SafeBlock/FinalizedBlock.
 VALID_AGGLAYER_SETTLEMENT_POLICIES = [
     "latest",
     "safe",
@@ -812,16 +770,8 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
 
 
 def set_l1_client_args(args, user_args):
-    # An anvil L1 has no ethereum-package el/cl services to name: set_anvil_args
-    # (called just before this, so args["l1_engine"] is already final -- it may
-    # have been flipped to "anvil" by anvil_state_file) has already pointed the
-    # three L1 URLs at the anvil service. Without this guard the el/cl template
-    # below unconditionally clobbers them back to `http://el-1-<el>-<cl>:8545`
-    # etc., i.e. services that are never created for an anvil L1, and every
-    # consumer (contracts.sh, agglayer, aggkit, the bridge service) then retries
-    # forever against a nonexistent host. Every anvil params file used to carry
-    # an explicit three-line l1_rpc_url/l1_ws_url/l1_beacon_url workaround for
-    # exactly this.
+    # An anvil L1 has no ethereum-package el/cl services: set_anvil_args has
+    # already pointed the L1 URLs at the anvil service, so keep them.
     if args["l1_engine"] == constants.L1_ENGINE.anvil:
         return
 
@@ -992,10 +942,8 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
             "http://op-cl-1-op-node-op-reth" + args["deployment_suffix"] + ":8547"
         )
 
-    # sequencer_type "anvil" reuses the OP-stack URL keys rather than introducing
-    # new ones: aggkit's config.toml, agglayer's config.toml, create_new_rollup.json
-    # and contracts.sh all read op_el_rpc_url, so aliasing it to the anvil L2
-    # service keeps every one of them working with zero renames.
+    # sequencer_type "anvil" reuses the OP-stack URL keys: aggkit, agglayer and
+    # contracts.sh all read op_el_rpc_url, so it is aliased to the anvil L2.
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.anvil:
         anvil_l2_url = "http://{}{}:{}".format(
             constants.L2_RPC_MAPPING[constants.SEQUENCER_TYPE.anvil],
@@ -1009,12 +957,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 )
             )
             args["op_el_rpc_url"] = anvil_l2_url
-        # There is no consensus layer. Point op_cl_rpc_url at the same anvil so
-        # aggkit's unconditional `OpNodeURL = "{{.op_cl_rpc_url}}"`
-        # (static_files/chain/shared/aggkit/config.toml:23) renders a valid,
-        # resolvable URL. It is never dialed: ecdsa-multisig forces
-        # Mode = "PessimisticProof", and [AggchainProofGen] is only used in
-        # AggchainProof mode.
+        # There is no consensus layer: point op_cl_rpc_url at the same node so that
+        # aggkit's OpNodeURL renders a resolvable URL. It is never dialed in
+        # PessimisticProof mode.
         if args["op_cl_rpc_url"] != anvil_l2_url:
             args["op_cl_rpc_url"] = anvil_l2_url
 
@@ -1046,14 +991,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 # TODO: should this be AggchainFEP instead?
                 args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
 
-    # An anvil L1 cannot host an op-reth L2: the optimism-package's op-node
-    # launcher unconditionally requires the `el_cl_genesis_data` files artifact,
-    # which only the ethereum-package L1 flow produces -- src/l1/anvil.star never
-    # creates it. Without this check the run dies at Starlark validation time
-    # with "Files artifact 'el_cl_genesis_data' ... doesn't exist", which gives
-    # no hint about the real cause. Gated on the stage that actually launches
-    # the optimism-package (main.star), so a partial deployment that never
-    # reaches it is still allowed.
+    # The optimism-package requires an el_cl_genesis_data artifact that only the
+    # ethereum-package L1 produces, so an anvil L1 cannot host an op-reth L2.
+    # Gated on the stage that launches the optimism-package.
     if (
         args["l1_engine"] == constants.L1_ENGINE.anvil
         and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
@@ -1065,11 +1005,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
 
     # Anvil L2 checks.
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.anvil:
-        # V1: the anvil L2 exists to serve the bridge/dev-ui flow end to end,
-        # which requires certificate settlement. Under pessimistic consensus the
-        # aggsender's multisig-committee query reverts and L2->L1 exits never
-        # settle. Fail loudly instead of silently coercing (unlike op-reth above)
-        # since this is a brand new sequencer type.
+        # Under pessimistic consensus the aggsender's multisig-committee query
+        # reverts and L2->L1 exits never settle, so fail instead of coercing like
+        # op-reth does.
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.ecdsa_multisig:
             fail(
                 "sequencer_type 'anvil' requires consensus_contract_type 'ecdsa-multisig' (got '{}'). Under pessimistic consensus the aggsender's multisig-committee query reverts and L2->L1 exits never settle.".format(
@@ -1077,10 +1015,8 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 )
             )
 
-        # V2: the anvil node is started inside the deploy_agglayer_contracts_on_l1
-        # stage (main.star), because initialize_rollup needs a live L2. Without
-        # that stage the chain launcher would wire aggkit to a service that was
-        # never created.
+        # The anvil node is started inside the deploy_agglayer_contracts_on_l1 stage
+        # (main.star), so aggkit would be wired to a service that is never created.
         if deployment_stages.get(
             "deploy_cdk_central_environment", False
         ) and not deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
@@ -1088,21 +1024,16 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 "sequencer_type 'anvil' launches the L2 node inside the deploy_agglayer_contracts_on_l1 stage; it cannot be skipped while deploy_cdk_central_environment is enabled."
             )
 
-        # V4: the optimism-package is not deployed at all for anvil. If the user
-        # supplies an optimism_package block, op_input_parser would run
-        # op_sanity_check against a chain that never launches.
+        # The optimism-package is not deployed for anvil.
         if user_args.get("optimism_package", {}):
             fail(
                 "sequencer_type 'anvil' does not use the optimism-package; remove the optimism_package block from your args file."
             )
 
-        # V5: --block-time 0 disables interval mining and --slots-in-an-epoch 0
-        # is nonsense.
+        # --block-time 0 disables interval mining.
         if args["l2_anvil_block_time"] < 1 or args["l2_anvil_slots_in_epoch"] < 1:
             fail("l2_anvil_block_time / l2_anvil_slots_in_epoch must be >= 1")
 
-    # agglayer_settle_confirmations must be a sane (non-negative, non-zero)
-    # number of L1 block confirmations to wait for.
     if args["agglayer_settle_confirmations"] < 1:
         fail("agglayer_settle_confirmations must be >= 1")
 
