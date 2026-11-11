@@ -1,6 +1,6 @@
 {
   "flavor": "anvil-aggkit",
-  "enclave_name": "k7-fixture",
+  "enclave_name": "extract-state-fixture",
   "l1_anvil": {
     "found": true,
     "service_name": "anvil-001",

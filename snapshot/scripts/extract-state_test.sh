@@ -1,35 +1,31 @@
 #!/usr/bin/env bash
 #
-# K7 (snapshot-v2-aggkit-e2e plan): hermetic regression test for
-# extract-state.sh's `--flavor anvil-aggkit` config-tree emission (K5), the
-# pipeline aggkit's own e2e env (test/e2e/envs/anvil-2chains/, built by A2 --
-# not this repo) is built FROM.
+# Hermetic regression test for extract-state.sh's `--flavor anvil-aggkit`
+# path: the config-tree emission, the anvil state capture, the haproxy patch
+# and the settlement-freeness probe.
 #
-# This test invokes the REAL extract-state.sh end to end against a crafted
-# discovery.json fixture (testdata/extract-state-config-tree/discovery.json)
-# whose agglayer/aggkit-00X/aggkit-proxy-001 containers are backed by
-# checked-in fixture files (testdata/extract-state-config-tree/containers/),
-# reached through fake `docker`/`curl` executables that shadow the real ones
-# on PATH for the duration of the run -- no live enclave, no docker daemon,
-# no network. haproxy/dev-ui are marked `found: false` in the fixture (the
-# bonus, non-required files K5's own evidence also captured) so this test
-# stays focused on aggkit-env-design.md (d)'s REQUIRED 11-file list.
+# The REAL extract-state.sh runs end to end against a crafted discovery.json
+# (testdata/extract-state-config-tree/discovery.json) whose containers are
+# backed by checked-in fixture files (testdata/extract-state-config-tree/
+# containers/), reached through fake `docker`/`curl` executables that shadow
+# the real ones on PATH -- no live enclave, no docker daemon, no network.
+# The fake curl's behaviour is selected per scenario through FAKE_DUMP and
+# FAKE_CERT.
 #
-# Asserts:
-#  1. All 11 files on aggkit-env-design.md (d)'s list are present and
-#     non-empty, at the paths extract-state.sh ACTUALLY EMITS -- see the
-#     mapping comment at the top of the "aggkit configs" block in
-#     extract-state.sh: kurtosis-cdk names directories after its OWN service
-#     names (config/aggkit-00X/, config/aggkit-proxy-001/), not aggkit's own
-#     e2e-env "001"/"002" convention (config/00X/aggkit-config.toml) --
-#     asserting the latter here would test the wrong repo's naming and pass
-#     even if K5's emission logic regressed.
-#  2. Exactly 11 files total land under config/ for this fixture (no silent
-#     extra/missing file -- the fixture deliberately excludes the optional
-#     claimsponsor.keystore and the found:false haproxy/dev-ui files).
-#  3. `TriggerCertMode = "ASAP"` is present in BOTH emitted aggkit configs
-#     (aggkit-env-design.md (d1): `Auto` silently resolves to `EpochBased`
-#     for a PessimisticProof aggsender).
+# Scenarios:
+#  base         the exact 11-file config tree lands at the paths extract-state.sh
+#               emits (kurtosis-cdk service names, not aggkit's "001"/"002"
+#               e2e-env convention); the state metadata describes the three
+#               chains, their network ids and historical states, and records
+#               the dump's own tip as the block number; the settlement probe is
+#               skipped (no readrpc port) and recorded as null, not true.
+#  gzip         an anvil_dumpState result that is gzip-compressed is decoded.
+#  probe        with a published agglayer port and haproxy: `result: null`
+#               means settlement-free, a header means it is not, and haproxy's
+#               default_backend is removed while its file mode is kept.
+#  probe-fail   an unreachable agglayer, an error response, an empty object or
+#               a non-JSON body is NOT "no certificates": the run fails.
+#  dump-fail    a dump without accounts or without historical states fails.
 #
 # Usage: ./extract-state_test.sh   (run from anywhere; hermetic -- the fake
 # docker/curl created below are the only things named "docker"/"curl" this
@@ -51,10 +47,9 @@ ok() {
 }
 
 # ---- fake docker -----------------------------------------------------------
-# Only `docker cp <container>:<src> <dest>` is exercised by the anvil-aggkit
-# flavor's config-copy blocks (agglayer/aggkit-00X/aggkit-proxy-001). Resolves
+# Only `docker cp <container>:<src> <dest>` is exercised. It resolves
 # <container> against the checked-in testdata/containers/<container>/<src>
-# tree instead of a live one.
+# tree instead of a live container.
 fake_bin="${work_dir}/fake-bin"
 mkdir -p "${fake_bin}"
 cat > "${fake_bin}/docker" <<EOF
@@ -78,9 +73,10 @@ EOF
 chmod +x "${fake_bin}/docker"
 
 # ---- fake curl --------------------------------------------------------------
-# Only the two anvil JSON-RPC calls capture_anvil_state makes are exercised
-# here (eth_blockNumber, anvil_dumpState); the settlement-freeness probe is
-# skipped by the fixture's empty agglayer.ports (no readrpc port published).
+# eth_blockNumber always answers 0xa (10). anvil_dumpState answers per
+# FAKE_DUMP, with best_block_number 0xb (11) so a recorded block number of 11
+# can only come from the dump itself. The agglayer certificate probe answers
+# per FAKE_CERT.
 cat > "${fake_bin}/curl" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -100,12 +96,27 @@ case "$data" in
         resp='{"jsonrpc":"2.0","id":1,"result":"0xa"}'
         ;;
     *anvil_dumpState*)
-        # A minimal, valid anvil_dumpState payload: non-empty accounts AND
-        # non-empty historical_states (S9b -- capture_anvil_state hard-fails
-        # without both, by design).
-        inner='{"accounts":{"0xabc":{}},"historical_states":{"0":{}}}'
-        hex=$(printf '%s' "$inner" | xxd -p | tr -d '\n')
+        case "${FAKE_DUMP:-plain}" in
+            no-accounts)     inner='{"accounts":{},"historical_states":{"0":{}},"best_block_number":"0xb"}' ;;
+            no-historical)   inner='{"accounts":{"0xabc":{}},"best_block_number":"0xb"}' ;;
+            *)               inner='{"accounts":{"0xabc":{}},"historical_states":{"0":{}},"best_block_number":"0xb"}' ;;
+        esac
+        if [ "${FAKE_DUMP:-plain}" = "gzip" ]; then
+            hex=$(printf '%s' "$inner" | gzip -c | xxd -p | tr -d '\n')
+        else
+            hex=$(printf '%s' "$inner" | xxd -p | tr -d '\n')
+        fi
         resp="{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"0x${hex}\"}"
+        ;;
+    *interop_getLatestKnownCertificateHeader*)
+        case "${FAKE_CERT:-null}" in
+            null)        resp='{"jsonrpc":"2.0","id":1,"result":null}' ;;
+            cert)        resp='{"jsonrpc":"2.0","id":1,"result":{"height":0,"status":"Settled"}}' ;;
+            error)       resp='{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}}' ;;
+            empty)       resp='{}' ;;
+            garbage)     resp='<html>502 Bad Gateway</html>' ;;
+            unreachable) exit 7 ;;
+        esac
         ;;
     *)
         resp='{}'
@@ -120,20 +131,71 @@ fi
 EOF
 chmod +x "${fake_bin}/curl"
 
-output_dir="${work_dir}/output"
-log_file="${work_dir}/extract-state.log"
+# ---- discovery variants -----------------------------------------------------
+base_discovery="${fixture_dir}/discovery.json"
+probe_discovery="${work_dir}/discovery-probe.json"
+jq '.agglayer.ports = {"4444": "19010"}
+    | .haproxy = {found: true, service_name: "agglayer-dev-ui-proxy-001", container_name: "haproxy-container"}' \
+    "${base_discovery}" > "${probe_discovery}"
 
-if PATH="${fake_bin}:${PATH}" "${script_dir}/extract-state.sh" --flavor anvil-aggkit \
-    "${fixture_dir}/discovery.json" "${output_dir}" > "${log_file}" 2>&1; then
-    ok "extract-state.sh --flavor anvil-aggkit ran cleanly against the fixture"
-else
-    fail "extract-state.sh --flavor anvil-aggkit exited non-zero against the fixture -- log:"
-    cat "${log_file}" >&2
-fi
+# run_extract <name> <discovery> [VAR=value ...] -> sets $rc, $output_dir, $log_file
+run_extract() {
+    local name="$1" discovery="$2"
+    shift 2
+    output_dir="${work_dir}/${name}"
+    log_file="${work_dir}/${name}.log"
+    if env "$@" PATH="${fake_bin}:${PATH}" "${script_dir}/extract-state.sh" --flavor anvil-aggkit \
+        "${discovery}" "${output_dir}" > "${log_file}" 2>&1; then
+        rc=0
+    else
+        rc=$?
+    fi
+}
 
-# ---- 1 & 2: the exact 11-file tree, at the paths K5 actually emits --------
-# (see extract-state.sh's mapping comment: kurtosis-cdk's own service names,
-# NOT aggkit's "001"/"002" env convention).
+assert_success() {
+    local name="$1"
+    if [ "${rc}" -eq 0 ]; then
+        ok "${name}: extract-state.sh exited 0"
+    else
+        fail "${name}: extract-state.sh exited ${rc}, expected 0 -- log:"
+        cat "${log_file}" >&2
+    fi
+}
+
+assert_failure() {
+    local name="$1" pattern="$2"
+    if [ "${rc}" -eq 0 ]; then
+        fail "${name}: extract-state.sh exited 0, expected a failure"
+    elif ! grep -qE "${pattern}" "${log_file}"; then
+        fail "${name}: failed (rc ${rc}) but the log does not match '${pattern}' -- log:"
+        cat "${log_file}" >&2
+    else
+        ok "${name}: failed as expected (rc ${rc}), log matches '${pattern}'"
+    fi
+    if [ -e "${output_dir}/state/state-metadata.json" ]; then
+        fail "${name}: state-metadata.json was written although the run failed"
+    else
+        ok "${name}: no state-metadata.json written"
+    fi
+}
+
+# assert_jq <name> <file> <jq -e filter> <description>
+assert_jq() {
+    local name="$1" file="$2" filter="$3" desc="$4"
+    if [ ! -f "${file}" ]; then
+        fail "${name}: ${desc}: ${file} does not exist"
+    elif jq -e "${filter}" "${file}" > /dev/null 2>&1; then
+        ok "${name}: ${desc}"
+    else
+        fail "${name}: ${desc} (jq: ${filter} on ${file})"
+    fi
+}
+
+# ---- base: file tree and metadata -------------------------------------------
+run_extract base "${base_discovery}"
+assert_success base
+
+# The exact tree, at the paths extract-state.sh emits.
 expected_files=(
     "config/agglayer/config.toml"
     "config/agglayer/aggregator.keystore"
@@ -150,35 +212,94 @@ expected_files=(
 for rel in "${expected_files[@]}"; do
     f="${output_dir}/${rel}"
     if [ ! -f "$f" ]; then
-        fail "missing required file: ${rel}"
+        fail "base: missing required file: ${rel}"
     elif [ ! -s "$f" ]; then
-        fail "required file is EMPTY: ${rel}"
+        fail "base: required file is EMPTY: ${rel}"
     else
-        ok "present and non-empty: ${rel}"
+        ok "base: present and non-empty: ${rel}"
     fi
 done
 
 if [ -d "${output_dir}/config" ]; then
     actual_count=$(find "${output_dir}/config" -type f | wc -l)
     if [ "${actual_count}" -eq "${#expected_files[@]}" ]; then
-        ok "exactly ${#expected_files[@]} files under config/ (no silent extra/missing file)"
+        ok "base: exactly ${#expected_files[@]} files under config/ (no silent extra/missing file)"
     else
-        fail "expected exactly ${#expected_files[@]} files under config/, found ${actual_count}:"
+        fail "base: expected exactly ${#expected_files[@]} files under config/, found ${actual_count}:"
         find "${output_dir}/config" -type f | sort >&2
     fi
 else
-    fail "config/ directory was not created at all"
+    fail "base: config/ directory was not created at all"
 fi
 
-# ---- 3: TriggerCertMode = "ASAP" in BOTH emitted aggkit configs -----------
-for svc in aggkit-001 aggkit-002; do
-    cfg="${output_dir}/config/${svc}/config.toml"
-    if [ -f "$cfg" ] && grep -qF 'TriggerCertMode = "ASAP"' "$cfg"; then
-        ok "${svc}/config.toml: TriggerCertMode = \"ASAP\" present"
-    else
-        fail "${svc}/config.toml: TriggerCertMode = \"ASAP\" NOT found (Auto silently resolves to EpochBased for a PessimisticProof aggsender -- aggkit-env-design.md (d1))"
-    fi
+meta="${output_dir}/state/state-metadata.json"
+assert_jq base "${meta}" '.chains | length == 3' "three chains (L1 and two L2s) in the metadata"
+assert_jq base "${meta}" '[.chains[] | select(.role == "l1")] | length == 1' "one L1 chain"
+assert_jq base "${meta}" '.chains | map(select(.service == "l2-anvil-001")) | .[0].network_id == 1' "l2-anvil-001 has network id 1 (read from the aggkit config)"
+assert_jq base "${meta}" '.chains | map(select(.service == "l2-anvil-002")) | .[0].network_id == 2' "l2-anvil-002 has network id 2 (read from the aggkit config)"
+assert_jq base "${meta}" 'all(.chains[]; .block_number == 11)' "block_number is the dump's own tip (11), not the earlier eth_blockNumber (10)"
+assert_jq base "${meta}" 'all(.chains[]; .historical_states == 1)' "historical_states recomputed from every state file"
+assert_jq base "${meta}" '.settlement_free == null' "settlement_free is null (not true) when the agglayer port is not published"
+for svc in anvil-001 l2-anvil-001 l2-anvil-002; do
+    assert_jq base "${output_dir}/state/${svc}.json" '(.accounts | length) > 0 and (.historical_states | length) > 0' "state/${svc}.json is a decoded dump"
 done
+
+# ---- gzip: compressed anvil_dumpState result --------------------------------
+run_extract gzip "${base_discovery}" FAKE_DUMP=gzip
+assert_success gzip
+assert_jq gzip "${output_dir}/state/l2-anvil-001.json" '.accounts | length > 0' "a gzip-compressed dump is decoded to plain JSON"
+
+# ---- dump failures ----------------------------------------------------------
+run_extract no-accounts "${base_discovery}" FAKE_DUMP=no-accounts
+assert_failure no-accounts 'no accounts'
+run_extract no-historical "${base_discovery}" FAKE_DUMP=no-historical
+assert_failure no-historical 'NO historical_states'
+
+# ---- probe: settlement-freeness and the haproxy patch ------------------------
+run_extract probe-none "${probe_discovery}" FAKE_CERT=null
+assert_success probe-none
+meta="${output_dir}/state/state-metadata.json"
+assert_jq probe-none "${meta}" '.settlement_free == true' "'result: null' for every network is settlement-free"
+assert_jq probe-none "${meta}" '.agglayer_certificates | length == 2 and all(.[]; .latest_known_certificate_height == "none")' "one 'none' certificate entry per L2"
+
+hap="${output_dir}/config/agglayer-dev-ui-proxy-001/haproxy.cfg"
+if [ ! -f "${hap}" ]; then
+    fail "probe-none: haproxy.cfg was not extracted"
+else
+    if grep -qE 'default_backend|backend_default|agglayer-dev-ui-001' "${hap}"; then
+        fail "probe-none: haproxy.cfg still references the default backend:"
+        cat "${hap}" >&2
+    else
+        ok "probe-none: haproxy.cfg has no default_backend/backend_default"
+    fi
+    if grep -q '^backend backend_l1rpc$' "${hap}"; then
+        ok "probe-none: haproxy.cfg keeps the other backends"
+    else
+        fail "probe-none: haproxy.cfg lost backend_l1rpc"
+    fi
+    mode=$(stat -c '%a' "${hap}")
+    if [ "${mode}" = "644" ]; then
+        ok "probe-none: haproxy.cfg keeps mode 644"
+    else
+        fail "probe-none: haproxy.cfg has mode ${mode}, expected 644"
+    fi
+fi
+
+run_extract probe-cert "${probe_discovery}" FAKE_CERT=cert
+assert_success probe-cert
+meta="${output_dir}/state/state-metadata.json"
+assert_jq probe-cert "${meta}" '.settlement_free == false' "a certificate header makes the capture not settlement-free"
+assert_jq probe-cert "${meta}" 'all(.agglayer_certificates[]; .latest_known_certificate_height == "0" and .status == "Settled")' "the certificate height and status are recorded"
+
+# ---- probe failures: "could not ask" is not "no certificates" ----------------
+run_extract probe-error "${probe_discovery}" FAKE_CERT=error
+assert_failure probe-error 'unusable interop_getLatestKnownCertificateHeader response'
+run_extract probe-empty "${probe_discovery}" FAKE_CERT=empty
+assert_failure probe-empty 'unusable interop_getLatestKnownCertificateHeader response'
+run_extract probe-garbage "${probe_discovery}" FAKE_CERT=garbage
+assert_failure probe-garbage 'unusable interop_getLatestKnownCertificateHeader response'
+run_extract probe-unreachable "${probe_discovery}" FAKE_CERT=unreachable
+assert_failure probe-unreachable 'agglayer did not answer'
 
 echo
 if [ "${fail_count}" -gt 0 ]; then

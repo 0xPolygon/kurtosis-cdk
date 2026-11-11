@@ -14,14 +14,20 @@
 # only option there; the L1 anvil is captured the same way for symmetry and
 # because `--dump-state` only writes its file on shutdown.
 #
-# The dump is taken with `anvil_dumpState(preserve_historical_states = true)`
-# (S9b). Without it, `--load-state` restores every block/tx/receipt/log but
-# only ONE state -- the tip -- so any `eth_call`/`eth_getCode`/
+# The dump is taken with `anvil_dumpState(preserve_historical_states = true)`.
+# Without it, `--load-state` restores every block/tx/receipt/log but only ONE
+# state -- the tip -- so any `eth_call`/`eth_getCode`/
 # `eth_getTransactionCount` pinned to a pre-snapshot block fails with
-# `BlockOutOfRangeError`. That broke aggkit (rollupCreationBlockNumber) and
-# agglayer (settlement-signer nonce-inclusion probe) on every restored
-# bundle. With historical states preserved the restored chain answers state
-# reads at every captured height, so no config repointing is needed.
+# `BlockOutOfRangeError`. That breaks aggkit (rollupCreationBlockNumber) and
+# agglayer (settlement-signer nonce-inclusion probe) on a restored bundle.
+# With historical states preserved the restored chain answers state reads at
+# every captured height, so no config repointing is needed.
+#
+# The three anvils are dumped one after another while they keep mining. The
+# recorded block_number is the tip of each dump itself (best_block_number),
+# and the L1 dump is taken first, so the L2 dumps may be a few blocks newer
+# than the L1 state they reference; that is harmless while the capture is
+# settlement-free (no bridge activity means no L1 info tree updates).
 #
 # Usage: extract-state.sh [--flavor <default|anvil-aggkit>] <DISCOVERY_JSON> <OUTPUT_DIR>
 #
@@ -135,17 +141,28 @@ with open(sys.argv[1]) as f:
     fi
 }
 
+# anvil_rpc_block <rpc url> -> block number (decimal) of eth_blockNumber, or empty
+anvil_rpc_block() {
+    local hex
+    hex=$(curl -s --max-time 30 "$1" -X POST -H 'Content-Type: application/json' \
+        --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+        | jq -r '.result // empty' 2>/dev/null) || true
+    case "$hex" in
+        0x[0-9a-fA-F]*) echo $((16#${hex#0x})) ;;
+        *) echo "" ;;
+    esac
+}
+
 # capture_anvil_state <container> <host_port> <out_json> -> block number on stdout
 capture_anvil_state() {
     local container="$1" host_port="$2" out_file="$3"
     local rpc="http://127.0.0.1:$host_port"
-    local tmp_response block_hex accounts
+    local tmp_response block_number accounts
 
-    tmp_response=$(mktemp "${TMPDIR:-/tmp}/anvil-dump-XXXXXX.json")
+    tmp_response=$(mktemp "${TMPDIR:-/tmp}/anvil-dump.XXXXXX")
 
-    block_hex=$(curl -s --max-time 30 "$rpc" -X POST -H 'Content-Type: application/json' \
-        --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' | jq -r '.result // empty')
-    if [ -z "$block_hex" ]; then
+    block_number=$(anvil_rpc_block "$rpc")
+    if [ -z "$block_number" ]; then
         log "    ERROR: $container is not answering JSON-RPC on $rpc" >&2
         rm -f "$tmp_response"
         return 1
@@ -155,7 +172,7 @@ capture_anvil_state() {
     # run with `--init <genesis>`, and anvil rejects `--init` together with
     # `--dump-state`.
     #
-    # params[0] = preserve_historical_states. MUST stay `true` (S9b): it is
+    # params[0] = preserve_historical_states. MUST stay `true`: it is
     # what makes the restored chain serve `eth_call`/`eth_getCode`/
     # `eth_getTransactionCount` at pre-snapshot heights. Cost is roughly
     # `blocks x tip-state-size` of JSON, which is why capture must happen
@@ -194,10 +211,10 @@ capture_anvil_state() {
         return 1
     fi
 
-    # S9b: historical states are load-bearing, not a nice-to-have -- without
-    # them agglayer panics at settlement_task.rs and aggkit dies at startup on
-    # the restored bundle. Fail the capture loudly rather than ship a bundle
-    # that cannot settle.
+    # Historical states are load-bearing, not a nice-to-have -- without them
+    # agglayer panics at settlement_task.rs and aggkit dies at startup on the
+    # restored bundle. Fail the capture loudly rather than ship a bundle that
+    # cannot settle.
     local historical
     # Guarded by a type check on purpose: jq's `length` on a NUMBER returns its
     # absolute value and on a STRING its character count, so a malformed
@@ -206,13 +223,30 @@ capture_anvil_state() {
     if [ -z "$historical" ] || [ "$historical" = "null" ] || [ "$historical" -eq 0 ]; then
         log "    ERROR: decoded state for $container has NO historical_states." >&2
         log "           anvil_dumpState(true) is required so the restored chain can serve" >&2
-        log "           state reads at pre-snapshot heights (see S9b). Is the anvil image" >&2
+        log "           state reads at pre-snapshot heights. Is the anvil image" >&2
         log "           too old to support preserve_historical_states?" >&2
         return 1
     fi
 
-    log "    ✓ $(basename "$out_file"): $(du -h "$out_file" | cut -f1), $accounts accounts, $historical historical states, block $((16#${block_hex#0x}))" >&2
-    echo $((16#${block_hex#0x}))
+    # Tip of the dump itself: eth_blockNumber read before the dump is only a
+    # lower bound while the chain keeps mining. Older anvils do not serialize
+    # best_block_number; those fall back to a read right after the dump.
+    local dumped_tip
+    dumped_tip=$(jq -r '(.best_block_number // .block.number // empty) | tostring' "$out_file" 2>/dev/null || echo "")
+    case "$dumped_tip" in
+        0x[0-9a-fA-F]*) block_number=$((16#${dumped_tip#0x})) ;;
+        ''|*[!0-9]*)
+            block_number=$(anvil_rpc_block "$rpc")
+            if [ -z "$block_number" ]; then
+                log "    ERROR: $container stopped answering JSON-RPC after the dump" >&2
+                return 1
+            fi
+            ;;
+        *) block_number="$dumped_tip" ;;
+    esac
+
+    log "    ✓ $(basename "$out_file"): $(du -h "$out_file" | cut -f1), $accounts accounts, $historical historical states, block $block_number" >&2
+    echo "$block_number"
 }
 
 # copy_container_dir <container> <src-dir> <dest-dir>
@@ -243,42 +277,24 @@ copy_container_file() {
 
 # patch_haproxy_default_backend <haproxy.cfg path>
 #
-# K5 FINDING (beyond devui-under-test.md's design, verified live): profile-
-# gating agglayer-dev-ui-002 off is NOT sufficient on its own even with the
-# 3-edit fix generate-compose.sh applies (drop the depends_on edge, override
-# the compose-level healthcheck to skip bare /). The CAPTURED haproxy.cfg's
-# `backend backend_default { server server4 agglayer-dev-ui-002:80 }` line
-# has no `resolvers`/`init-addr` directive, so haproxy resolves that
-# hostname EAGERLY AT BOOT and, when agglayer-dev-ui-002 was never started
-# (no Docker embedded-DNS record for it at all -- it is not merely
-# "unhealthy", it does not exist on the network), haproxy logs
-# "could not resolve address 'agglayer-dev-ui-002'" / "Failed to initialize
-# server(s) addr" and CRASH-LOOPS. This is a fatal boot failure of the
-# haproxy PROCESS itself, unrelated to and unfixed by any healthcheck
-# change -- verified empirically: `docker compose up -d --wait` never
-# reaches healthy, the container sits in `Restarting`.
+# The captured haproxy.cfg ends with `backend backend_default { server
+# agglayer-dev-ui-NNN:80 }`. That server line has no `resolvers`/`init-addr`
+# directive, so haproxy resolves the hostname eagerly at boot; when the
+# dev-ui service is not started (it is profile-gated in the bundle's
+# compose file, so it has no Docker DNS record at all) haproxy logs "could
+# not resolve address" / "Failed to initialize server(s) addr" and
+# crash-loops, and `docker compose up --wait` never reaches healthy.
 #
-# Since bare `/` is never hit by anything CI-relevant (devui-under-test.md
-# finding (b): no bare-root fetch anywhere in the Playwright suite,
-# devnetReady.mjs, or e2e.yaml), the fix applied here is to drop haproxy's
-# `default_backend` fallback ENTIRELY from the captured config used by this
-# snapshot bundle -- an unmatched request 503s instead of routing anywhere,
-# which is exactly as inert to CI as the removed fallback was. This is a
-# snapshot-pipeline-only patch of the CAPTURED file (the live enclave's own
-# haproxy.cfg / static_files/additional_services/bridge-ui/haproxy.cfg
-# template are untouched -- out of K5's scope, and the live enclave always
-# has agglayer-dev-ui-002 running so it never hits this failure mode).
-# `backend_default` is deterministically the LAST block in the file (per
-# the template), so truncating from its header comment to EOF is safe and
-# unambiguous; `default_backend backend_default` is deleted separately from
-# the frontend section. Idempotent (a no-op if already patched or absent).
+# The fix is to drop the `default_backend` fallback from the captured config
+# used by the bundle: an unmatched request answers 503 instead of being
+# routed to the dev-ui. The live enclave's haproxy.cfg and the template in
+# static_files are untouched. `backend_default` is the LAST block of the
+# template, so truncating from its header comment to EOF is safe;
+# `default_backend backend_default` is deleted separately from the frontend
+# section. Idempotent (a no-op if already patched or absent).
 #
-# Trade-off, stated explicitly: with dev-ui brought up manually via
-# `--profile devui up -d`, bare `/` through haproxy no longer proxies to it
-# (previously true only because the container happened to be up). The
-# container itself is still directly reachable on its own published port
-# (${DEVUI_PORT:-8557}) either way, so "stays available for manual
-# debugging" (devui-under-test.md (c) item 1) still holds.
+# The dev-ui container stays reachable on its own published port
+# (${DEVUI_PORT:-8557}) when started with `--profile devui`.
 patch_haproxy_default_backend() {
     local cfg="$1"
     if [ ! -f "$cfg" ]; then
@@ -289,13 +305,9 @@ patch_haproxy_default_backend() {
     fi
     local tmp orig_mode
     tmp=$(mktemp)
-    # `mktemp` files are 0600 -- if that mode ends up baked into the derived
-    # image's COPY (build-images.sh's Dockerfile has no --chmod for this
-    # file), haproxy fails with "Could not open configuration file:
-    # Permission denied" and crash-loops just as badly as the unpatched
-    # DNS-resolution failure this function exists to fix. Capture and
-    # restore the ORIGINAL file's mode explicitly rather than relying on
-    # `mv`/`cp` to preserve anything.
+    # `mktemp` files are 0600; if that mode ended up in the derived image's
+    # COPY, haproxy would fail with "Could not open configuration file:
+    # Permission denied". Restore the original file's mode explicitly.
     orig_mode=$(stat -c '%a' "$cfg" 2>/dev/null || stat -f '%Lp' "$cfg" 2>/dev/null || echo 644)
     # 1) drop the `default_backend backend_default` frontend line.
     # 2) truncate the file at (and including) the "# Default backend
@@ -307,7 +319,7 @@ patch_haproxy_default_backend() {
     if ! grep -q '^backend backend_default$' "$tmp" && [ -s "$tmp" ]; then
         chmod "$orig_mode" "$tmp"
         mv "$tmp" "$cfg"
-        log "    ✓ patched $(basename "$cfg"): dropped default_backend/backend_default (K5 -- see extract-state.sh comment)"
+        log "    ✓ patched $(basename "$cfg"): dropped default_backend/backend_default (it cannot resolve a dev-ui that is not running)"
     else
         rm -f "$tmp"
         log "    ERROR: patch_haproxy_default_backend failed to remove backend_default from $cfg"
@@ -390,16 +402,15 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     log "  Note: /etc/agglayer/storage and /etc/agglayer/backups NOT extracted (stateless by design)"
 
     # ---- aggkit configs -----------------------------------------------------
-    # Each aggkit-00X container now also serves the bridge REST API in-process
-    # (--components=...,bridge), so there is only one role/container per L2
-    # network to extract -- no separate "-bridge" sibling (merged in K1).
+    # The anvil params files list `bridge` among aggkit_components, so each
+    # aggkit-00X container also serves the bridge REST API in-process and
+    # there is one container per L2 network to extract.
     #
-    # K5 / aggkit-env-design.md (d): this loop (plus the agglayer and
-    # aggkit-proxy blocks above/below it) is what produces the config/ tree
-    # aggkit's own e2e env (test/e2e/envs/anvil-2chains/, built by A2 -- not
-    # this repo) is built FROM. The emitted layout here is named after
-    # kurtosis-cdk's own service names, not aggkit's expected per-network
-    # "001"/"002" directories, so the mapping is spelled out explicitly:
+    # This loop (plus the agglayer and aggkit-proxy blocks around it) produces
+    # the config/ tree aggkit's own e2e env (test/e2e/envs/anvil-2chains/) is
+    # built from. The emitted layout is named after kurtosis-cdk's service
+    # names, not aggkit's per-network "001"/"002" directories, so the mapping
+    # is spelled out explicitly:
     #
     #   kurtosis-cdk (emitted here)              aggkit's env (A2 builds this)
     #   ----------------------------------------  -----------------------------
@@ -468,16 +479,12 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     fi
 
     # ---- network ids (authoritative, straight out of the aggkit configs) ---
-    # agglayer/issues#55: the autoclaim strip (c2ca894d) removed the
-    # AutoClaim.Claimers block that carried the ONLY `NetworkID =` line the
-    # rendered aggkit config had, so the bare grep below now finds nothing --
-    # and under set -euo pipefail a no-match grep kills STEP 3 SILENTLY (no
-    # stderr), which is exactly what broke snapshot-devui run 38611070673
-    # twice with no error visible anywhere in the CI log. The extraction now
-    # falls back to the dev-ui config.json per-chain `networkId` table (the
-    # same source the dev-ui itself uses), matched by chain id, and when
-    # neither source yields a value the failure is LOUD (real message +
-    # exit 1) instead of a silent pipeline death.
+    # The aggkit config no longer carries an AutoClaim.Claimers block, which
+    # held the only `NetworkID =` line the rendered config had, so the grep
+    # below may find nothing -- and under set -euo pipefail a no-match grep
+    # would kill the script silently. The extraction therefore falls back to
+    # the dev-ui config.json per-chain `networkId` table (matched by chain
+    # id), and when neither source yields a value fails loudly instead.
     DEV_UI_CFG=""
     if [ "$(jq -r '.dev_ui.found // false' "$DISCOVERY_JSON")" = "true" ] \
         && [ -n "${DEV_UI_SERVICE:-}" ] \
@@ -508,7 +515,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             log "       No 'NetworkID =' line in $cfg and no matching chain in ${DEV_UI_CFG:-<no dev-ui config extracted>}."
             log "       state-metadata.json network_id, the settlement probe and"
             log "       generate-summary/generate-compose all need it; failing loudly instead of"
-            log "       dying silently on a grep pipeline (see the comment above)."
+            log "       dying silently on a grep pipeline."
             exit 1
         fi
         CHAINS_META=$(echo "$CHAINS_META" | jq \
@@ -521,8 +528,15 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
     # agglayer/aggkit internal databases are deliberately NOT captured, so a
     # snapshot taken while certificates exist restores into an inconsistent
     # world (the chains remember bridges the certificate bookkeeping does
-    # not). This does not fail the extraction -- the tooling still produces a
-    # well-formed bundle -- but it must be recorded loudly.
+    # not). Certificate activity does not fail the extraction -- the tooling
+    # still produces a well-formed bundle -- but it is recorded loudly and
+    # the soundness gate refuses the bundle.
+    #
+    # Only a JSON-RPC response with a `result` member is an answer:
+    # `interop_getLatestKnownCertificateHeader` returns `result: null` for a
+    # network without certificates and a header object otherwise. A transport
+    # failure, a non-JSON body or an `error` response (for instance a renamed
+    # method) is NOT "no certificates" and fails the extraction.
     SETTLEMENT_FREE="null"
     CERT_HEIGHTS='[]'
     AGGLAYER_READRPC_PORT=$(jq -r '.agglayer.ports["4444"] // empty' "$DISCOVERY_JSON")
@@ -532,10 +546,17 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             net=$(echo "$CHAINS_META" | jq -r --arg p "$prefix" \
                 'map(select(.prefix == $p)) | .[0].network_id // empty')
             [ -z "$net" ] && continue
-            header=$(curl -s --max-time 15 "http://127.0.0.1:$AGGLAYER_READRPC_PORT" \
+            if ! header=$(curl -s --max-time 15 "http://127.0.0.1:$AGGLAYER_READRPC_PORT" \
                 -X POST -H 'Content-Type: application/json' \
-                --data "{\"jsonrpc\":\"2.0\",\"method\":\"interop_getLatestKnownCertificateHeader\",\"params\":[$net],\"id\":1}" \
-                2>/dev/null || echo '{}')
+                --data "{\"jsonrpc\":\"2.0\",\"method\":\"interop_getLatestKnownCertificateHeader\",\"params\":[$net],\"id\":1}"); then
+                log "ERROR: agglayer did not answer interop_getLatestKnownCertificateHeader for network $net on port $AGGLAYER_READRPC_PORT"
+                exit 1
+            fi
+            if ! echo "$header" | jq -e 'type == "object" and has("result") and (has("error") | not)' > /dev/null 2>&1; then
+                log "ERROR: unusable interop_getLatestKnownCertificateHeader response for network $net: $(echo "$header" | head -c 400)"
+                log "       Cannot tell \"no certificates\" from \"could not ask\"; refusing to record settlement_free."
+                exit 1
+            fi
             height=$(echo "$header" | jq -r '.result.height // empty')
             status=$(echo "$header" | jq -r '.result.status // empty')
             CERT_HEIGHTS=$(echo "$CERT_HEIGHTS" | jq \
@@ -543,9 +564,9 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 --arg height "${height:-none}" \
                 --arg status "${status:-none}" \
                 '. + [{network_id: $network_id, latest_known_certificate_height: $height, status: $status}]')
-            if [ -n "$height" ]; then
+            if [ "$(echo "$header" | jq -r '.result != null')" = "true" ]; then
                 SETTLEMENT_FREE=false
-                log "  WARNING: network $net already has certificates (latest known height $height, status $status)"
+                log "  WARNING: network $net already has certificates (latest known height ${height:-unknown}, status ${status:-unknown})"
             fi
         done
         if [ "$SETTLEMENT_FREE" = "true" ]; then
@@ -560,13 +581,13 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
             log "  ================================================================"
         fi
     else
-        log "  WARNING: agglayer readrpc port not published; settlement-freeness not checked"
+        log "  WARNING: agglayer readrpc port not published; settlement-freeness not checked (recorded as null)"
     fi
 
     # ---- metadata ----------------------------------------------------------
-    # S9b: make the bundle self-describing about historical states. A dump
-    # with historical_states == 0 cannot settle certificates after restore, so
-    # S10/S11 can gate on this the same way they gate on settlement_free.
+    # Make the bundle self-describing about historical states. A dump with
+    # historical_states == 0 cannot settle certificates after restore, so the
+    # soundness gate checks this the same way it checks settlement_free.
     for idx in $(seq 0 $(( $(echo "$CHAINS_META" | jq 'length') - 1 ))); do
         chain_state_file=$(echo "$CHAINS_META" | jq -r ".[$idx].state_file")
         chain_historical=$(jq -r '.historical_states | if . == null then 0 else length end' \
