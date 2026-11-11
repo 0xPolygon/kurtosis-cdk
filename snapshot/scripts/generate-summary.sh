@@ -84,7 +84,7 @@ SNAPSHOT_ID=$(basename "$OUTPUT_DIR")
 # ============================================================================
 # Flavor: anvil-aggkit
 #
-# This summary is a CONTRACT with dev-ui CI (S13): the workflow reads the
+# This summary is a CONTRACT with dev-ui CI: the workflow reads the
 # haproxy origin, the chain ids, the per-L2 network_id, the aggkit-proxy REST
 # base and -- critically -- erc20_address, which is nonce-dependent and never
 # matches dev-ui's hardcoded DEVNET_KNOWN_ERC20_CANDIDATE.
@@ -192,13 +192,6 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 kind: "rest",
                 upstream: ($proxy_svc + ":8080"),
                 note: "aggkit-proxy bridge + tracker REST API (path prefix stripped upstream)"
-            },
-            {
-                path: "/",
-                url: ($base + "/"),
-                kind: "http",
-                upstream: ($devui_svc + ":80"),
-                note: "default backend: the dev-ui"
             }
         ]')
 
@@ -473,7 +466,7 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 service: $devui_svc,
                 image: $devui_image,
                 url: ("http://127.0.0.1:" + ($devui_port|tostring)),
-                url_via_proxy: ($proxy_base + "/"),
+                note: "behind the devui compose profile; not routed through haproxy",
                 config_path: "/etc/agglayer-dev-ui/config.json"
             },
 
@@ -507,7 +500,6 @@ if [ "$FLAVOR" = "anvil-aggkit" ]; then
                 erc20: "erc20_address is nonce-dependent and does NOT match dev-ui DEVNET_KNOWN_ERC20_CANDIDATE. Pass it as E2E_ERC20_ADDRESS so globalSetup skips its own deploy.",
                 self_contained: "State, config and keystores are baked into the images. The compose file is the only file needed.",
                 settlement_free: "A bundle with settlement_free == false must not be published: agglayer/aggkit internal databases are not captured, so restoring chain state that already contains bridge activity is unsound.",
-                restore_adaptation: "aggkit rollupCreationBlockNumber / RollupCreationBlockL1 are repointed at the L1 snapshot block when the images are built: a restored anvil serves state only at the snapshot block and later. See snapshot/scripts/build-images.sh.",
                 keys: "All keys here are public kurtosis devnet keys. Nothing sensitive is published."
             }
         }' > "$SUMMARY_FILE"
