@@ -207,7 +207,11 @@ if [ "$REUSED" = false ]; then
     trap 'rm -rf "$WORK_DIR"' EXIT
 
     mkdir -p "$WORK_DIR/src"
-    printf '[profile.default]\nsrc = "src"\nout = "out"\n' > "$WORK_DIR/foundry.toml"
+    # A fixed compiler and EVM version: the deployed bytecode, and therefore
+    # the ERC20 address recorded in the bundle, must not depend on whichever
+    # 0.8.x solc happens to be newest when the snapshot is taken (the
+    # download also needs network access to binaries.soliditylang.org).
+    printf '[profile.default]\nsrc = "src"\nout = "out"\nsolc = "0.8.28"\nevm_version = "shanghai"\n' > "$WORK_DIR/foundry.toml"
 
     # Byte-for-byte dev-ui's E2E_TOKEN_SOURCE (tests/e2e/globalSetup.ts).
     cat > "$WORK_DIR/src/E2EToken.sol" << 'SOLIDITY'
