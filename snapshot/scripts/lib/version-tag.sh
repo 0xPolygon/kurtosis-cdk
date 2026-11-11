@@ -2,15 +2,22 @@
 #
 # Immutable, self-describing per-service image tags.
 #
-# K4 (dev-ui-ci-snapshot / snapshot-v2-aggkit-e2e plan): every published
-# snapshot image now carries a tag of the form
-#   <component-version>-<unix-ts>
-# e.g. kurtosis-cdk-snapshot-aggkit-001:0.11.0-rc5-1755100800
-# where <component-version> is derived from the exact upstream image ref
-# that produced that service's baked image (IMAGE_INFO.json's
-# `base_image`, which is already params-override-aware -- see
-# build-images.sh's record_image()) and <unix-ts> is ONE timestamp shared by
-# every service in a single publish run.
+# Every published snapshot image carries a tag of the form
+#   <component-version>-<UTC yyyymmddHHMMSS>-<source-id>
+# e.g. kurtosis-cdk-snapshot-aggkit-001:0.11.1-20261110093015-1a2b3c4-r1234567.1
+# where
+#   <component-version> is derived from the exact upstream image ref that
+#     produced that service's baked image (IMAGE_INFO.json's `base_image`,
+#     which is already params-override-aware -- see build-images.sh's
+#     record_image());
+#   <UTC timestamp> is ONE timestamp shared by every service of a publish run;
+#   <source-id> says where the images came from and makes the tag unique per
+#     run: "<short git sha>-r<run id>.<run attempt>" in GitHub Actions
+#     (GITHUB_SHA, GITHUB_RUN_ID, GITHUB_RUN_ATTEMPT), "<short git sha>-l<6 hex
+#     random>" for a local run. Two publishes therefore never share a tag, even
+#     within the same second, and a tag can be traced back to its run.
+# publish-images.sh additionally refuses to push a tag that already exists in
+# the registry.
 #
 # This is a pure, side-effect-free helper library: no docker/network calls.
 # SINGLE SOURCE OF TRUTH for the sanitization rule -- publish-images.sh must
@@ -19,7 +26,8 @@
 # Usage:
 #   source "$(dirname "$0")/lib/version-tag.sh"
 #   version=$(snapshot_resolve_component_version "$base_image") || exit 1
-#   tag=$(snapshot_versioned_tag "$base_image" "$unix_ts") || exit 1
+#   source_id=$(snapshot_source_id) || exit 1
+#   tag=$(snapshot_versioned_tag "$base_image" "$unix_ts" "$source_id") || exit 1
 #
 # Every function below fails LOUDLY (non-zero return, message on stderr) on
 # anything it cannot confidently resolve. There is deliberately no silent
@@ -36,18 +44,16 @@ fi
 _SNAPSHOT_LIB_VERSION_TAG_SOURCED=1
 
 # Maximum length of the <component-version> portion of a tag, BEFORE the
-# "-<unix-ts>" suffix is appended. The OCI/Docker tag grammar allows up to
-# 128 characters total (https://github.com/opencontainers/distribution-spec,
-# `[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}`), which leaves enormous headroom even
-# after reserving space for a 10-digit unix timestamp plus its separating
-# dash. This cap is deliberately much tighter than that hard limit, purely
-# for human readability in the GHCR package listing: some upstream tags
-# (branch-, commit- or run-number-derived refs) run well past it, and this
-# cap truncates them. Truncation is safe because the tag is
+# timestamp and source id are appended. The OCI/Docker tag grammar allows up
+# to 128 characters total (https://github.com/opencontainers/distribution-spec,
+# `[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}`); a 40-character version, 14-digit
+# timestamp and a source id of at most 40 characters stay well below that.
+# The cap is purely for readability in the GHCR package listing: some
+# upstream tags (branch-, commit- or run-number-derived refs) run well past
+# it, and this cap truncates them. Truncation is safe because the tag is
 # informational only -- the LOAD-BEARING pin is the `@sha256:<digest>`
-# recorded alongside it (see apply-digests.sh), not this string, so a
-# theoretical truncation collision between two different long upstream tags
-# would not weaken the pin.
+# recorded alongside it (see apply-digests.sh), and the timestamp and source
+# id keep two truncated tags apart.
 SNAPSHOT_MAX_VERSION_LEN=40
 
 # snapshot_extract_image_tag <image-ref>
@@ -122,17 +128,77 @@ snapshot_resolve_component_version() {
     snapshot_sanitize_tag_component "$tag" || return 1
 }
 
-# snapshot_versioned_tag <base_image> <unix_ts>
-# Echo "<component-version>-<unix_ts>". Fails loudly if the version cannot
-# be resolved, or if <unix_ts> is not a plain non-negative integer.
-snapshot_versioned_tag() {
-    local base_image="$1" unix_ts="$2" version
+# snapshot_utc_stamp <unix_ts>
+# Echo the UTC time of <unix_ts> as yyyymmddHHMMSS (GNU or BSD date).
+snapshot_utc_stamp() {
+    local unix_ts="$1"
     case "$unix_ts" in
         '' | *[!0-9]*)
             echo "version-tag.sh: unix_ts '$unix_ts' is not a non-negative integer" >&2
             return 1
             ;;
     esac
+    date -u -d "@${unix_ts}" +%Y%m%d%H%M%S 2> /dev/null \
+        || date -u -r "${unix_ts}" +%Y%m%d%H%M%S 2> /dev/null \
+        || {
+            echo "version-tag.sh: could not format unix_ts '$unix_ts' with date" >&2
+            return 1
+        }
+}
+
+# snapshot_source_id
+# Echo the source id of the current run (see the header). Uses
+# GITHUB_SHA/GITHUB_RUN_ID/GITHUB_RUN_ATTEMPT when GITHUB_RUN_ID is set,
+# otherwise `git rev-parse` of the checkout this file lives in plus a random
+# suffix. Fails when the commit cannot be determined.
+snapshot_source_id() {
+    local sha run_id attempt rand
+    run_id="${GITHUB_RUN_ID:-}"
+    if [ -n "$run_id" ]; then
+        sha="${GITHUB_SHA:-}"
+        attempt="${GITHUB_RUN_ATTEMPT:-}"
+        case "$run_id" in *[!0-9]*)
+            echo "version-tag.sh: GITHUB_RUN_ID '$run_id' is not numeric" >&2
+            return 1
+            ;;
+        esac
+        case "$attempt" in '' | *[!0-9]*)
+            echo "version-tag.sh: GITHUB_RUN_ATTEMPT '$attempt' is not numeric" >&2
+            return 1
+            ;;
+        esac
+        case "$sha" in '' | *[!0-9a-fA-F]*)
+            echo "version-tag.sh: GITHUB_SHA '$sha' is not a commit id" >&2
+            return 1
+            ;;
+        esac
+        echo "$(printf '%s' "${sha:0:7}" | tr 'A-F' 'a-f')-r${run_id}.${attempt}"
+        return 0
+    fi
+    sha=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --short=7 HEAD 2> /dev/null) || sha=""
+    if [ -z "$sha" ]; then
+        echo "version-tag.sh: cannot determine the git commit for the source id (not in a git checkout and GITHUB_RUN_ID unset)" >&2
+        return 1
+    fi
+    rand=$(od -An -N3 -tx1 /dev/urandom 2> /dev/null | tr -d ' \n')
+    if [ -z "$rand" ]; then
+        rand=$(printf '%06x' $((RANDOM * 32768 + RANDOM)) | tail -c 6)
+    fi
+    echo "${sha}-l${rand}"
+}
+
+# snapshot_versioned_tag <base_image> <unix_ts> <source_id>
+# Echo "<component-version>-<yyyymmddHHMMSS of unix_ts>-<source_id>". Fails
+# loudly if the version cannot be resolved, if <unix_ts> is not a plain
+# non-negative integer, or if <source_id> is empty or not a legal tag
+# fragment.
+snapshot_versioned_tag() {
+    local base_image="$1" unix_ts="$2" source_id="${3:-}" version stamp
+    stamp=$(snapshot_utc_stamp "$unix_ts") || return 1
+    if [ -z "$source_id" ] || [ "${#source_id}" -gt 40 ] || [[ ! "$source_id" =~ ^[A-Za-z0-9_][A-Za-z0-9._-]*$ ]]; then
+        echo "version-tag.sh: source_id '$source_id' is empty, longer than 40 characters or not a legal tag fragment" >&2
+        return 1
+    fi
     version=$(snapshot_resolve_component_version "$base_image") || return 1
-    echo "${version}-${unix_ts}"
+    echo "${version}-${stamp}-${source_id}"
 }
