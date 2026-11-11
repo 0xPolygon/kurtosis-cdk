@@ -230,6 +230,76 @@ def test_parse_args_with_user_overrides(plan):
     expect.ne(external_l1, None)
 
 
+def test_parse_args_with_op_succinct_defaults_to_compatible_op_node(plan):
+    # Should default to the op-node release OP Succinct can read, when it is deployed
+    user_args = {
+        "deployment_suffix": "-001",
+        "l2_chain_id": 2151908,
+        "l1_seconds_per_slot": 2,
+        "deploy_op_succinct": True,
+    }
+
+    # Empty op args
+    result = op_input_parser.parse_args(plan, user_args, {})
+    participants = (
+        result.get("optimism_package").get("chains").get("001").get("participants")
+    )
+    for name in ["sequencer1", "rpc1"]:
+        expect.eq(
+            participants.get(name).get("cl").get("image"),
+            constants.OP_SUCCINCT_OP_NODE_IMAGE,
+        )
+
+    # Partial op args: participants and chains that do not set an image get the
+    # compatible one, an explicit image is kept
+    user_op_args = {
+        "chains": {
+            "001": {
+                "participants": {
+                    "sequencer1": {
+                        "sequencer": True,
+                        "cl": {"image": "op-node:latest"},
+                    },
+                    "rpc1": {"sequencer": "sequencer1"},
+                },
+            },
+            "002": {},
+        },
+    }
+    result = op_input_parser.parse_args(plan, user_args, user_op_args)
+    chains = result.get("optimism_package").get("chains")
+    participants = chains.get("001").get("participants")
+    expect.eq(participants.get("sequencer1").get("cl").get("image"), "op-node:latest")
+    expect.eq(
+        participants.get("rpc1").get("cl").get("image"),
+        constants.OP_SUCCINCT_OP_NODE_IMAGE,
+    )
+    for name in ["sequencer1", "rpc1"]:
+        expect.eq(
+            chains.get("002").get("participants").get(name).get("cl").get("image"),
+            constants.OP_SUCCINCT_OP_NODE_IMAGE,
+        )
+
+
+def test_parse_args_without_op_succinct_keeps_default_op_node(plan):
+    # Should keep the default op-node image when OP Succinct is not deployed
+    user_args = {
+        "deployment_suffix": "-001",
+        "l2_chain_id": 2151908,
+        "l1_seconds_per_slot": 2,
+        "deploy_op_succinct": False,
+    }
+    result = op_input_parser.parse_args(plan, user_args, {})
+    participants = (
+        result.get("optimism_package").get("chains").get("001").get("participants")
+    )
+    for name in ["sequencer1", "rpc1"]:
+        expect.eq(
+            participants.get(name).get("cl").get("image"),
+            constants.DEFAULT_IMAGES.get("op_node_image"),
+        )
+
+
 def test_parse_chains_with_empty_chains(plan):
     # Should return default chain when empty dict is provided
     result = op_input_parser._parse_chains({})
