@@ -998,7 +998,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         anvil_l2_url = "http://{}{}:{}".format(
             constants.L2_RPC_MAPPING[constants.SEQUENCER_TYPE.anvil],
             args["deployment_suffix"],
-            DEFAULT_PORTS.get("anvil_port"),
+            ports_package.HTTP_RPC_PORT_NUMBER,
         )
         if args["op_el_rpc_url"] != anvil_l2_url:
             plan.print(
