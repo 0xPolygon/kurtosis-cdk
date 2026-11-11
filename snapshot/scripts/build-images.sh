@@ -507,6 +507,9 @@ DOCKER_EOF
         exit 1
     fi
     log "  dev-ui chains now use: $(jq -r '[.chains[] | .rpcUrl] | join(" ")' "$BUILD_DIR/config.json")"
+    # The mounts-variant compose file bind-mounts config/<dev-ui>/config.json;
+    # keep it identical to the baked copy.
+    cp "$BUILD_DIR/config.json" "$OUTPUT_DIR/config/$DEVUI_SVC/config.json"
 
     cat > "$BUILD_DIR/healthcheck.sh" << 'HC_EOF'
 #!/bin/sh

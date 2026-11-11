@@ -3,7 +3,7 @@
 # Snapshot Verification Script
 # Validates that a snapshot can boot and produce blocks
 #
-# Usage: verify.sh <SNAPSHOT_DIR>
+# Usage: verify.sh [--compose-file <name>] [--keep] <SNAPSHOT_DIR>
 #
 
 set -euo pipefail
@@ -53,21 +53,26 @@ usage() {
 Snapshot Verification Script
 
 Usage:
-  $0 [--compose-file <name>] <SNAPSHOT_DIR>
+  $0 [--compose-file <name>] [--keep] <SNAPSHOT_DIR>
 
 Arguments:
   SNAPSHOT_DIR        Path to snapshot directory
 
 Options:
   --compose-file <name>  Compose file to verify against, relative to
-                          SNAPSHOT_DIR (default: docker-compose.yml). K5:
-                          this is what lets the SAME anvil-aggkit bundle be
+                          SNAPSHOT_DIR (default: docker-compose.yml). This
+                          is what lets the SAME anvil-aggkit bundle be
                           verified against BOTH the zero-mount default
                           (docker-compose.yml) and the config-tree-mounted
                           variant (docker-compose.mounts.yml). Only
                           consulted for the anvil-aggkit flavor; the default
                           (geth/lighthouse) flavor has no second variant and
                           ignores this flag.
+  --keep                  anvil-aggkit only: leave the stack running after the
+                          verification. By default it is removed again
+                          (docker compose down -v), and a stack left over from
+                          an earlier run is removed before the verification
+                          starts.
 
 Description:
   Verifies a snapshot by:
@@ -100,6 +105,10 @@ while [ $# -gt 0 ]; do
             COMPOSE_FILE_NAME="$2"
             shift 2
             ;;
+        --keep)
+            export SNAPSHOT_VERIFY_KEEP=true
+            shift
+            ;;
         -*)
             log_error "Unknown option: $1"
             usage 1
@@ -129,7 +138,7 @@ if [ ! -f "$SNAPSHOT_DIR/$COMPOSE_FILE_NAME" ]; then
 fi
 
 # ============================================================================
-# Flavor detection (S9).
+# Flavor detection.
 #
 # The anvil-aggkit flavor has no metadata/checkpoint.json at all (see
 # snapshot/scripts/extract-state.sh -- it captures anvil state over RPC, not
@@ -161,8 +170,7 @@ if [ "$SNAPSHOT_FLAVOR" = "anvil-aggkit" ]; then
     exit $?
 fi
 
-# ---- default (geth/lighthouse) flavor continues below, byte-for-byte
-# unchanged from before S9. ----
+# ---- default (geth/lighthouse) flavor continues below. ----
 
 if [ ! -f "$SNAPSHOT_DIR/metadata/checkpoint.json" ]; then
     log_error "checkpoint.json not found in: $SNAPSHOT_DIR"

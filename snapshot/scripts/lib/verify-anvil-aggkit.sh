@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Anvil-aggkit flavor verification (S9).
+# Anvil-aggkit flavor verification.
 #
 # This library is SOURCED by snapshot/verify.sh once it detects (via
 # summary.json's "flavor" key) that the snapshot directory it was pointed at
@@ -11,36 +11,40 @@
 # has no effect whatsoever on the default flavor's TESTS_* globals if verify.sh
 # is ever refactored to define them earlier.
 #
-# Every check here exercises the dev-ui contract table in the plan (§1):
-# block progression + finalized on all three chains, bridge/GER bytecode,
+# Every check here exercises the contract the dev-ui CI relies on: block
+# progression + finalized on all three chains, bridge/GER bytecode,
 # sync-status (both is_synced AND is_active, both sides), the tracker health
-# endpoint, haproxy CORS preflight on every route, dev-ui /config.json, the
-# the S9b historical-state invariant (aggkit config baked verbatim + the
-# restored L1 answering state reads at pre-snapshot heights), and
-# a full scripted bridge round trip (both legs manually claimed via cast --
-# since agglayer/issues#55 no automated claimer runs in the enclave).
+# endpoint, haproxy CORS preflight on every route, the baked dev-ui config
+# (valid, and every chain reachable through the proxy), the historical-state
+# invariant (aggkit config baked verbatim + the restored L1 answering state
+# reads at pre-snapshot heights), and a full scripted bridge round trip (both
+# legs manually claimed via cast -- no automated claimer runs in the
+# enclave).
 #
-# Hard-won context baked in (see plan S1/S4b/S6/S8 outcomes -- do not
-# rediscover):
+# Hard-won context baked in:
 #   - The host `cast`/`forge` wrappers cannot reach kurtosis/compose-published
 #     ports (no --network host). Every cast invocation below goes through a
-#     throwaway `docker run --rm --network host ... foundry:latest` container.
+#     throwaway `docker run --rm --network host ... foundry` container.
 #   - claimAsset's `originNetwork` is the ASSET's origin network (0 for
 #     native ETH), never the network_id of the chain the deposit was
-#     submitted on (F1, S6). Passing the source network_id reverts
-#     InvalidSmtProof. This script reads origin_network from the `bridges`
-#     REST listing for the exact deposit being claimed -- never guesses it.
+#     submitted on. Passing the source network_id reverts InvalidSmtProof.
+#     This script reads origin_network from the `bridges` REST listing for
+#     the exact deposit being claimed -- never guesses it.
 #   - claim-proof's `leaf_index` is the L1-info-tree index, NOT the deposit
-#     count (S4b). Get it from GET /bridge/v1/l1-info-tree-index first.
+#     count. Get it from GET /bridge/v1/l1-info-tree-index first.
 #   - The tracker's terminal state is tracking_status:"finished" with final
 #     step_name:"Claimed" -- there is no "Completed" value.
 #   - Transient tracker step errors (error_type_string:"transient") are
-#     NORMAL mid-flight (retry_count reached ~14 in S6) and self-resolve;
-#     never fail on the first one. A CertificatePending step whose *result*
+#     NORMAL mid-flight (retry_count reached ~14) and self-resolve; never
+#     fail on the first one. A CertificatePending step whose *result*
 #     carries status_string:"InError" is a DIFFERENT, non-transient signal
 #     (the underlying agglayer certificate itself failed) -- if it persists
 #     across several polls without change, that is treated as a genuine
 #     failure, not something to keep waiting on.
+#   - The stack this library starts is torn down again when the verification
+#     ends (pass or fail) unless SNAPSHOT_VERIFY_KEEP=true (verify.sh --keep),
+#     and a stack left over from an earlier run is removed first, so a run
+#     never continues on a state mutated by a previous one.
 
 # Idempotent source guard.
 if [ -n "${_SNAPSHOT_LIB_VERIFY_ANVIL_AGGKIT_SOURCED:-}" ]; then
@@ -50,17 +54,15 @@ fi
 _SNAPSHOT_LIB_VERIFY_ANVIL_AGGKIT_SOURCED=1
 
 # ============================================================================
-# cast wrapper -- host foundry is unusable here (broken GLIBC on the host
-# `cast`, and the host wrapper script lacks --network host so it cannot reach
-# published ports even where it does run). Every call goes through a
-# throwaway container instead, exactly as documented in
-# plans/dev-ui-ci-snapshot/s4b-evidence/21-manual-claim-recipe.txt.
+# cast wrapper -- host foundry is unusable here (the host `cast` wrapper
+# lacks --network host, so it cannot reach published ports). Every call goes
+# through a throwaway container instead.
 # ============================================================================
 # The foundry tag is read from the bundle whenever possible, never pinned to a
 # floating `:latest`: the anvil nodes in the snapshot are a specific foundry
-# version (v1.5.1 -- older builds lack eth_getTransactionBySenderAndNonce and
-# make agglayer panic, S4b), and verifying them with a different, drifting
-# `cast` is exactly the kind of mismatch this tooling exists to prevent.
+# version (older builds lack eth_getTransactionBySenderAndNonce and make
+# agglayer panic), and verifying them with a different, drifting `cast` is
+# exactly the kind of mismatch this tooling exists to prevent.
 # _verify_cast_image is resolved once by _resolve_verify_cast_image below.
 VERIFY_CAST_IMAGE="${VERIFY_CAST_IMAGE:-ghcr.io/foundry-rs/foundry:latest}"
 
@@ -122,6 +124,39 @@ hex_to_dec() {
     echo $((16#$h))
 }
 
+# Tear the stack down when the verification ends, however it ends, unless
+# SNAPSHOT_VERIFY_KEEP=true, and remove the temporary compose log.
+_anvil_aggkit_cleanup() {
+    local rc=$?
+    if [ -n "${ANVIL_VERIFY_UP_LOG:-}" ]; then
+        rm -f "$ANVIL_VERIFY_UP_LOG"
+    fi
+    if [ -n "${ANVIL_VERIFY_COMPOSE_DIR:-}" ]; then
+        if [ "${SNAPSHOT_VERIFY_KEEP:-false}" = true ]; then
+            log_info "Leaving the stack running (--keep); stop it with: (cd $ANVIL_VERIFY_COMPOSE_DIR && docker compose -f $ANVIL_VERIFY_COMPOSE_FILE --profile '*' down -v)"
+        else
+            log_info "Tearing the stack down..."
+            (cd "$ANVIL_VERIFY_COMPOSE_DIR" && docker compose -f "$ANVIL_VERIFY_COMPOSE_FILE" --profile '*' down -v --remove-orphans) > /dev/null 2>&1 || true
+        fi
+    fi
+    return "$rc"
+}
+
+# duration_to_seconds <go duration, e.g. 30m, 1h30m, 90s, 1.5h>
+# Echoes the duration in whole seconds, or nothing (exit 1) when it is not a
+# valid Go duration. Needs python3, which this verifier already requires.
+duration_to_seconds() {
+    python3 - "$1" << 'PY'
+import re, sys
+text = sys.argv[1]
+units = {"ns": 1e-9, "us": 1e-6, "\u00b5s": 1e-6, "ms": 1e-3, "s": 1, "m": 60, "h": 3600}
+if text in ("0", "") or not re.fullmatch(r"(?:\d+(?:\.\d+)?(?:ns|us|\u00b5s|ms|s|m|h))+", text):
+    sys.exit(1)
+total = sum(float(n) * units[u] for n, u in re.findall(r"(\d+(?:\.\d+)?)(ns|us|\u00b5s|ms|s|m|h)", text))
+print(int(total))
+PY
+}
+
 run_anvil_aggkit_verification() {
     # verify.sh runs under `set -euo pipefail`, which this function inherits
     # since it is sourced into the same shell. That is the wrong contract for
@@ -139,8 +174,8 @@ run_anvil_aggkit_verification() {
     local SNAPSHOT_DIR="$1"
     local SNAPSHOT_ID="$2"
     local SCRIPT_DIR_OF_VERIFY="$3"
-    # K5 (C55): which compose file to verify against -- docker-compose.yml
-    # (the zero-mount default) or docker-compose.mounts.yml (the
+    # Which compose file to verify against -- docker-compose.yml (the
+    # zero-mount default) or docker-compose.mounts.yml (the
     # config-tree-mounted variant). Every `docker compose -f ...` call below
     # uses this instead of a hardcoded docker-compose.yml.
     local COMPOSE_FILE_NAME="${4:-docker-compose.yml}"
@@ -151,6 +186,11 @@ run_anvil_aggkit_verification() {
     local SUMMARY_JSON="$SNAPSHOT_DIR/summary.json"
     local START_TS
     START_TS=$(date +%s)
+
+    ANVIL_VERIFY_COMPOSE_DIR="$SNAPSHOT_DIR"
+    ANVIL_VERIFY_COMPOSE_FILE="$COMPOSE_FILE_NAME"
+    ANVIL_VERIFY_UP_LOG=""
+    trap '_anvil_aggkit_cleanup' EXIT
 
     log_step "Snapshot Verification (flavor: anvil-aggkit, compose file: $COMPOSE_FILE_NAME)"
     log "Snapshot directory: $SNAPSHOT_DIR"
@@ -165,8 +205,8 @@ run_anvil_aggkit_verification() {
     fi
 
     # ------------------------------------------------------------------
-    # Read the contract off summary.json -- the single source of truth S8
-    # built for exactly this purpose.
+    # Read the contract off summary.json -- the single source of truth the
+    # summary generator builds for exactly this purpose.
     # ------------------------------------------------------------------
     local PROXY_BASE L1_CHAIN_ID L1_NETWORK_ID L1_BRIDGE L1_BLOCK_AT_CAPTURE
     local L2_PREFIXES SETTLEMENT_FREE ERC20_ADDR E2E_WALLET E2E_KEY IMAGES_TAG
@@ -199,8 +239,8 @@ run_anvil_aggkit_verification() {
         log_warn "while the chain data (which IS captured) still reflects it. Any"
         log_warn "check below that depends on certificate settlement may fail for"
         log_warn "this specific reason -- that is a property of THIS bundle, not a"
-        log_warn "bug in this script. Per plan S8/S10: do not publish a bundle like"
-        log_warn "this; only settlement_free:true bundles are sound to ship."
+        log_warn "bug in this script. Do not publish a bundle like this; only"
+        log_warn "settlement_free:true bundles are sound to ship."
         log_warn "=================================================================="
     fi
 
@@ -237,10 +277,10 @@ run_anvil_aggkit_verification() {
     anvil_test_result "All referenced images exist locally" "$([ "$MISSING_IMAGES" -eq 0 ] && echo pass || echo fail)"
 
     # ------------------------------------------------------------------
-    # TEST 2: static healthcheck / compose-shape audit (the fix for the
-    # always-exit-0 verify-healthchecks.sh, scoped to this flavor).
+    # TEST 2: static healthcheck / compose-shape audit (verify-healthchecks.sh
+    # with real failing checks, scoped to this flavor).
     #
-    # K5: this check's entire premise -- every service has a healthcheck,
+    # This check's entire premise -- every service has a healthcheck,
     # every depends_on is gated on service_healthy, and the bundle has NO
     # bind mounts/volumes -- is the docker-compose.yml "self-contained,
     # zero-mount" contract. docker-compose.mounts.yml deliberately violates
@@ -266,7 +306,12 @@ run_anvil_aggkit_verification() {
     # ------------------------------------------------------------------
     log_step "TEST 3: Start Services"
     local COMPOSE_UP_LOG UP_RC
+    # A stack left over from an earlier run of this bundle would carry the
+    # state that run mutated (the bridge round trip executes once per start).
+    log_info "  removing any stack left over from an earlier run (docker compose down -v)"
+    (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" --profile '*' down -v --remove-orphans) > /dev/null 2>&1
     COMPOSE_UP_LOG=$(mktemp)
+    ANVIL_VERIFY_UP_LOG="$COMPOSE_UP_LOG"
     (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" up -d --wait --wait-timeout 180) \
         > "$COMPOSE_UP_LOG" 2>&1
     UP_RC=$?
@@ -334,9 +379,8 @@ run_anvil_aggkit_verification() {
     anvil_test_result "L1 finalized advances" "$([ "$L1_FIN_T1" -gt "$L1_FIN_T0" ] && echo pass || echo fail)"
 
     # ------------------------------------------------------------------
-    # TEST 6: each L2 chain (contract table row 2) + restore-time config
-    # adaptation (S8 accepted deviation -- must assert it happened AND is
-    # correct, not just that aggkit is up).
+    # TEST 6: each L2 chain (contract table row 2) + the baked aggkit config
+    # (must be the captured one, not just "aggkit is up").
     # ------------------------------------------------------------------
     local PREFIX
     for PREFIX in $L2_PREFIXES; do
@@ -370,11 +414,10 @@ run_anvil_aggkit_verification() {
         anvil_test_result "L2-$PREFIX block progresses" "$([ "$L2_BLOCK_T1" -gt "$L2_BLOCK_T0" ] && echo pass || echo fail)"
         anvil_test_result "L2-$PREFIX finalized advances" "$([ "$L2_FIN_T1" -gt "$L2_FIN_T0" ] && echo pass || echo fail)"
 
-        # ---- S9b: the captured aggkit config is baked VERBATIM. S8 used to
-        # repoint rollupCreationBlockNumber / RollupCreationBlockL1 at the L1
-        # snapshot block because a restored anvil only held the tip state;
-        # extract-state.sh now captures historical states, so that hack is
-        # gone and the two invariants worth asserting are:
+        # ---- The captured aggkit config is baked VERBATIM (extract-state.sh
+        # captures historical states, so no restore-time rewrite of
+        # rollupCreationBlockNumber / RollupCreationBlockL1 is needed). The
+        # two invariants worth asserting are:
         #   (a) the LIVE running aggkit still carries the ENCLAVE's creation
         #       block -- i.e. nothing rewrote it behind our back, and
         #   (b) the restored L1 actually answers a state read pinned at that
@@ -386,16 +429,13 @@ run_anvil_aggkit_verification() {
         CAPTURED_ROLLUP_BLOCK=$(grep -E '^rollupCreationBlockNumber[[:space:]]*=' \
             "$SNAPSHOT_DIR/config/$AGGKIT_SVC/config.toml" 2>/dev/null | sed -E 's/.*"([0-9]+)".*/\1/')
         if [ "$IS_MOUNTS_VARIANT" = true ]; then
-            # K5: this check's whole point is proving the DERIVED image's
-            # BAKED config wasn't rewritten at restore time. In this variant
-            # there is no baked config at all -- the container reads
-            # /etc/aggkit/config.toml straight off the host bind mount, so
-            # "live vs captured" is tautological (same file) AND, more
-            # importantly, the override-able aggkit image here ships no
-            # shell/busybox to `exec` into (K5 C53's bare-upstream-image
-            # decision) so a docker compose exec would just fail to launch,
-            # not fail the assertion. Skip rather than force a meaningless
-            # or mechanically-broken check.
+            # This check's whole point is proving the DERIVED image's BAKED
+            # config wasn't rewritten. In this variant there is no baked
+            # config at all -- the container reads /etc/aggkit/config.toml
+            # straight off the host bind mount, so "live vs captured" is
+            # tautological (same file) AND the override-able aggkit image
+            # ships no shell/busybox to `exec` into, so a docker compose exec
+            # would fail to launch rather than fail the assertion. Skip.
             log_info "  skipped (mounts variant): config is bind-mounted, not baked -- see this block's comment"
         else
             local LIVE_CFG LIVE_ROLLUP_BLOCK
@@ -408,8 +448,9 @@ run_anvil_aggkit_verification() {
         fi
 
         # (b) Historical state read: eth_getCode against the L1 bridge pinned
-        # at the rollup's creation block. Before S9b this returned
-        # `-32602 BlockOutOfRangeError: block height is N but requested was M`.
+        # at the rollup's creation block. Without preserved historical states
+        # this returns `-32602 BlockOutOfRangeError: block height is N but
+        # requested was M`.
         local HIST_CALL HIST_CODE HIST_ERR
         HIST_CALL=$(rpc_call "$L1_URL" eth_getCode "[\"$L1_BRIDGE\",\"$(printf '0x%x' "$CAPTURED_ROLLUP_BLOCK")\"]")
         HIST_CODE=$(echo "$HIST_CALL" | jq -r '.result // ""')
@@ -422,7 +463,7 @@ run_anvil_aggkit_verification() {
     # ------------------------------------------------------------------
     # TEST 7: sync-status?network_id=0|1|2, both is_synced AND is_active,
     # both sides -- with polling + timeout (contract table row 3; matches
-    # devnetReady.mjs's stricter bar per S9's context pack).
+    # the stricter bar of dev-ui's devnetReady.mjs).
     # ------------------------------------------------------------------
     log_step "TEST 7: Bridge sync-status (network_id 0, 1, 2)"
     local NID SYNC_OK SYNC_JSON SYNC_DEADLINE
@@ -463,16 +504,17 @@ run_anvil_aggkit_verification() {
     # config shipped alongside the bundle)
     # ------------------------------------------------------------------
     log_step "TEST 9: Tracker RetentionPeriod"
-    local PROXY_CFG RETENTION RETENTION_OK
+    local PROXY_CFG RETENTION RETENTION_SECONDS RETENTION_OK
     PROXY_CFG=$(find "$SNAPSHOT_DIR/config" -maxdepth 1 -type d -name 'aggkit-proxy*' | head -1)
     RETENTION_OK=false
     if [ -n "$PROXY_CFG" ] && [ -f "$PROXY_CFG/config.toml" ]; then
         RETENTION=$(grep -E '^RetentionPeriod[[:space:]]*=' "$PROXY_CFG/config.toml" | sed -E 's/.*"([^"]*)".*/\1/')
         log_info "  RetentionPeriod = $RETENTION"
-        case "$RETENTION" in
-            *h) RETENTION_OK=true ;;                                    # any number of hours
-            *m) [ "${RETENTION%m}" -ge 30 ] 2>/dev/null && RETENTION_OK=true ;;
-        esac
+        RETENTION_SECONDS=$(duration_to_seconds "$RETENTION")
+        log_info "  = ${RETENTION_SECONDS:-unparseable} seconds"
+        if [ -n "$RETENTION_SECONDS" ] && [ "$RETENTION_SECONDS" -ge 1800 ]; then
+            RETENTION_OK=true
+        fi
     else
         log_error "  aggkit-proxy config.toml not found under $SNAPSHOT_DIR/config"
     fi
@@ -519,48 +561,50 @@ run_anvil_aggkit_verification() {
     done
 
     # ------------------------------------------------------------------
-    # TEST 11: dev-ui /config.json is valid
+    # TEST 11: the dev-ui runtime config is valid and its chains are reachable
     #
-    # K5: /config.json used to be reachable through the proxy unconditionally
-    # (haproxy's now-removed `default_backend` fell through to
-    # agglayer-dev-ui-002, which was always running). Per the profile design
-    # (devui-under-test.md (c)) agglayer-dev-ui-002 is now `profiles:
-    # [devui]` and NOT started by a plain `up -d --wait` -- and per that same
-    # doc's finding (b), nothing CI-relevant ever fetches /config.json
-    # THROUGH the proxy anyway (only the 4 routes l1rpc/l2rpc-*/aggkitapi
-    # are). So this check only makes sense, and is only attempted, when the
-    # devui profile is actually part of THIS run.
+    # The dev-ui is behind the `devui` compose profile, so a plain
+    # `up -d --wait` does not start it, and haproxy has no default backend
+    # that would serve its /config.json. The config it would be started with
+    # is therefore read directly: from the baked image for the default
+    # compose file, from the bind-mounted file for the mounts variant. Every
+    # chain's rpcUrl must be a route of the proxy and answer eth_chainId with
+    # that chain's id -- the dev-ui runs in a browser on the host, so a URL
+    # that only resolves inside the enclave is a defect of the bundle.
     # ------------------------------------------------------------------
-    log_step "TEST 11: dev-ui /config.json"
-    local DEVUI_SVC_NAME DEVUI_RUNNING
+    log_step "TEST 11: dev-ui runtime config"
+    local DEVUI_SVC_NAME DEVUI_IMAGE DEVUI_CONFIG DEVUI_CONFIG_FILE
     DEVUI_SVC_NAME=$(jq -r '.dev_ui.service // empty' "$SUMMARY_JSON")
-    DEVUI_RUNNING=$( (cd "$SNAPSHOT_DIR" && docker compose -f "$COMPOSE_FILE_NAME" ps --status running --format json -- "$DEVUI_SVC_NAME" 2>/dev/null) | jq -r '.Name // empty' 2>/dev/null)
-    if [ -z "$DEVUI_SVC_NAME" ] || [ -z "$DEVUI_RUNNING" ]; then
-        log_info "  skipped: $DEVUI_SVC_NAME is not running in this invocation (no --profile devui)"
-        log_info "  -- /config.json through the proxy is a manual-debug convenience only, not a CI-needed route"
+    DEVUI_CONFIG=""
+    if [ -z "$DEVUI_SVC_NAME" ]; then
+        log_error "  summary.json names no dev_ui.service"
+    elif [ "$IS_MOUNTS_VARIANT" = true ]; then
+        DEVUI_CONFIG=$(cat "$SNAPSHOT_DIR/config/$DEVUI_SVC_NAME/config.json" 2>/dev/null)
     else
-    local DEVUI_CONFIG DEVUI_CONFIG_FILE
+        DEVUI_IMAGE=$(docker compose -f "$SNAPSHOT_DIR/$COMPOSE_FILE_NAME" --profile '*' config --format json 2>/dev/null \
+            | jq -r --arg s "$DEVUI_SVC_NAME" '.services[$s].image // empty')
+        if [ -n "$DEVUI_IMAGE" ]; then
+            DEVUI_CONFIG=$(docker run --rm --entrypoint cat "$DEVUI_IMAGE" /etc/agglayer-dev-ui/config.json 2>/dev/null)
+        else
+            log_error "  compose file has no image for service '$DEVUI_SVC_NAME'"
+        fi
+    fi
     DEVUI_CONFIG_FILE=$(mktemp)
-    DEVUI_CONFIG=$(curl -s -m 10 "${PROXY_BASE}/config.json")
     echo "$DEVUI_CONFIG" > "$DEVUI_CONFIG_FILE"
     local DEVUI_JSON_OK=false DEVUI_SCHEMA_OK=false
-    if echo "$DEVUI_CONFIG" | jq -e . > /dev/null 2>&1; then
+    if [ -n "$DEVUI_CONFIG" ] && echo "$DEVUI_CONFIG" | jq -e . > /dev/null 2>&1; then
         DEVUI_JSON_OK=true
     fi
-    anvil_test_result "dev-ui /config.json is valid JSON" "$([ "$DEVUI_JSON_OK" = true ] && echo pass || echo fail)"
+    anvil_test_result "dev-ui config is present and valid JSON" "$([ "$DEVUI_JSON_OK" = true ] && echo pass || echo fail)"
 
     if [ "$DEVUI_JSON_OK" = true ]; then
         # Prefer dev-ui's own scripts/validateConfig.mjs when a checkout is
-        # discoverable (overridable via DEVUI_REPO_PATH; not assumed present
-        # on GH runners for THIS step -- S12/S13 own that wiring). Falls back
-        # to a portable structural check so this script has no hard external
-        # dependency.
-        # NOTE: which branch runs is environment-dependent, which is exactly how
-        # the schema bug S11 hit stayed hidden -- so the fallback below is
-        # written to be as strong as the mjs check, not as a token stand-in.
-        # Candidate list is deliberately relative-only (plus the explicit
-        # DEVUI_REPO_PATH override): a developer's absolute home directory has
-        # no business deciding which assertion a CI-facing verifier runs.
+        # discoverable (overridable via DEVUI_REPO_PATH). Which branch runs is
+        # environment-dependent, so the fallback below is written to be as
+        # strong as the mjs check, not a token stand-in. The candidate list is
+        # deliberately relative-only (plus the explicit DEVUI_REPO_PATH
+        # override): a developer's absolute home directory has no business
+        # deciding which assertion a CI-facing verifier runs.
         local DEVUI_REPO="${DEVUI_REPO_PATH:-}"
         if [ -z "$DEVUI_REPO" ]; then
             for _cand in "../agglayer-dev-ui" "../../agglayer-dev-ui" "../../agglayer/agglayer-dev-ui" "../../../agglayer/agglayer-dev-ui"; do
@@ -571,32 +615,46 @@ run_anvil_aggkit_verification() {
             local VALIDATE_OUT
             VALIDATE_OUT=$(cd "$DEVUI_REPO" && node ./scripts/validateConfig.mjs "$DEVUI_CONFIG_FILE" 2>&1)
             log_info "  validateConfig.mjs: $VALIDATE_OUT"
-            anvil_test_result "dev-ui /config.json passes scripts/validateConfig.mjs" \
+            anvil_test_result "dev-ui config passes scripts/validateConfig.mjs" \
                 "$(echo "$VALIDATE_OUT" | grep -q "validation passed" && echo pass || echo fail)"
         else
             log_warn "  dev-ui checkout with scripts/validateConfig.mjs not found; falling back to a structural check"
-            # Matches the real schema emitted by
+            # Matches the schema emitted by
             # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl:
             # "chains" is an OBJECT keyed by chain name (not an array), and
-            # "aggkitProxy" lives inside appModes.configs.<mode>, not at
-            # the top level (K9: migrated off the old per-network
-            # "aggkitBridgeApis" map, which dev-ui's now-.strict() schema
-            # rejects outright). This exact mismatch was only ever masked on
-            # dev machines that happen to have an agglayer-dev-ui checkout
-            # (which takes the validateConfig.mjs branch above instead) --
-            # caught by S11's first real CI run, which has no such checkout.
+            # "aggkitProxy" lives inside appModes.configs.<mode>, not at the
+            # top level (dev-ui's strict schema rejects the old per-network
+            # "aggkitBridgeApis" map).
             DEVUI_SCHEMA_OK=$(echo "$DEVUI_CONFIG" | jq -e '
                 (has("chains") and (.chains | type == "object") and (.chains | length > 0)) and
                 (has("appModes") and (.appModes | has("configs")) and
                  (.appModes.configs | type == "object") and (.appModes.configs | length > 0) and
                  (.appModes.configs | to_entries[0].value | has("aggkitProxy")))
                 ' > /dev/null 2>&1 && echo true || echo false)
-            anvil_test_result "dev-ui /config.json has required keys (chains object; appModes.configs.<mode>.aggkitProxy)" \
+            anvil_test_result "dev-ui config has required keys (chains object; appModes.configs.<mode>.aggkitProxy)" \
                 "$([ "$DEVUI_SCHEMA_OK" = true ] && echo pass || echo fail)"
         fi
+
+        # Every chain must be reachable at the rpcUrl the dev-ui will use.
+        local CHAIN_KEY CHAIN_ID_WANTED CHAIN_URL CHAIN_ID_GOT SEEN_DEVUI_CHAINS=0
+        while IFS=$'\t' read -r CHAIN_KEY CHAIN_ID_WANTED CHAIN_URL; do
+            [ -n "$CHAIN_KEY" ] || continue
+            SEEN_DEVUI_CHAINS=$((SEEN_DEVUI_CHAINS + 1))
+            CHAIN_ID_GOT=""
+            case "$CHAIN_URL" in
+                "${PROXY_BASE}/"*) CHAIN_ID_GOT=$(hex_to_dec "$(rpc_result "$CHAIN_URL" eth_chainId)") ;;
+            esac
+            log_info "  $CHAIN_KEY: rpcUrl=$CHAIN_URL eth_chainId=${CHAIN_ID_GOT:-n/a} (expected $CHAIN_ID_WANTED)"
+            anvil_test_result "dev-ui chain $CHAIN_KEY: rpcUrl is a proxy route and answers eth_chainId == $CHAIN_ID_WANTED" \
+                "$([ -n "$CHAIN_ID_GOT" ] && [ "$CHAIN_ID_GOT" = "$CHAIN_ID_WANTED" ] && echo pass || echo fail)"
+        done < <(echo "$DEVUI_CONFIG" | jq -r '.chains | to_entries[] | [.key, (.value.id | tostring), (.value.rpcUrl // "")] | @tsv')
+        # One chain per captured network (the L1 plus every L2).
+        local EXPECTED_DEVUI_CHAINS
+        EXPECTED_DEVUI_CHAINS=$(( $(echo "$L2_PREFIXES" | grep -c .) + 1 ))
+        anvil_test_result "dev-ui config lists $EXPECTED_DEVUI_CHAINS chains (L1 + every L2)" \
+            "$([ "$SEEN_DEVUI_CHAINS" -eq "$EXPECTED_DEVUI_CHAINS" ] && echo pass || echo fail)"
     fi
     rm -f "$DEVUI_CONFIG_FILE"
-    fi
 
     # ------------------------------------------------------------------
     # TEST 12: scripted bridge round trip
@@ -608,8 +666,8 @@ run_anvil_aggkit_verification() {
 
 # ============================================================================
 # Bridge round trip: L1->L2 then L2->L1 (both legs manually claimed via
-# cast -- no automated claimer remains in the enclave, agglayer/issues#55).
-# See module doc for the F1 / leaf_index traps.
+# cast -- no automated claimer runs in the enclave). See the module doc for the
+# origin-network / leaf_index traps.
 # ============================================================================
 _anvil_aggkit_bridge_roundtrip() {
     local SUMMARY_JSON="$1" PROXY_BASE="$2" L1_BRIDGE="$3" WALLET="$4" KEY="$5" SETTLEMENT_FREE="$6" L1_NETWORK_ID="$7"
@@ -635,9 +693,9 @@ _anvil_aggkit_bridge_roundtrip() {
     L2_BRIDGE=$(jq -r --arg p "$PREFIX" '.networks.l2[$p].contracts.sovereign_bridge' "$SUMMARY_JSON")
 
     # ---- Leg 1: L1 -> L2 (manual claim) ----
-    # agglayer/issues#55: aggkit's autoclaim service was removed upstream
-    # (aggkit PR #1901), and this enclave runs the bridge UI in "aggkit" mode,
-    # which deploys no bridge-hub autoclaimer either -- nothing claims L1->L2
+    # aggkit's autoclaim service was removed upstream (aggkit PR #1901), and
+    # this enclave runs the bridge UI in "aggkit" mode, which deploys no
+    # bridge-hub autoclaimer either -- nothing claims L1->L2
     # deposits automatically any more, so the deposit is claimed manually
     # below, mirroring Leg 2's recipe with the roles swapped (origin network
     # 0, claim executed on the L2 bridge).
@@ -715,7 +773,7 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
     log_info "  deposit: deposit_count=$DEPOSIT_COUNT1 global_index=$GLOBAL_INDEX1 origin_network=$ORIGIN_NETWORK1 (asset origin, NOT $NETWORK_ID)"
 
     # leaf_index for claim-proof is the L1-INFO-TREE index, not deposit_count
-    # (same S4b trap as Leg 2); fetched fresh every time rather than guessed.
+    # (same trap as Leg 2); fetched fresh every time rather than guessed.
     local LEAF_INDEX1
     LEAF_INDEX1=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/l1-info-tree-index?network_id=${L1_NETWORK_ID}&deposit_count=${DEPOSIT_COUNT1}")
     if ! [[ "$LEAF_INDEX1" =~ ^[0-9]+$ ]]; then
@@ -797,9 +855,9 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
     anvil_test_result "Bridge round trip: L2->L1 deposit sent" "pass"
 
     # Poll to "ready to claim" (WaitingClaim done or in progress with a
-    # settled certificate) -- budget >=5 min per S4b/S6 (agglayer epoch
-    # cadence 15s, settlement waits on SafeBlock; full round trip ~3.5 min
-    # measured in S4b). Distinguish a genuinely-stuck InError certificate
+    # settled certificate) -- budget >=5 min (agglayer epoch cadence 15s,
+    # settlement waits on SafeBlock; the full round trip takes ~3.5 min).
+    # Distinguish a genuinely-stuck InError certificate
     # (fails fast after it repeats unchanged) from ordinary "still pending".
     local DEADLINE=$(( $(date +%s) + 300 ))
     local READY=false INERROR_STREAK=0 LAST_CERT_STATUS="" L2L1_STATE
@@ -830,12 +888,12 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
             if [ "$INERROR_STREAK" -ge 3 ]; then
                 log_error "  Certificate stuck in InError for 3+ consecutive polls: $L2L1_STATE"
                 log_error "  This is a restore-time hazard in the snapshot itself, not something this"
-                log_error "  verify script can work around -- observed root causes (S9 investigation):"
+                log_error "  verify script can work around -- known root causes:"
                 log_error "  (a) settlement_free=false: agglayer's (uncaptured) DB believes no cert has"
                 log_error "      ever settled while the restored chain's real history disagrees, so a new"
                 log_error "      certificate's declared prev_local_exit_root mismatches what agglayer"
                 log_error "      independently computes (TypeConversionError/MismatchPrevLocalExitRoot)."
-                log_error "  (b) a state dump captured WITHOUT historical states (the S9b defect):"
+                log_error "  (b) a state dump captured WITHOUT historical states:"
                 log_error "      agglayer probes its settlement signer's nonce inclusion at the"
                 log_error "      pre-snapshot L1 block holding that wallet's earlier tx. If the restored"
                 log_error "      anvil carries only the tip state that returns -32602"
@@ -876,7 +934,7 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
         "$([ -n "$STILL_WAITING" ] && [ "$STILL_WAITING" != "done" ] && echo pass || echo fail)"
 
     # ---- Manual claim via cast, sourced entirely from the bridges REST
-    # listing + claim-proof, per the F1 comment and the S4b recipe. ----
+    # listing + claim-proof, per the origin-network note below. ----
     local BRIDGES_JSON DEPOSIT
     BRIDGES_JSON=$(curl -s -m 10 "${PROXY_BASE}/aggkitapi/bridge/v1/bridges?network_id=${NETWORK_ID}")
     DEPOSIT=$(echo "$BRIDGES_JSON" | jq -c --arg h "$TX2" '.bridges[] | select(.tx_hash == $h)')
@@ -886,7 +944,7 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
         return
     fi
     local DEPOSIT_COUNT GLOBAL_INDEX
-    # NOTE (F1, S6 finding): origin_network/origin_address below are read
+    # NOTE: origin_network/origin_address below are read
     # straight from this specific deposit's bridges-listing entry -- the
     # ASSET's origin network (0 for native ETH), never $NETWORK_ID (the
     # chain the deposit was submitted ON). Passing $NETWORK_ID here would
@@ -903,7 +961,7 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
     log_info "  deposit: deposit_count=$DEPOSIT_COUNT global_index=$GLOBAL_INDEX origin_network=$ORIGIN_NETWORK (asset origin, NOT $NETWORK_ID)"
 
     # leaf_index for claim-proof is the L1-INFO-TREE index, not deposit_count
-    # (S4b trap). A wrong leaf_index here is indistinguishable from "not yet
+    # (a known trap). A wrong leaf_index here is indistinguishable from "not yet
     # claimable" (both 500), so this is fetched fresh every time rather than
     # cached/guessed.
     local LEAF_INDEX
@@ -975,7 +1033,7 @@ _poll_tracker() {
         fi
         # A tracking_status of "error" is only terminal if the offending
         # step's error is NOT transient; a transient one self-resolves and
-        # tracking_status flips back to "running" on a later poll (S1/S6).
+        # tracking_status flips back to "running" on a later poll.
         if [ "$status" = "error" ]; then
             local err_type
             err_type=$(echo "$resp" | jq -r '[.all_steps[]? | select(.status=="error") | .error.error_type_string] | last // "?"')
