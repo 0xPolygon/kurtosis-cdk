@@ -1,3 +1,4 @@
+aggkit = import_module("../chain/shared/aggkit.star")
 constants = import_module("../package_io/constants.star")
 hex = import_module("../hex/hex.star")
 wallet_module = import_module("../wallet/wallet.star")
@@ -83,23 +84,15 @@ def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
             fail("The 'rpc' port of the l2 rpc service is not available.")
         return service.ports["rpc"].url
     else:
-        # The legacy zkevm-bridge-service isn't deployed -- the merged
-        # aggkit service (see src/chain/shared/aggkit.star) serves the
-        # bridge REST API itself when "bridge" is included in
-        # aggkit_components. That service always opens a "rest" port
-        # (_get_aggkit_bridge_ports), but the port only actually serves
-        # /bridge/v1/... routes when the bridge component is enabled -- fail
-        # loudly instead of pointing the test runner at a rest port that
-        # never registers those routes.
-        components = args.get("aggkit_components", "").split(",")
-        if "bridge" not in components:
-            fail(
-                "_get_bridge_service_url: deploy_cdk_bridge_infra is false and "
-                + "'bridge' is not in aggkit_components ('{}') -- there is no ".format(
+        # Without the legacy zkevm-bridge-service, the aggkit service only serves
+        # /bridge/v1 when its components include "bridge".
+        if not aggkit.has_component(args.get("aggkit_components", ""), "bridge"):
+            plan.print(
+                "WARNING: deploy_cdk_bridge_infra is false and 'bridge' is not in aggkit_components ('{}'): BRIDGE_SERVICE_URL is left empty for the test runner.".format(
                     args.get("aggkit_components", "")
                 )
-                + "bridge REST API for the test runner to target."
             )
+            return ""
         service_name = "aggkit" + args["deployment_suffix"]
         service = plan.get_service(service_name)
         if "rest" not in service.ports:
