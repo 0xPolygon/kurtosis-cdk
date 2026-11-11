@@ -123,12 +123,15 @@ assert_not_contains() {
   fi
 }
 
-# assert_section_contains <file> <section header regex> <line regex> <desc>
-# The line must appear between the section header and the next `[` header.
+# assert_section_contains <file> <section header> <line regex> <desc>
+# The line must appear between the section header (an exact line) and the
+# next `[` header. The header is compared literally: passing it as a regex
+# would make `\[` depend on the awk implementation (gawk reduces it to a
+# bracket expression and matches nothing).
 assert_section_contains() {
   local file="$1" header="$2" pattern="$3" desc="$4"
   if awk -v h="${header}" -v p="${pattern}" '
-      $0 ~ h { in_section = 1; next }
+      $0 == h { in_section = 1; next }
       /^\[/ { in_section = 0 }
       in_section && $0 ~ p { found = 1 }
       END { exit found ? 0 : 1 }
@@ -172,8 +175,8 @@ echo
 echo "=== agglayer/config.toml, agglayer 0.6.2 ==="
 assert_no_leftovers "${agglayer_out}"
 assert_contains "${agglayer_out}" '^\[full-node-rpcs\]$' "[full-node-rpcs] section present"
-assert_section_contains "${agglayer_out}" '^\[full-node-rpcs\]$' '^1 = "http' "network 1 URL"
-assert_section_contains "${agglayer_out}" '^\[proof-signers\]$' '^1 = "0x' "network 1 proof signer"
+assert_section_contains "${agglayer_out}" '[full-node-rpcs]' '^1 = "http' "network 1 URL"
+assert_section_contains "${agglayer_out}" '[proof-signers]' '^1 = "0x' "network 1 proof signer"
 assert_not_contains "${agglayer_out}" '^2 = ' "a network 2 entry (the fixture declares no extra rollup)"
 # From agglayer v0.6.0-rc.7 on, [outbound.rpc.settle] is ignored and the
 # settlement knobs live in [settlement.pessimistic-proof-tx-config].
@@ -215,10 +218,10 @@ overlay testdata/agglayer-config-data.json \
 agglayer_two_out="${work_dir}/agglayer-config-two-l2.toml"
 render "static_files/agglayer/config.toml" "${work_dir}/agglayer-two-l2.json" "${agglayer_two_out}" || true
 assert_no_leftovers "${agglayer_two_out}"
-assert_section_contains "${agglayer_two_out}" '^\[full-node-rpcs\]$' '^1 = "http' "network 1 URL"
-assert_section_contains "${agglayer_two_out}" '^\[full-node-rpcs\]$' '^2 = "http://l2-anvil-002:8545"$' "network 2 URL"
-assert_section_contains "${agglayer_two_out}" '^\[proof-signers\]$' '^1 = "0x' "network 1 proof signer"
-assert_section_contains "${agglayer_two_out}" '^\[proof-signers\]$' '^2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"$' "network 2 proof signer"
+assert_section_contains "${agglayer_two_out}" '[full-node-rpcs]' '^1 = "http' "network 1 URL"
+assert_section_contains "${agglayer_two_out}" '[full-node-rpcs]' '^2 = "http://l2-anvil-002:8545"$' "network 2 URL"
+assert_section_contains "${agglayer_two_out}" '[proof-signers]' '^1 = "0x' "network 1 proof signer"
+assert_section_contains "${agglayer_two_out}" '[proof-signers]' '^2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"$' "network 2 proof signer"
 
 echo
 echo "=== zkevm-bridge-service/config.toml ==="
@@ -233,14 +236,14 @@ echo "=== aggkit-proxy config.toml, two networks ==="
 proxy_out="${work_dir}/aggkit-proxy-config.toml"
 render "static_files/additional_services/aggkit-proxy/config.toml" "testdata/aggkit-proxy-config-data.json" "${proxy_out}" || true
 assert_no_leftovers "${proxy_out}"
-assert_section_contains "${proxy_out}" '^\[BridgeServiceFinder\.BridgeURLs\]$' '^1 = "http://aggkit-001:5577"$' "network 1 bridge URL"
-assert_section_contains "${proxy_out}" '^\[BridgeServiceFinder\.BridgeURLs\]$' '^2 = "http://aggkit-002:5577"$' "network 2 bridge URL"
-assert_section_contains "${proxy_out}" '^\[BridgeServiceFinder\.RPCURLs\]$' '^0 = "http' "L1 (network 0) RPC URL"
-assert_section_contains "${proxy_out}" '^\[BridgeServiceFinder\.RPCURLs\]$' '^2 = "http://l2-anvil-002:8545"$' "network 2 RPC URL"
+assert_section_contains "${proxy_out}" '[BridgeServiceFinder.BridgeURLs]' '^1 = "http://aggkit-001:5577"$' "network 1 bridge URL"
+assert_section_contains "${proxy_out}" '[BridgeServiceFinder.BridgeURLs]' '^2 = "http://aggkit-002:5577"$' "network 2 bridge URL"
+assert_section_contains "${proxy_out}" '[BridgeServiceFinder.RPCURLs]' '^0 = "http' "L1 (network 0) RPC URL"
+assert_section_contains "${proxy_out}" '[BridgeServiceFinder.RPCURLs]' '^2 = "http://l2-anvil-002:8545"$' "network 2 RPC URL"
 assert_present_nonempty "${proxy_out}" "RollupManagerAddr"
 assert_present_nonempty "${proxy_out}" "L1GlobalExitRootAddress"
 assert_not_contains "${proxy_out}" '^L1GlobalExitRootAddress = "0x0{40}"' "zero L1 global exit root address"
-assert_section_contains "${proxy_out}" '^\[Tracker\.AgglayerClient\.GRPC\]$' '^URL = "agglayer:4443"$' "agglayer gRPC URL"
+assert_section_contains "${proxy_out}" '[Tracker.AgglayerClient.GRPC]' '^URL = "agglayer:4443"$' "agglayer gRPC URL"
 
 echo
 echo "=== bridge-ui haproxy.cfg ==="
