@@ -19,8 +19,9 @@
 # service of the run (override with --unix-ts, mainly for tests); the source
 # id is derived from the commit and the CI run (override with --source-id).
 #
-# The publish is ordered so that a failure never leaves the aliases pointing
-# at a mix of old and new images:
+# The publish is ordered so that a failed check or push leaves the aliases
+# untouched. Only a failure while moving the aliases themselves (step 3) can
+# leave them pointing at a mix of old and new images:
 #   1. pre-flight, without pushing anything: every service resolves an
 #      immutable tag, every local image exists, buildx works, and none of the
 #      immutable tags exists in the registry yet;

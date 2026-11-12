@@ -205,7 +205,7 @@ Images publish under `ghcr.io/0xpolygon/kurtosis-cdk-snapshot-<service>` for the
 
 The authoritative pin is the `@sha256:<digest>` reference that `apply-digests.sh` writes into `docker-compose.yml` and `docker-compose.mounts.yml` (the readable tag is kept as a trailing comment) and into `summary.json`'s `images.services.<svc>.{tag,digest}`. The workflow passes `--smoke-test`, which pulls the pinned images and runs `docker compose up -d --wait` on the result. `publish-images.sh` writes `PUBLISHED_TAGS.json` (`repo`, `tag`, `digest`, `aliases` per service) only when everything succeeded.
 
-The uploaded workflow artifact `devui-snapshot-<tag>` contains `docker-compose.yml`, `docker-compose.mounts.yml` and `summary.json`.
+The uploaded workflow artifact `devui-snapshot-<tag>` contains `docker-compose.yml`, `docker-compose.mounts.yml`, `summary.json` and the `config/` tree the mounts variant bind-mounts.
 
 ### Package visibility
 
@@ -315,7 +315,7 @@ The default flavor's constraint carries over: **the source enclave must not have
 `extract-state.sh` therefore captures with `anvil_dumpState`'s `preserve_historical_states` option. Two machine-checkable invariants are enforced by `gate-snapshot-soundness.sh` before anything is published:
 
 1. **`settlement_free: true`**: no certificate ever existed in the captured enclave.
-2. **The expected chain set** (one L1 and `--expect-l2 N` L2s, each with a state file) **and `historical_states > 0` for every chain**, recomputed from the state files rather than trusted from the metadata.
+2. **The expected chain set** (one L1 and `--expect-l2 N` L2s, each with a state file) **and `historical_states > 0` for every chain**. The chain set is read from the metadata; `historical_states` is recomputed from the state files.
 
 A bundle failing either is never published. `historical_states` lives only in the capture-time `state/state-metadata.json`; `summary.json` carries `settlement_free` but not `historical_states`. The dump size is linear in block count, which is the practical reason to capture right after readiness.
 
