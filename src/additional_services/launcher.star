@@ -1,6 +1,19 @@
 constants = import_module("../package_io/constants.star")
 
 
+def order_additional_services(additional_services):
+    """Put aggkit_proxy first: bridge_ui in aggkit mode routes to the
+    aggkit-proxy-001 service by name, so it has to exist before the proxy is
+    configured, whatever the order of the list."""
+    if constants.ADDITIONAL_SERVICES.aggkit_proxy not in additional_services:
+        return additional_services
+    return [constants.ADDITIONAL_SERVICES.aggkit_proxy] + [
+        svc
+        for svc in additional_services
+        if svc != constants.ADDITIONAL_SERVICES.aggkit_proxy
+    ]
+
+
 def launch(
     plan,
     args,
@@ -12,7 +25,9 @@ def launch(
     l1_context,
     l2_context,
 ):
-    for svc in args.get("additional_services", []):
+    additional_services = order_additional_services(args.get("additional_services", []))
+
+    for svc in additional_services:
         if svc == constants.ADDITIONAL_SERVICES.agglogger:
             import_module("./agglogger.star").run(
                 plan,
@@ -20,6 +35,10 @@ def launch(
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
                 sequencer_type,
+            )
+        elif svc == constants.ADDITIONAL_SERVICES.aggkit_proxy:
+            import_module("./aggkit_proxy.star").run(
+                plan, args, contract_setup_addresses
             )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
             import_module("./arpeggio.star").run(plan, args)
@@ -30,9 +49,14 @@ def launch(
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
             import_module("./blutgang.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_ui:
-            api_url = import_module("./bridge_ui/api.star").run(
-                plan, args, contract_setup_addresses, l2_context
+            bridge_ui_backend = args.get(
+                "bridge_ui_backend", constants.BRIDGE_UI_BACKEND.bridge_hub
             )
+            api_url = None
+            if bridge_ui_backend == constants.BRIDGE_UI_BACKEND.bridge_hub:
+                api_url = import_module("./bridge_ui/api.star").run(
+                    plan, args, contract_setup_addresses, l2_context
+                )
             import_module("./bridge_ui/ui.star").run(
                 plan, args, contract_setup_addresses, l1_context, l2_context, api_url
             )

@@ -80,6 +80,11 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
     plan.add_service(name=service_name, config=service_config)
 
 
+def has_component(aggkit_components, component):
+    """True if component is one of the comma-separated aggkit_components."""
+    return component in [c.strip() for c in aggkit_components.split(",")]
+
+
 def run(
     plan,
     args,
@@ -162,13 +167,18 @@ def _create_deployment_context(
 
 
 def _deploy_core_aggkit_services(plan, args, deployment_context):
-    """Deploy the core aggkit services (main service and bridge)."""
+    """Deploy the core aggkit services and return the service serving the bridge
+    REST API.
+
+    When "bridge" is one of aggkit_components the main service serves it itself;
+    otherwise a dedicated aggkit<suffix>-bridge service runs the bridge component.
+    """
     plan.print("Deploying core aggkit services")
 
-    # Create main aggkit service with inline config
-    _deploy_main_aggkit_service(plan, args, deployment_context)
+    main_service = _deploy_main_aggkit_service(plan, args, deployment_context)
+    if has_component(args.get("aggkit_components", ""), "bridge"):
+        return main_service
 
-    # Create bridge service with inline config
     return _deploy_bridge_service(plan, args, deployment_context)
 
 
@@ -225,7 +235,7 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
         ],
     )
 
-    plan.add_service(name=service_name, config=service_config)
+    return plan.add_service(name=service_name, config=service_config)
 
 
 def _deploy_bridge_service(plan, args, deployment_context):
@@ -481,8 +491,7 @@ def _build_config_data(args, deployment_context, extra_data=None):
 def _log_claim_sponsor_warning(plan, args):
     """Log warning if claim sponsor is enabled without bridge component."""
     if args.get("enable_aggkit_claim_sponsor", False):
-        components = args.get("aggkit_components", [])
-        if "bridge" not in components:
+        if not has_component(args.get("aggkit_components", ""), "bridge"):
             plan.print(
                 "⚠️  WARNING: Claim sponsor is enabled, but 'bridge' is not included in aggkit components — the claim sponsor feature will be disabled."
             )
@@ -743,6 +752,11 @@ def _aggkit_version_gte(aggkit_image, major, minor):
             break
 
     parts = ver.split(".")
+
+    # Non-numeric tags (CI builds named after a branch) are treated like "local".
+    if not parts[0].isdigit():
+        return True
+
     v_major = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 0
     v_minor = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
     return (v_major, v_minor) >= (major, minor)

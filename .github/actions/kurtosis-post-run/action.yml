@@ -70,6 +70,9 @@ runs:
           echo "✅ All services are running."
         fi
 
+    # Log lines excluded below are known to be benign:
+    # - agglayer logs "Failed to extract database schema, assuming empty, error: IO error: No such
+    #   file or directory" while probing the not yet created database on first boot.
     - name: Check for errors in service logs
       if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
       shell: bash
@@ -87,7 +90,7 @@ runs:
               continue
             fi
             echo "Checking logs for ${container}"
-            matches="$(docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic" | cut -c "1-${max_line_length}" || true)"
+            matches="$(docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]|Failed to extract database schema, assuming empty, error: IO error: No such file or directory" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic" | cut -c "1-${max_line_length}" || true)"
             if [[ -n "${matches}" ]]; then
               count="$(wc -l <<<"${matches}")"
               if [[ "${count}" -gt "${max_lines}" ]]; then

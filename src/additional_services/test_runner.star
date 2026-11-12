@@ -1,3 +1,4 @@
+aggkit = import_module("../chain/shared/aggkit.star")
 constants = import_module("../package_io/constants.star")
 hex = import_module("../hex/hex.star")
 wallet_module = import_module("../wallet/wallet.star")
@@ -83,7 +84,20 @@ def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
             fail("The 'rpc' port of the l2 rpc service is not available.")
         return service.ports["rpc"].url
     else:
-        return ""
+        # Without the legacy zkevm-bridge-service, the aggkit service only serves
+        # /bridge/v1 when its components include "bridge".
+        if not aggkit.has_component(args.get("aggkit_components", ""), "bridge"):
+            plan.print(
+                "WARNING: deploy_cdk_bridge_infra is false and 'bridge' is not in aggkit_components ('{}'): BRIDGE_SERVICE_URL is left empty for the test runner.".format(
+                    args.get("aggkit_components", "")
+                )
+            )
+            return ""
+        service_name = "aggkit" + args["deployment_suffix"]
+        service = plan.get_service(service_name)
+        if "rest" not in service.ports:
+            fail("The 'rest' port of the aggkit bridge service is not available.")
+        return service.ports["rest"].url
 
 
 def _get_l2_bridge_address(
@@ -92,10 +106,7 @@ def _get_l2_bridge_address(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
 ):
-    if sequencer_type in [
-        constants.SEQUENCER_TYPE.op_reth,
-        constants.SEQUENCER_TYPE.besu,
-    ]:
+    if sequencer_type in constants.SOVEREIGN_SEQUENCER_TYPES:
         return sovereign_contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
     if "l2_bridge_address" in contract_setup_addresses:

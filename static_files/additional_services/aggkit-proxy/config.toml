@@ -1,0 +1,82 @@
+# aggkit-proxy config (components proxy and tracker, see aggkit_proxy.star).
+#
+# Based on aggkit's proxy/scripts/configuration_based_on_kurtosis.sh: LatestBlock
+# instead of FinalizedBlock, which lags too much on a devnet, a 10s poll interval
+# and HealthCheckPath "/", where the aggkit bridge REST service answers its
+# health check. [Tracker] keeps the binary defaults except RetentionPeriod.
+# L1GlobalExitRootAddress has no fallback: left at the zero address it stalls
+# every L1->L2 bridge, so it is set explicitly.
+
+[Log]
+Environment = "development"
+Level = "info"
+Outputs = ["stderr"]
+
+[L1RPC]
+URL = "{{.l1_rpc_url}}"
+Mode = "basic"
+RetryMode = "backoff"
+MaxRetries = 5
+InitialBackoff = "2s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+
+[BridgeServiceFinder]
+RollupManagerAddr = "{{.rollup_manager_address}}"
+BlockFinality = "LatestBlock"
+PollInterval = "10s"
+BlockChunkSize = 10000
+HealthCheckPath = "/"
+HealthCheckTimeout = "5s"
+RequireAllHealthyOnStart = false
+
+[BridgeServiceFinder.BridgeURLs]
+{{- range .aggkit_proxy_bridge_urls }}
+{{.network_id}} = "{{.bridge_url}}"
+{{- end }}
+
+[BridgeServiceFinder.RPCURLs]
+{{- range .aggkit_proxy_rpc_urls }}
+{{.network_id}} = "{{.rpc_url}}"
+{{- end }}
+
+[REST]
+Host = "0.0.0.0"
+Port = 8080
+ReadTimeout = "5m"
+WriteTimeout = "5m"
+# MaxRequestsPerIPAndSecond is not enforced for this section.
+MaxRequestsPerIPAndSecond = 0
+
+[Tracker]
+# Longer than the 10m default so that a slow L2->L1 certificate stays queryable.
+RetentionPeriod = "30m"
+IdleTimeout = "30m"
+RegisterResolveTimeout = "3s"
+L1BlockFinality = "LatestBlock"
+L2BlockFinality = "LatestBlock"
+MaxTrackedBridges = 100000
+L1GlobalExitRootAddress = "{{.l1_global_exit_root_address}}"
+
+[Tracker.AgglayerClient]
+Cached = true
+[Tracker.AgglayerClient.ConfigurationCache]
+TTL = "1s"
+Capacity = 100
+SendCertificate = "forbidden"
+GetCertificateHeader = "cached"
+GetEpochConfiguration = "cached"
+GetLatestPendingCertificateHeader = "cached"
+GetNetworkInfo = "cached"
+
+[Tracker.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+UseTLS = false
+MinConnectTimeout = "5s"
+RequestTimeout = "300s"
+
+[Tracker.AgglayerClient.GRPC.Retry]
+InitialBackoff = "1s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+MaxAttempts = 20

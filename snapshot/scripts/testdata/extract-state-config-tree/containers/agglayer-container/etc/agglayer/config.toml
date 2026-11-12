@@ -1,0 +1,4 @@
+# Minimal stand-in for a captured /etc/agglayer/config.toml.
+[settlement.pessimistic-proof-tx-config]
+confirmations = 1
+settlement-policy = "SafeBlock"

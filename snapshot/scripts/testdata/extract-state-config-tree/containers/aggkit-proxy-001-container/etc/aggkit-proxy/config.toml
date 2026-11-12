@@ -1,0 +1,4 @@
+# Minimal stand-in for a captured aggkit-proxy-001 /etc/aggkit-proxy/config.toml.
+[BridgeServiceFinder.BridgeURLs]
+1 = "http://aggkit-001:5577"
+2 = "http://aggkit-002:5577"

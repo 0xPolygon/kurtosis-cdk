@@ -1,0 +1,97 @@
+# Builds the anvil-aggkit devnet snapshot and publishes it to GHCR for the
+# dev-ui, aggkit and agglayer CI to consume (docs/docs/advanced/anvil-devnet-snapshot.md).
+#
+# - pull_request: capture, gate and verify the bundle; nothing is pushed.
+# - push to main: the same, then publish the images and pin the compose files
+#   to their digests.
+# - workflow_dispatch: validates; with `publish: true` it publishes, and only
+#   when it runs from main.
+#
+# Only the `publish` job holds `packages: write`. The pipeline itself is in
+# snapshot-devui-pipeline.yml.
+
+name: snapshot-devui
+
+on:
+  pull_request:
+    paths:
+      - "main.star"
+      - "src/**"
+      - "static_files/**"
+      - "snapshot/**"
+      - "params-aggkit-anvil-l2l2-run*.yml"
+      - "kurtosis.yml"
+      - ".github/actions/kurtosis-*/**"
+      - ".github/workflows/snapshot-devui.yml"
+      - ".github/workflows/snapshot-devui-pipeline.yml"
+  push:
+    branches: [main]
+    paths:
+      - "main.star"
+      - "src/**"
+      - "static_files/**"
+      - "snapshot/**"
+      - "params-aggkit-anvil-l2l2-run*.yml"
+      - "kurtosis.yml"
+      - ".github/actions/kurtosis-*/**"
+      - ".github/workflows/snapshot-devui.yml"
+      - ".github/workflows/snapshot-devui-pipeline.yml"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Local image build tag (not pushed; default: short commit SHA)"
+        required: false
+        type: string
+      publish:
+        description: "Push the images to GHCR (only allowed from main)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+    concurrency:
+      group: snapshot-devui-pr-${{ github.event.pull_request.number || github.run_id }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/snapshot-devui-pipeline.yml
+    with:
+      publish: false
+      tag: ${{ inputs.tag || '' }}
+    secrets: inherit
+
+  publish:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish))
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    # One publish at a time, never cancelled half-way through writing manifests.
+    concurrency:
+      group: snapshot-devui-publish
+      cancel-in-progress: false
+    uses: ./.github/workflows/snapshot-devui-pipeline.yml
+    with:
+      publish: true
+      tag: ${{ inputs.tag || '' }}
+    secrets: inherit
+
+  refuse-publish:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse to publish
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          echo "::error::images are only published from main (this run is on ${REF})"
+          exit 1

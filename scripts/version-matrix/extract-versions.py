@@ -122,6 +122,8 @@ EXTRA_IMAGES = {
     "mitm_image": {"name": "mitmproxy", "repo": "mitmproxy/mitmproxy", "tag_prefix": "v"},
     "test_runner_image": {"name": "e2e-test-runner", "commit_repo": "agglayer/e2e"},
     "agglayer_dev_ui_image": {"name": "agglayer-dev-ui", "registry": True},
+    "agglayer_dev_ui_aggkit_image": {"name": "agglayer-dev-ui-aggkit", "repo": "agglayer/agglayer-dev-ui",
+                                     "tag_prefix": "v"},
     "agglogger_image": {"name": "agglogger", "registry": True},
     "bridge_hub_api_image": {"name": "bridge-hub-api", "registry": True},
     "bridge_hub_consumer_image": {"name": "bridge-hub-consumer", "registry": True},

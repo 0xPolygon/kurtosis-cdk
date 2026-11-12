@@ -1,0 +1,48 @@
+# First `kurtosis run` of a two-L2 enclave: L1, agglayer and rollup 1
+# (network_id 1, op-reth, aggkit-001). A second run with
+# params-aggkit-l2l2-run2.yml, in the same enclave, adds rollup 2.
+
+deployment_stages:
+  deploy_op_succinct: false
+  # The legacy zkevm-bridge-service is not needed: aggkit-001 serves the bridge
+  # REST API itself ("bridge" in aggkit_components below).
+  deploy_cdk_bridge_infra: false
+
+args:
+  sequencer_type: op-reth
+  # ecdsa-multisig, not pessimistic: aggsender queries an on-chain multisig
+  # validator committee, which the pessimistic contracts do not expose, so L2->L1
+  # exits would never settle.
+  consensus_contract_type: ecdsa-multisig
+  # "bridge" makes aggkit-001 also serve the bridge REST API (port 5577).
+  aggkit_components: "aggsender,aggoracle,bridge"
+
+  # aggsender multisig committee: 1 validator, threshold 1.
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  additional_services: []
+
+  l2_chain_id: 20201
+
+  # Rollup 2 is deployed by the second run with deploy_agglayer: false, which
+  # reuses the agglayer deployed here. This run's agglayer config is therefore the
+  # only place to register rollup 2 in [full-node-rpcs] and [proof-signers].
+  #
+  # sequencer_address is the default l2_sequencer_address. The second run must not
+  # override l2_sequencer_address or any other l2_* role key: the roles are
+  # granted on the L1 RollupManager and fixed into the CREATE2 genesis addresses
+  # by this run.
+  agglayer_extra_rollups:
+    - network_id: 2
+      op_el_rpc_url: "http://op-el-1-op-reth-op-node-002:8545"
+      sequencer_address: "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
+
+optimism_package:
+  chains:
+    "001":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20201"

@@ -1,0 +1,88 @@
+# Second `kurtosis run` of a two-L2 anvil enclave, in the same enclave as
+# params-aggkit-anvil-l2l2-run1.yml: adds rollup 2 (network_id 2, suffix -002,
+# anvil L2, aggkit-002), settling through the agglayer the first run deployed, and
+# deploys the aggkit-proxy, bridge_ui (aggkit backend) and dev-ui services.
+#
+#   kurtosis run --enclave cdk --args-file params-aggkit-anvil-l2l2-run2.yml .
+#
+# Run it after the first run has completed, without removing the enclave.
+
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+  # Nothing in the anvil path reads the postgres databases.
+  deploy_databases: false
+
+args:
+  l1_engine: anvil
+  # The L1 was deployed by the first run as anvil-001, whereas the URLs derived
+  # for this run's -002 suffix would name anvil-002.
+  l1_rpc_url: "http://anvil-001:8545"
+  l1_ws_url: "ws://anvil-001:8545"
+  l1_beacon_url: "http://anvil-001:8545"
+  sequencer_type: anvil
+  consensus_contract_type: ecdsa-multisig
+
+  # "bridge" makes aggkit-002 also serve the bridge REST API (port 5577).
+  aggkit_components: "aggsender,aggoracle,bridge"
+
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # aggkit_proxy needs the contract addresses and every bridge service to exist,
+  # and bridge_ui routes /aggkitapi to it (aggkit_proxy_url below).
+  additional_services:
+    - aggkit_proxy
+    - bridge_ui
+
+  # bridge_ui in aggkit mode skips the bridge-hub stack and renders only the
+  # haproxy proxy. aggkit_proxy_url points its /aggkitapi backend at the
+  # aggkit-proxy service, which routes networks 0, 1 and 2 by network_id.
+  bridge_ui_backend: aggkit
+  aggkit_proxy_url: "http://aggkit-proxy-001:8080"
+  # Also deploy the agglayer-dev-ui container, configured with L1 and both L2s
+  # and served through the same haproxy.
+  aggkit_deploy_dev_ui: true
+
+  # Per-chain L2 JSON-RPC routes /l2rpc-001 and /l2rpc-002. The bare /l2rpc route
+  # is an alias of the "-001" entry. chain_id and network_id also list the chain
+  # in the dev-ui config; entries without them only get the route.
+  bridge_ui_l2_rpc_urls:
+    - path_suffix: "-001"
+      url: "http://l2-anvil-001:8545"
+      chain_id: 20201
+      network_id: 1
+    - path_suffix: "-002"
+      url: "http://l2-anvil-002:8545"
+      chain_id: 20202
+      network_id: 2
+
+  # Static network_id -> URL maps for the aggkit-proxy. Every network is listed,
+  # including 0 (L1), which is never enumerated on-chain. Networks 0 and 1 both
+  # use aggkit-001, which syncs the L1 side too.
+  aggkit_proxy_bridge_urls:
+    - network_id: 0
+      bridge_url: "http://aggkit-001:5577"
+    - network_id: 1
+      bridge_url: "http://aggkit-001:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002:5577"
+  aggkit_proxy_rpc_urls:
+    - network_id: 0
+      rpc_url: "http://anvil-001:8545"
+    - network_id: 1
+      rpc_url: "http://l2-anvil-001:8545"
+    - network_id: 2
+      rpc_url: "http://l2-anvil-002:8545"
+
+  deployment_suffix: "-002"
+  l2_chain_id: 20202
+  l2_network_id: 2
+
+  # Do not override l2_admin_address, l2_sequencer_address or any other l2_* role
+  # key; see params-aggkit-l2l2-run2.yml.
+
+# No optimism_package block: sequencer_type anvil rejects it.

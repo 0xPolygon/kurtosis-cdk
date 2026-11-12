@@ -121,6 +121,40 @@ jobs:
       - name: Run unit tests
         run: kurtosis-test .
 
+  # Fast shell and Go checks for the snapshot tooling.
+  snapshot-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: scripts/anvil-template-check/go.mod
+          cache-dependency-path: scripts/anvil-template-check/go.mod
+
+      - name: Run the snapshot shell unit tests
+        run: |
+          set -euo pipefail
+          for test in \
+            snapshot/scripts/lib/ports_test.sh \
+            snapshot/scripts/lib/version-tag_test.sh \
+            snapshot/scripts/lib/verify-anvil-aggkit_test.sh \
+            snapshot/scripts/extract-state_test.sh \
+            snapshot/scripts/gate-snapshot-soundness_test.sh \
+            snapshot/scripts/publish-images_test.sh \
+            snapshot/scripts/apply-digests_test.sh \
+            snapshot/scripts/verify-healthchecks_test.sh \
+            snapshot/scripts/generate-compose_test.sh \
+            snapshot/scripts/discover-containers_test.sh; do
+            echo "::group::${test}"
+            "./${test}"
+            echo "::endgroup::"
+          done
+
+      - name: Check template rendering (anvil L2, agglayer, aggkit-proxy, haproxy)
+        run: ./scripts/anvil-template-check/check.sh
+
   run-without-args:
     needs: [lint, unit]
     runs-on: ubuntu-latest
@@ -166,7 +200,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/besu/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml ./.github/tests/besu/*.yml ./.github/tests/other/anvil/anvil-rollup.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -334,6 +368,22 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
+      - name: Verify the aggkit bridge REST API serves /bridge/v1
+        run: |
+          # Without the bridge component the REST server answers every /bridge/v1 route
+          # with a 404, which is what the bridge hub consumers of BRIDGE_SERVICE_URL would see.
+          bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001-bridge rest)
+          deadline=$((SECONDS + 120))
+          until curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1" | jq -e '.l1_info and .l2_info' >/dev/null; do
+            if [[ "${SECONDS}" -ge "${deadline}" ]]; then
+              echo "❌ ${bridge_rest_url}/bridge/v1/sync-status did not return a sync status"
+              curl -si "${bridge_rest_url}/bridge/v1/sync-status?network_id=1" || true
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "✅ aggkit bridge REST API serves /bridge/v1"
+
       - name: Verify arpeggio rpc
         run: |
           result=$(yq '.args.additional_services | contains(["arpeggio"])' ./.github/tests/additional-services.yml)
@@ -434,3 +484,91 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
+
+  # A single-chain `sequencer_type: anvil` enclave. It has its own checks instead of
+  # ./.github/actions/bridge-tests: that suite claims through polycli's legacy
+  # bridge-service client, which requests the zkevm-bridge-service REST shape, while the
+  # aggkit bridge only serves /bridge/v1/... routes.
+  run-with-anvil-l2:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/other/anvil/anvil-l2-rollup.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup progress
+        working-directory: .github/scripts
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} anvil ecdsa-multisig
+
+      - name: Verify sovereign bridge and GER bytecode at the addresses aggkit is configured with
+        run: |
+          set -euo pipefail
+          l2_rpc_url=$(kurtosis port print "${ENCLAVE_NAME}" l2-anvil-001 rpc)
+          container=$(docker ps --format '{{.Names}}' | grep -E '^aggkit-001--' | head -n 1)
+          docker cp "${container}:/etc/aggkit/config.toml" /tmp/aggkit-config.toml
+          # [L2Config] holds the sovereign GER manager and bridge addresses.
+          read_l2_address() {
+            awk -v key="$1" '/^\[L2Config\]/ {in_l2 = 1; next} /^\[/ {in_l2 = 0} in_l2 && $1 == key {gsub(/"/, "", $3); print $3; exit}' /tmp/aggkit-config.toml
+          }
+          for key in BridgeAddr GlobalExitRootAddr; do
+            address=$(read_l2_address "${key}")
+            if ! [[ "${address}" =~ ^0x[0-9a-fA-F]{40}$ ]]; then
+              echo "❌ aggkit [L2Config] ${key} is not an address: '${address}'"
+              exit 1
+            fi
+            code=$(cast code "${address}" --rpc-url "${l2_rpc_url}")
+            if [ "${code}" = "0x" ]; then
+              echo "❌ ${key} ${address} has no bytecode on l2-anvil-001"
+              exit 1
+            fi
+            echo "✅ ${key} ${address} has bytecode (${#code} hex chars)"
+          done
+
+      - name: Verify aggkit bridge sync-status (L1 and L2 both synced+active)
+        run: |
+          bridge_rest_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} aggkit-001 rest)
+          # The L1/L2 syncers race the "Monitor rollup progress" block-height wait above,
+          # not the other way round -- poll instead of a single shot (matches monitor.sh's
+          # own retry style).
+          for attempt in $(seq 1 24); do
+            # `run:` blocks execute under `bash -e`, and a bare
+            # `var=$(cmd)` assignment is NOT a tested command -- so an
+            # unguarded `curl -sf` here would abort the whole step on the
+            # FIRST transient failure (exit 7 connection refused, 22 on
+            # 4xx/5xx) and the retry loop could never do its job. The
+            # early attempts are exactly when the endpoint is expected to
+            # be unavailable, so every probe below tolerates failure and
+            # falls through to the sleep.
+            sync_status=$(curl -sf "${bridge_rest_url}/bridge/v1/sync-status?network_id=1" || true)
+            echo "attempt ${attempt}/24 sync-status: ${sync_status}"
+            l1_synced=$(jq -r '.l1_info.is_synced' <<<"${sync_status}" 2>/dev/null || true)
+            l1_active=$(jq -r '.l1_info.is_active' <<<"${sync_status}" 2>/dev/null || true)
+            l2_synced=$(jq -r '.l2_info.is_synced' <<<"${sync_status}" 2>/dev/null || true)
+            l2_active=$(jq -r '.l2_info.is_active' <<<"${sync_status}" 2>/dev/null || true)
+            if [ "${l1_synced}" = "true" ] && [ "${l1_active}" = "true" ] && [ "${l2_synced}" = "true" ] && [ "${l2_active}" = "true" ]; then
+              echo "✅ aggkit bridge sync-status: L1 and L2 both synced+active"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ aggkit bridge sync-status did not reach fully synced+active on both sides within 120s"
+          exit 1
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: anvil-l2-rollup

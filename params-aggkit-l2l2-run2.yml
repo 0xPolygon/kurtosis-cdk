@@ -1,0 +1,78 @@
+# Second `kurtosis run` of a two-L2 enclave, in the same enclave as
+# params-aggkit-l2l2-run1.yml: adds rollup 2 (network_id 2, suffix -002, op-reth,
+# aggkit-002), settling through the agglayer the first run deployed, and deploys
+# aggkit_proxy and bridge_ui in front of both chains.
+#
+#   kurtosis run --enclave cdk --args-file params-aggkit-l2l2-run2.yml .
+#
+# Run it after the first run has completed, without removing the enclave.
+
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: ecdsa-multisig
+  # "bridge" makes aggkit-002 also serve the bridge REST API (port 5577).
+  aggkit_components: "aggsender,aggoracle,bridge"
+
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # aggkit_proxy needs the contract addresses and every bridge service to exist,
+  # and bridge_ui routes /aggkitapi to it (aggkit_proxy_url below).
+  additional_services:
+    - aggkit_proxy
+    - bridge_ui
+
+  # bridge_ui in aggkit mode skips the bridge-hub stack and renders only the
+  # haproxy proxy. aggkit_proxy_url points its /aggkitapi backend at the
+  # aggkit-proxy service, which routes networks 0, 1 and 2 by network_id.
+  bridge_ui_backend: aggkit
+  aggkit_proxy_url: "http://aggkit-proxy-001:8080"
+  # Per-chain L2 JSON-RPC routes /l2rpc-001 and /l2rpc-002. The bare /l2rpc
+  # route is an alias of the "-001" entry.
+  bridge_ui_l2_rpc_urls:
+    - path_suffix: "-001"
+      url: "http://op-el-1-op-reth-op-node-001:8545"
+    - path_suffix: "-002"
+      url: "http://op-el-1-op-reth-op-node-002:8545"
+
+  # Static network_id -> URL maps for the aggkit-proxy. Every network is listed,
+  # including 0 (L1), which is never enumerated on-chain. Networks 0 and 1 both
+  # use aggkit-001, which syncs the L1 side too.
+  aggkit_proxy_bridge_urls:
+    - network_id: 0
+      bridge_url: "http://aggkit-001:5577"
+    - network_id: 1
+      bridge_url: "http://aggkit-001:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002:5577"
+  aggkit_proxy_rpc_urls:
+    - network_id: 0
+      rpc_url: "http://el-1-geth-lighthouse:8545"
+    - network_id: 1
+      rpc_url: "http://op-el-1-op-reth-op-node-001:8545"
+    - network_id: 2
+      rpc_url: "http://op-el-1-op-reth-op-node-002:8545"
+
+  deployment_suffix: "-002"
+  l2_chain_id: 20202
+  l2_network_id: 2
+
+  # Do not override l2_admin_address, l2_sequencer_address or any other l2_* role
+  # key: the first run granted those roles on the L1 RollupManager and derived
+  # the CREATE2 genesis addresses from them, so other values break rollup
+  # creation ("Deployer does not have admin role").
+
+optimism_package:
+  chains:
+    "002":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20202"

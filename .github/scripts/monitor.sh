@@ -63,6 +63,10 @@ case "${sequencer_type}" in
   "op-reth")
     rpc_name="op-el-1-op-reth-op-node${deployment_suffix}"
     ;;
+  "anvil")
+    # The anvil L2 is its own RPC endpoint (constants.L2_RPC_MAPPING[anvil]).
+    rpc_name="l2-anvil${deployment_suffix}"
+    ;;
   "besu")
     rpc_name="besu${deployment_suffix}"
     ;;
@@ -84,6 +88,9 @@ case "${sequencer_type}" in
     ;;
   "op-reth")
     target=50 # blocks
+    ;;
+  "anvil")
+    target=20 # blocks, one per l2_anvil_block_time (default 1s)
     ;;
   "besu")
     target=50 # blocks
@@ -123,6 +130,17 @@ for step in $(seq 1 "${num_steps}"); do
           fi
           ;;
         "op-reth")
+          LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
+          SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
+          FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
+          log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
+          if [[ "${LATEST_BLOCK}" -ge "${target}" && "${SAFE_BLOCK}" -ge "${target}" && "${FINALIZED_BLOCK}" -ge "${target}" ]]; then
+            log_info "Target blocks reached for all block types (latest, safe and finalized)"
+            exit 0
+          fi
+          ;;
+        "anvil")
+          # anvil advances "finalized" itself (--slots-in-an-epoch).
           LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
           SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
           FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
@@ -197,7 +215,7 @@ case "${consensus_contract_type}" in
       "cdk-erigon")
         log_error "Target batches have not been reached for latest batch type"
         ;;
-      "op-reth")
+      "op-reth" | "anvil")
         log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"
         ;;
       "besu")

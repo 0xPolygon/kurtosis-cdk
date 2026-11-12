@@ -1,21 +1,70 @@
 #!/usr/bin/env bash
 #
 # State Extraction Script
-# Stops L1 containers and extracts their datadirs
 #
-# Usage: extract-state.sh <DISCOVERY_JSON> <OUTPUT_DIR>
+# Default flavor ("default"): stops the L1 containers and extracts their
+# datadirs (geth/lighthouse), plus agglayer and op-reth L2 configuration.
+#
+# Flavor "anvil-aggkit": captures state from the three anvils over the
+# `anvil_dumpState` RPC -- WITHOUT stopping anything -- plus the configs and
+# keystores of the stateless services (agglayer, aggkit x2 -- each also
+# serving the bridge REST API in the same container/config, aggkit-proxy,
+# haproxy, dev-ui). The L2 anvils are launched with `--init`,
+# which anvil refuses to combine with `--dump-state`, so RPC capture is the
+# only option there; the L1 anvil is captured the same way for symmetry and
+# because `--dump-state` only writes its file on shutdown.
+#
+# The dump is taken with `anvil_dumpState(preserve_historical_states = true)`.
+# Without it, `--load-state` restores every block/tx/receipt/log but only ONE
+# state -- the tip -- so any `eth_call`/`eth_getCode`/
+# `eth_getTransactionCount` pinned to a pre-snapshot block fails with
+# `BlockOutOfRangeError`. That breaks aggkit (rollupCreationBlockNumber) and
+# agglayer (settlement-signer nonce-inclusion probe) on a restored bundle.
+# With historical states preserved the restored chain answers state reads at
+# every captured height, so no config repointing is needed.
+#
+# The three anvils are dumped one after another while they keep mining. The
+# recorded block_number is the tip of each dump itself (best_block_number),
+# and the L1 dump is taken first, so the L2 dumps may be a few blocks newer
+# than the L1 state they reference; that is harmless while the capture is
+# settlement-free (no bridge activity means no L1 info tree updates).
+#
+# Usage: extract-state.sh [--flavor <default|anvil-aggkit>] <DISCOVERY_JSON> <OUTPUT_DIR>
+#
+# The flavor defaults to the `flavor` field of DISCOVERY_JSON when present,
+# and to "default" otherwise, so existing two-argument callers are unaffected.
 #
 
 set -euo pipefail
 
 # Check arguments
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
+FLAVOR=""
+POSITIONAL=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --flavor)
+            FLAVOR="${2:-}"
+            shift 2
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            echo "Usage: $0 [--flavor <default|anvil-aggkit>] <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
+            exit 1
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#POSITIONAL[@]} -ne 2 ]; then
+    echo "Usage: $0 [--flavor <default|anvil-aggkit>] <DISCOVERY_JSON> <OUTPUT_DIR>" >&2
     exit 1
 fi
 
-DISCOVERY_JSON="$1"
-OUTPUT_DIR="$2"
+DISCOVERY_JSON="${POSITIONAL[0]}"
+OUTPUT_DIR="${POSITIONAL[1]}"
 
 # Check dependencies
 for cmd in docker jq tar; do
@@ -36,6 +85,542 @@ log "Starting state extraction"
 if [ ! -f "$DISCOVERY_JSON" ]; then
     log "ERROR: Discovery file not found: $DISCOVERY_JSON"
     exit 1
+fi
+
+if [ -z "$FLAVOR" ]; then
+    FLAVOR=$(jq -r '.flavor // "default"' "$DISCOVERY_JSON")
+fi
+
+case "$FLAVOR" in
+    default|anvil-aggkit) ;;
+    *)
+        log "ERROR: Unknown flavor: $FLAVOR (expected 'default' or 'anvil-aggkit')"
+        exit 1
+        ;;
+esac
+
+# ============================================================================
+# Flavor: anvil-aggkit
+#
+# Everything below this block is the original ("default") geth/lighthouse
+# extraction and is left untouched -- the anvil branch writes its own output
+# tree and exits before reaching it.
+# ============================================================================
+
+# Decode an `anvil_dumpState` result (0x-prefixed hex of a gzipped state JSON;
+# older anvils returned the JSON uncompressed, which is handled too) into a
+# plain JSON file.
+decode_dump_state() {
+    local hex_file="$1" out_file="$2"
+    local magic
+    local -a decoder
+
+    # Strip the 0x prefix in place.
+    tail -c +3 "$hex_file" | tr -d '\n' > "$hex_file.stripped"
+    mv "$hex_file.stripped" "$hex_file"
+
+    magic=$(head -c 4 "$hex_file")
+
+    # xxd is preferred because it needs no interpreter; python3 is the
+    # fallback for environments where xxd is not installed.
+    if command -v xxd &> /dev/null; then
+        decoder=(xxd -r -p)
+    elif command -v python3 &> /dev/null; then
+        decoder=(python3 -c 'import sys
+with open(sys.argv[1]) as f:
+    sys.stdout.buffer.write(bytes.fromhex(f.read().strip()))')
+    else
+        log "ERROR: neither 'xxd' nor 'python3' available to decode the anvil state dump" >&2
+        return 1
+    fi
+
+    if [ "$magic" = "1f8b" ]; then
+        "${decoder[@]}" "$hex_file" | gzip -dc > "$out_file"
+    else
+        "${decoder[@]}" "$hex_file" > "$out_file"
+    fi
+}
+
+# anvil_rpc_block <rpc url> -> block number (decimal) of eth_blockNumber, or empty
+anvil_rpc_block() {
+    local hex
+    hex=$(curl -s --max-time 30 "$1" -X POST -H 'Content-Type: application/json' \
+        --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+        | jq -r '.result // empty' 2>/dev/null) || true
+    case "$hex" in
+        0x[0-9a-fA-F]*) echo $((16#${hex#0x})) ;;
+        *) echo "" ;;
+    esac
+}
+
+# capture_anvil_state <container> <host_port> <out_json> -> block number on stdout
+capture_anvil_state() {
+    local container="$1" host_port="$2" out_file="$3"
+    local rpc="http://127.0.0.1:$host_port"
+    local tmp_response block_number accounts
+
+    tmp_response=$(mktemp "${TMPDIR:-/tmp}/anvil-dump.XXXXXX")
+
+    block_number=$(anvil_rpc_block "$rpc")
+    if [ -z "$block_number" ]; then
+        log "    ERROR: $container is not answering JSON-RPC on $rpc" >&2
+        rm -f "$tmp_response"
+        return 1
+    fi
+
+    # anvil_dumpState is the ONLY capture route available here: the L2 anvils
+    # run with `--init <genesis>`, and anvil rejects `--init` together with
+    # `--dump-state`.
+    #
+    # params[0] = preserve_historical_states. MUST stay `true`: it is
+    # what makes the restored chain serve `eth_call`/`eth_getCode`/
+    # `eth_getTransactionCount` at pre-snapshot heights. Cost is roughly
+    # `blocks x tip-state-size` of JSON, which is why capture must happen
+    # right after enclave readiness (a few hundred blocks), never against a
+    # long-lived enclave.
+    if ! curl -s --max-time 300 "$rpc" -X POST -H 'Content-Type: application/json' \
+        --data '{"jsonrpc":"2.0","method":"anvil_dumpState","params":[true],"id":1}' -o "$tmp_response"; then
+        log "    ERROR: anvil_dumpState request to $container failed" >&2
+        rm -f "$tmp_response"
+        return 1
+    fi
+
+    if ! jq -e '.result | type == "string"' "$tmp_response" > /dev/null 2>&1; then
+        log "    ERROR: anvil_dumpState on $container returned no result: $(head -c 400 "$tmp_response")" >&2
+        rm -f "$tmp_response"
+        return 1
+    fi
+
+    jq -j '.result' "$tmp_response" > "$tmp_response.hex"
+    rm -f "$tmp_response"
+
+    if ! decode_dump_state "$tmp_response.hex" "$out_file"; then
+        rm -f "$tmp_response.hex"
+        return 1
+    fi
+    rm -f "$tmp_response.hex"
+
+    if [ ! -s "$out_file" ]; then
+        log "    ERROR: decoded state for $container is empty" >&2
+        return 1
+    fi
+
+    accounts=$(jq -r '.accounts | length' "$out_file" 2>/dev/null || echo "")
+    if [ -z "$accounts" ] || [ "$accounts" = "null" ] || [ "$accounts" -eq 0 ]; then
+        log "    ERROR: decoded state for $container has no accounts (not a valid anvil dump)" >&2
+        return 1
+    fi
+
+    # Historical states are load-bearing, not a nice-to-have -- without them
+    # agglayer panics at settlement_task.rs and aggkit dies at startup on the
+    # restored bundle. Fail the capture loudly rather than ship a bundle that
+    # cannot settle.
+    local historical
+    # Guarded by a type check on purpose: jq's `length` on a NUMBER returns its
+    # absolute value and on a STRING its character count, so a malformed
+    # `"historical_states": 1` would pass a bare `length > 0`.
+    historical=$(jq -r 'if (.historical_states | type) as $t | ($t == "object" or $t == "array") then (.historical_states | length) else 0 end' "$out_file" 2>/dev/null || echo "0")
+    if [ -z "$historical" ] || [ "$historical" = "null" ] || [ "$historical" -eq 0 ]; then
+        log "    ERROR: decoded state for $container has NO historical_states." >&2
+        log "           anvil_dumpState(true) is required so the restored chain can serve" >&2
+        log "           state reads at pre-snapshot heights. Is the anvil image" >&2
+        log "           too old to support preserve_historical_states?" >&2
+        return 1
+    fi
+
+    # Tip of the dump itself: eth_blockNumber read before the dump is only a
+    # lower bound while the chain keeps mining. Older anvils do not serialize
+    # best_block_number; those fall back to a read right after the dump.
+    local dumped_tip
+    dumped_tip=$(jq -r '(.best_block_number // .block.number // empty) | tostring' "$out_file" 2>/dev/null || echo "")
+    case "$dumped_tip" in
+        0x[0-9a-fA-F]*) block_number=$((16#${dumped_tip#0x})) ;;
+        ''|*[!0-9]*)
+            block_number=$(anvil_rpc_block "$rpc")
+            if [ -z "$block_number" ]; then
+                log "    ERROR: $container stopped answering JSON-RPC after the dump" >&2
+                return 1
+            fi
+            ;;
+        *) block_number="$dumped_tip" ;;
+    esac
+
+    log "    ✓ $(basename "$out_file"): $(du -h "$out_file" | cut -f1), $accounts accounts, $historical historical states, block $block_number" >&2
+    echo "$block_number"
+}
+
+# copy_container_dir <container> <src-dir> <dest-dir>
+# Both copy helpers return non-zero on failure, which aborts the run under
+# `set -e`; call them with `|| true` for anything genuinely optional.
+copy_container_dir() {
+    local container="$1" src="$2" dest="$3"
+    rm -rf "$dest"
+    if docker cp "$container:$src" "$dest" 2>/dev/null; then
+        log "    ✓ $src -> $(basename "$dest")/ ($(find "$dest" -type f | wc -l) file(s))"
+        return 0
+    fi
+    log "    ERROR: could not copy $src from $container"
+    return 1
+}
+
+# copy_container_file <container> <src-file> <dest-file>
+copy_container_file() {
+    local container="$1" src="$2" dest="$3"
+    mkdir -p "$(dirname "$dest")"
+    if docker cp "$container:$src" "$dest" 2>/dev/null; then
+        log "    ✓ $(basename "$dest") ($(wc -c < "$dest") bytes)"
+        return 0
+    fi
+    log "    ERROR: could not copy $src from $container"
+    return 1
+}
+
+# patch_haproxy_default_backend <haproxy.cfg path>
+#
+# The captured haproxy.cfg ends with `backend backend_default { server
+# agglayer-dev-ui-NNN:80 }`. That server line has no `resolvers`/`init-addr`
+# directive, so haproxy resolves the hostname eagerly at boot; when the
+# dev-ui service is not started (it is profile-gated in the bundle's
+# compose file, so it has no Docker DNS record at all) haproxy logs "could
+# not resolve address" / "Failed to initialize server(s) addr" and
+# crash-loops, and `docker compose up --wait` never reaches healthy.
+#
+# The fix is to drop the `default_backend` fallback from the captured config
+# used by the bundle: an unmatched request answers 503 instead of being
+# routed to the dev-ui. The live enclave's haproxy.cfg and the template in
+# static_files are untouched. `backend_default` is the LAST block of the
+# template, so truncating from its header comment to EOF is safe;
+# `default_backend backend_default` is deleted separately from the frontend
+# section. Idempotent (a no-op if already patched or absent).
+#
+# The dev-ui container stays reachable on its own published port
+# (${DEVUI_PORT:-8557}) when started with `--profile devui`.
+patch_haproxy_default_backend() {
+    local cfg="$1"
+    if [ ! -f "$cfg" ]; then
+        return 0
+    fi
+    if ! grep -q '^backend backend_default$' "$cfg"; then
+        return 0
+    fi
+    local tmp orig_mode
+    tmp=$(mktemp)
+    # `mktemp` files are 0600; if that mode ended up in the derived image's
+    # COPY, haproxy would fail with "Could not open configuration file:
+    # Permission denied". Restore the original file's mode explicitly.
+    orig_mode=$(stat -c '%a' "$cfg" 2>/dev/null || stat -f '%Lp' "$cfg" 2>/dev/null || echo 644)
+    # 1) drop the `default_backend backend_default` frontend line.
+    # 2) truncate the file at (and including) the "# Default backend
+    #    configuration" header comment that immediately precedes the
+    #    backend_default block -- everything from there to EOF is that one
+    #    block, per the template's fixed ordering.
+    sed '/^[[:space:]]*default_backend backend_default[[:space:]]*$/d' "$cfg" \
+        | sed '/^# Default backend configuration$/,$d' > "$tmp"
+    if ! grep -q '^backend backend_default$' "$tmp" && [ -s "$tmp" ]; then
+        chmod "$orig_mode" "$tmp"
+        mv "$tmp" "$cfg"
+        log "    ✓ patched $(basename "$cfg"): dropped default_backend/backend_default (it cannot resolve a dev-ui that is not running)"
+    else
+        rm -f "$tmp"
+        log "    ERROR: patch_haproxy_default_backend failed to remove backend_default from $cfg"
+        return 1
+    fi
+}
+
+if [ "$FLAVOR" = "anvil-aggkit" ]; then
+    log "Flavor: anvil-aggkit (live capture -- no containers are stopped)"
+
+    ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")
+    STATE_DIR="$OUTPUT_DIR/state"
+    CONFIG_DIR="$OUTPUT_DIR/config"
+    mkdir -p "$STATE_DIR" "$CONFIG_DIR"
+
+    CHAINS_META='[]'
+
+    # ---- L1 anvil ----------------------------------------------------------
+    log "Capturing L1 anvil state..."
+    L1_CONTAINER=$(jq -r '.l1_anvil.container_name' "$DISCOVERY_JSON")
+    L1_SERVICE=$(jq -r '.l1_anvil.service_name' "$DISCOVERY_JSON")
+    L1_PORT=$(jq -r '.l1_anvil.ports["8545"] // empty' "$DISCOVERY_JSON")
+    if [ -z "$L1_PORT" ]; then
+        log "ERROR: L1 anvil has no published 8545 port"
+        exit 1
+    fi
+    L1_BLOCK=$(capture_anvil_state "$L1_CONTAINER" "$L1_PORT" "$STATE_DIR/$L1_SERVICE.json")
+    CHAINS_META=$(echo "$CHAINS_META" | jq \
+        --arg service "$L1_SERVICE" \
+        --arg role "l1" \
+        --arg state_file "state/$L1_SERVICE.json" \
+        --argjson chain_id "$(jq '.l1_anvil.chain_id // null' "$DISCOVERY_JSON")" \
+        --argjson network_id 0 \
+        --argjson block_number "$L1_BLOCK" \
+        --arg image "$(jq -r '.l1_anvil.image' "$DISCOVERY_JSON")" \
+        --argjson cmd "$(jq '.l1_anvil.cmd' "$DISCOVERY_JSON")" \
+        '. + [{service: $service, role: $role, chain_id: $chain_id, network_id: $network_id,
+               block_number: $block_number, state_file: $state_file, image: $image, cmd: $cmd}]')
+
+    # ---- L2 anvils ---------------------------------------------------------
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        log "Capturing L2 anvil state (network $prefix)..."
+        L2_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].anvil.container_name" "$DISCOVERY_JSON")
+        L2_SERVICE=$(jq -r ".l2_chains[\"$prefix\"].anvil.service_name" "$DISCOVERY_JSON")
+        L2_PORT=$(jq -r ".l2_chains[\"$prefix\"].anvil.ports[\"8545\"] // empty" "$DISCOVERY_JSON")
+        if [ -z "$L2_PORT" ]; then
+            log "ERROR: $L2_SERVICE has no published 8545 port"
+            exit 1
+        fi
+        L2_BLOCK=$(capture_anvil_state "$L2_CONTAINER" "$L2_PORT" "$STATE_DIR/$L2_SERVICE.json")
+
+        # The `--init` genesis is not part of the state dump; keep it so the
+        # restore can reproduce the same launch shape if it wants to.
+        L2_GENESIS_PATH=$(jq -r ".l2_chains[\"$prefix\"].anvil.cmd | join(\" \")" "$DISCOVERY_JSON" \
+            | grep -oE '\-\-init +[^ ]+' | awk '{print $2}' | head -1)
+        if [ -n "$L2_GENESIS_PATH" ]; then
+            copy_container_file "$L2_CONTAINER" "$L2_GENESIS_PATH" "$STATE_DIR/$L2_SERVICE-genesis.json" || true
+        fi
+
+        CHAINS_META=$(echo "$CHAINS_META" | jq \
+            --arg service "$L2_SERVICE" \
+            --arg role "l2" \
+            --arg prefix "$prefix" \
+            --arg state_file "state/$L2_SERVICE.json" \
+            --argjson chain_id "$(jq ".l2_chains[\"$prefix\"].anvil.chain_id // null" "$DISCOVERY_JSON")" \
+            --argjson block_number "$L2_BLOCK" \
+            --arg image "$(jq -r ".l2_chains[\"$prefix\"].anvil.image" "$DISCOVERY_JSON")" \
+            --argjson cmd "$(jq ".l2_chains[\"$prefix\"].anvil.cmd" "$DISCOVERY_JSON")" \
+            '. + [{service: $service, role: $role, prefix: $prefix, chain_id: $chain_id,
+                   network_id: null, block_number: $block_number, state_file: $state_file,
+                   image: $image, cmd: $cmd}]')
+    done
+
+    # ---- agglayer config ---------------------------------------------------
+    log "Extracting agglayer configuration..."
+    AGGLAYER_CONTAINER=$(jq -r '.agglayer.container_name' "$DISCOVERY_JSON")
+    mkdir -p "$CONFIG_DIR/agglayer"
+    copy_container_file "$AGGLAYER_CONTAINER" "/etc/agglayer/config.toml" "$CONFIG_DIR/agglayer/config.toml"
+    copy_container_file "$AGGLAYER_CONTAINER" "/etc/agglayer/aggregator.keystore" "$CONFIG_DIR/agglayer/aggregator.keystore"
+    log "  Note: /etc/agglayer/storage and /etc/agglayer/backups NOT extracted (stateless by design)"
+
+    # ---- aggkit configs -----------------------------------------------------
+    # The anvil params files list `bridge` among aggkit_components, so each
+    # aggkit-00X container also serves the bridge REST API in-process and
+    # there is one container per L2 network to extract.
+    #
+    # This loop (plus the agglayer and aggkit-proxy blocks around it) produces
+    # the config/ tree aggkit's own e2e env (test/e2e/envs/anvil-2chains/) is
+    # built from. The emitted layout is named after kurtosis-cdk's service
+    # names, not aggkit's per-network "001"/"002" directories, so the mapping
+    # is spelled out explicitly:
+    #
+    #   kurtosis-cdk (emitted here)              aggkit's env (A2 builds this)
+    #   ----------------------------------------  -----------------------------
+    #   config/agglayer/config.toml               config/agglayer/config.toml
+    #   config/agglayer/aggregator.keystore       config/agglayer/aggregator.keystore
+    #   config/aggkit-001/config.toml              config/001/aggkit-config.toml
+    #   config/aggkit-001/sequencer.keystore       config/001/sequencer.keystore
+    #   config/aggkit-001/aggoracle.keystore       config/001/aggoracle.keystore
+    #   config/aggkit-001/sovereignadmin.keystore  config/001/sovereignadmin.keystore
+    #   config/aggkit-002/config.toml              config/002/aggkit-config.toml
+    #   config/aggkit-002/sequencer.keystore       config/002/sequencer.keystore
+    #   config/aggkit-002/aggoracle.keystore       config/002/aggoracle.keystore
+    #   config/aggkit-002/sovereignadmin.keystore  config/002/sovereignadmin.keystore
+    #   config/aggkit-proxy-001/config.toml        config/aggkit-proxy/aggkit-proxy.toml
+    #
+    # i.e. kurtosis-cdk names each directory after the kurtosis SERVICE
+    # (aggkit-<prefix>, aggkit-proxy-<prefix>) and every config file
+    # "config.toml" (the literal filename every one of these containers
+    # exposes at /etc/aggkit{,-proxy}/config.toml); aggkit's own env instead
+    # keys the per-L2 directories by bare network prefix ("001"/"002", no
+    # "aggkit-" prefix) and names the aggkit config file "aggkit-config.toml"
+    # (its own docker-compose.yml's bind-mount target name). The KEYSTORE
+    # filenames are identical in both layouts (sequencer/aggoracle/
+    # sovereignadmin.keystore) and need no rename. An optional
+    # claimsponsor.keystore may also be present per instance (11 files are
+    # REQUIRED across the whole tree -- 2 agglayer + 4x2 aggkit + 1
+    # aggkit-proxy; claimsponsor.keystore, if present, is a 12th, optional
+    # file, not part of the required count).
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        found=$(jq -r ".l2_chains[\"$prefix\"].aggkit.found // false" "$DISCOVERY_JSON")
+        if [ "$found" != "true" ]; then
+            log "  Skipping aggkit for network $prefix (not present)"
+            continue
+        fi
+        container=$(jq -r ".l2_chains[\"$prefix\"].aggkit.container_name" "$DISCOVERY_JSON")
+        service=$(jq -r ".l2_chains[\"$prefix\"].aggkit.service_name" "$DISCOVERY_JSON")
+        log "Extracting $service configuration..."
+        copy_container_dir "$container" "/etc/aggkit" "$CONFIG_DIR/$service"
+    done
+
+    # ---- aggkit-proxy config ----------------------------------------------
+    if [ "$(jq -r '.aggkit_proxy.found // false' "$DISCOVERY_JSON")" = "true" ]; then
+        PROXY_CONTAINER=$(jq -r '.aggkit_proxy.container_name' "$DISCOVERY_JSON")
+        PROXY_SERVICE=$(jq -r '.aggkit_proxy.service_name' "$DISCOVERY_JSON")
+        log "Extracting $PROXY_SERVICE configuration..."
+        copy_container_dir "$PROXY_CONTAINER" "/etc/aggkit-proxy" "$CONFIG_DIR/$PROXY_SERVICE"
+    fi
+
+    # ---- haproxy config ----------------------------------------------------
+    if [ "$(jq -r '.haproxy.found // false' "$DISCOVERY_JSON")" = "true" ]; then
+        HAPROXY_CONTAINER=$(jq -r '.haproxy.container_name' "$DISCOVERY_JSON")
+        HAPROXY_SERVICE=$(jq -r '.haproxy.service_name' "$DISCOVERY_JSON")
+        log "Extracting $HAPROXY_SERVICE configuration..."
+        copy_container_file "$HAPROXY_CONTAINER" "/usr/local/etc/haproxy/haproxy.cfg" \
+            "$CONFIG_DIR/$HAPROXY_SERVICE/haproxy.cfg"
+        patch_haproxy_default_backend "$CONFIG_DIR/$HAPROXY_SERVICE/haproxy.cfg"
+    fi
+
+    # ---- dev-ui config -----------------------------------------------------
+    if [ "$(jq -r '.dev_ui.found // false' "$DISCOVERY_JSON")" = "true" ]; then
+        DEV_UI_CONTAINER=$(jq -r '.dev_ui.container_name' "$DISCOVERY_JSON")
+        DEV_UI_SERVICE=$(jq -r '.dev_ui.service_name' "$DISCOVERY_JSON")
+        log "Extracting $DEV_UI_SERVICE configuration..."
+        copy_container_file "$DEV_UI_CONTAINER" "/etc/agglayer-dev-ui/config.json" \
+            "$CONFIG_DIR/$DEV_UI_SERVICE/config.json"
+    fi
+
+    # ---- network ids (authoritative, straight out of the aggkit configs) ---
+    # The aggkit config no longer carries an AutoClaim.Claimers block, which
+    # held the only `NetworkID =` line the rendered config had, so the grep
+    # below may find nothing -- and under set -euo pipefail a no-match grep
+    # would kill the script silently. The extraction therefore falls back to
+    # the dev-ui config.json per-chain `networkId` table (matched by chain
+    # id), and when neither source yields a value fails loudly instead.
+    DEV_UI_CFG=""
+    if [ "$(jq -r '.dev_ui.found // false' "$DISCOVERY_JSON")" = "true" ] \
+        && [ -n "${DEV_UI_SERVICE:-}" ] \
+        && [ -f "$CONFIG_DIR/$DEV_UI_SERVICE/config.json" ]; then
+        DEV_UI_CFG="$CONFIG_DIR/$DEV_UI_SERVICE/config.json"
+    fi
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+        service=$(jq -r ".l2_chains[\"$prefix\"].aggkit.service_name" "$DISCOVERY_JSON")
+        l2_service=$(jq -r ".l2_chains[\"$prefix\"].anvil.service_name" "$DISCOVERY_JSON")
+        cfg="$CONFIG_DIR/$service/config.toml"
+        network_id=""
+        if [ -f "$cfg" ]; then
+            network_id=$(grep -m1 -E '^[[:space:]]*NetworkID[[:space:]]*=' "$cfg" \
+                | grep -oE '[0-9]+' | head -1 || true)
+        fi
+        net_src="config.toml"
+        if [ -z "$network_id" ] && [ -n "$DEV_UI_CFG" ]; then
+            chain_id=$(jq -r ".l2_chains[\"$prefix\"].anvil.chain_id // empty" "$DISCOVERY_JSON")
+            if [ -n "$chain_id" ]; then
+                network_id=$(jq -r --argjson cid "$chain_id" \
+                    '[.chains[] | select(.id == $cid) | .networkId] | first // empty' \
+                    "$DEV_UI_CFG" || true)
+                net_src="dev-ui config.json (chain id $chain_id)"
+            fi
+        fi
+        if [ -z "$network_id" ]; then
+            log "ERROR: could not determine the network id for $l2_service (prefix $prefix)"
+            log "       No 'NetworkID =' line in $cfg and no matching chain in ${DEV_UI_CFG:-<no dev-ui config extracted>}."
+            log "       state-metadata.json network_id, the settlement probe and"
+            log "       generate-summary/generate-compose all need it; failing loudly instead of"
+            log "       dying silently on a grep pipeline."
+            exit 1
+        fi
+        CHAINS_META=$(echo "$CHAINS_META" | jq \
+            --arg service "$l2_service" --argjson network_id "$network_id" \
+            'map(if .service == $service then . + {network_id: $network_id} else . end)')
+        log "  Network id for $l2_service: $network_id (from $net_src)"
+    done
+
+    # ---- settlement-freeness probe ----------------------------------------
+    # agglayer/aggkit internal databases are deliberately NOT captured, so a
+    # snapshot taken while certificates exist restores into an inconsistent
+    # world (the chains remember bridges the certificate bookkeeping does
+    # not). Certificate activity does not fail the extraction -- the tooling
+    # still produces a well-formed bundle -- but it is recorded loudly and
+    # the soundness gate refuses the bundle.
+    #
+    # Only a JSON-RPC response with a `result` member is an answer:
+    # `interop_getLatestKnownCertificateHeader` returns `result: null` for a
+    # network without certificates and a header object otherwise. A transport
+    # failure, a non-JSON body or an `error` response (for instance a renamed
+    # method) is NOT "no certificates" and fails the extraction.
+    SETTLEMENT_FREE="null"
+    CERT_HEIGHTS='[]'
+    AGGLAYER_READRPC_PORT=$(jq -r '.agglayer.ports["4444"] // empty' "$DISCOVERY_JSON")
+    if [ -n "$AGGLAYER_READRPC_PORT" ]; then
+        SETTLEMENT_FREE=true
+        for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON"); do
+            net=$(echo "$CHAINS_META" | jq -r --arg p "$prefix" \
+                'map(select(.prefix == $p)) | .[0].network_id // empty')
+            [ -z "$net" ] && continue
+            if ! header=$(curl -s --max-time 15 "http://127.0.0.1:$AGGLAYER_READRPC_PORT" \
+                -X POST -H 'Content-Type: application/json' \
+                --data "{\"jsonrpc\":\"2.0\",\"method\":\"interop_getLatestKnownCertificateHeader\",\"params\":[$net],\"id\":1}"); then
+                log "ERROR: agglayer did not answer interop_getLatestKnownCertificateHeader for network $net on port $AGGLAYER_READRPC_PORT"
+                exit 1
+            fi
+            if ! echo "$header" | jq -e 'type == "object" and has("result") and (has("error") | not)' > /dev/null 2>&1; then
+                log "ERROR: unusable interop_getLatestKnownCertificateHeader response for network $net: $(echo "$header" | head -c 400)"
+                log "       Cannot tell \"no certificates\" from \"could not ask\"; refusing to record settlement_free."
+                exit 1
+            fi
+            height=$(echo "$header" | jq -r '.result.height // empty')
+            status=$(echo "$header" | jq -r '.result.status // empty')
+            CERT_HEIGHTS=$(echo "$CERT_HEIGHTS" | jq \
+                --argjson network_id "$net" \
+                --arg height "${height:-none}" \
+                --arg status "${status:-none}" \
+                '. + [{network_id: $network_id, latest_known_certificate_height: $height, status: $status}]')
+            if [ "$(echo "$header" | jq -r '.result != null')" = "true" ]; then
+                SETTLEMENT_FREE=false
+                log "  WARNING: network $net already has certificates (latest known height ${height:-unknown}, status ${status:-unknown})"
+            fi
+        done
+        if [ "$SETTLEMENT_FREE" = "true" ]; then
+            log "  ✓ No certificates known to agglayer -- capture is settlement-free"
+        else
+            log "  ================================================================"
+            log "  WARNING: THIS ENCLAVE HAS SETTLEMENT ACTIVITY."
+            log "  agglayer/aggkit internal databases are NOT captured, so restoring"
+            log "  this snapshot yields chains whose bridge history the certificate"
+            log "  bookkeeping cannot account for. Capture from a freshly created,"
+            log "  un-bridged enclave for a snapshot that is meant to be used."
+            log "  ================================================================"
+        fi
+    else
+        log "  WARNING: agglayer readrpc port not published; settlement-freeness not checked (recorded as null)"
+    fi
+
+    # ---- metadata ----------------------------------------------------------
+    # Make the bundle self-describing about historical states. A dump with
+    # historical_states == 0 cannot settle certificates after restore, so the
+    # soundness gate checks this the same way it checks settlement_free.
+    for idx in $(seq 0 $(( $(echo "$CHAINS_META" | jq 'length') - 1 ))); do
+        chain_state_file=$(echo "$CHAINS_META" | jq -r ".[$idx].state_file")
+        chain_historical=$(jq -r '.historical_states | if . == null then 0 else length end' \
+            "$OUTPUT_DIR/$chain_state_file")
+        chain_bytes=$(wc -c < "$OUTPUT_DIR/$chain_state_file")
+        CHAINS_META=$(echo "$CHAINS_META" | jq \
+            --argjson i "$idx" --argjson hs "$chain_historical" --argjson sz "$chain_bytes" \
+            '.[$i] += {historical_states: $hs, state_file_bytes: $sz}')
+    done
+
+    jq -n \
+        --arg flavor "$FLAVOR" \
+        --arg enclave_name "$ENCLAVE_NAME" \
+        --arg captured_at "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --argjson chains "$CHAINS_META" \
+        --argjson settlement_free "$SETTLEMENT_FREE" \
+        --argjson certificates "$CERT_HEIGHTS" \
+        '{flavor: $flavor,
+          enclave_name: $enclave_name,
+          captured_at: $captured_at,
+          capture_method: "anvil_dumpState RPC (live, no container stop)",
+          chains: $chains,
+          settlement_free: $settlement_free,
+          agglayer_certificates: $certificates}' \
+        > "$STATE_DIR/state-metadata.json"
+
+    log "State extraction complete (flavor: anvil-aggkit)"
+    log "State files:"
+    find "$STATE_DIR" -type f | sort | sed 's/^/  /'
+    log "Config files:"
+    find "$CONFIG_DIR" -type f | sort | sed 's/^/  /'
+
+    exit 0
 fi
 
 ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")

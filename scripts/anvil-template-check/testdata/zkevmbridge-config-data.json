@@ -1,0 +1,33 @@
+{
+  "admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "agglayer_gateway_address": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "db": {
+    "hostname": "postgres-001",
+    "name": "bridge_db",
+    "password": "redacted",
+    "port": 5432,
+    "user": "bridge_user"
+  },
+  "environment": "development",
+  "grpc_port_number": 9090,
+  "l1_bridge_address": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "l1_ger_address": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "l1_rpc_url": "http://anvil-001:8545",
+  "l2_bridge_address": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "l2_chain_id": "20201",
+  "l2_ger_address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
+  "l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
+  "l2_rpc_url": "http://l2-anvil-001:8545",
+  "log_level": "info",
+  "metrics_port_number": 8090,
+  "pol_token_address": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "require_sovereign_chain_contract": true,
+  "rollup_address": "0x414e9E227e4b589aF92200508aF5399576530E4e",
+  "rollup_manager_address": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "rollup_manager_block_number": "48",
+  "rpc_port_number": 8080,
+  "sequencer_type": "anvil",
+  "sovereign_bridge_proxy_addr": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "sovereign_ger_proxy_addr": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
+  "sovereign_rollup_addr": "0x414e9E227e4b589aF92200508aF5399576530E4e"
+}

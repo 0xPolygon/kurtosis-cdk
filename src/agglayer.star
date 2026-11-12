@@ -66,6 +66,43 @@ def agglayer_version(args):
         return "latest"
 
 
+def _parse_version(version):
+    """Parse "0.6.0-rc.5" into (0, 6, 0, 5). A release has a prerelease number
+    of 999 so it orders after every rc; tags that are not numeric versions
+    (latest, local, branch builds) parse as the newest version.
+    """
+    release, _, suffix = version.lstrip("v").partition("-")
+    numbers = release.split(".")
+    if len(numbers) == 0 or not all([n.isdigit() for n in numbers]):
+        return (999, 0, 0, 999)
+
+    parsed = [int(n) for n in numbers[:3]]
+    for _ in range(3 - len(parsed)):
+        parsed.append(0)
+
+    prerelease = 999
+    if suffix.startswith("rc"):
+        rc_number = suffix.removeprefix("rc").removeprefix(".")
+        digits = ""
+        for c in rc_number.elems():
+            if not c.isdigit():
+                break
+            digits += c
+        if digits:
+            prerelease = int(digits)
+    return (parsed[0], parsed[1], parsed[2], prerelease)
+
+
+def use_outbound_settle(version):
+    """[outbound.rpc.settle] is read up to v0.6.0-rc.6 and ignored afterwards."""
+    return _parse_version(version) < (0, 6, 0, 7)
+
+
+def use_settlement_config(version):
+    """[settlement.*] exists from v0.6.0-rc.1; older versions reject it."""
+    return _parse_version(version) >= (0, 6, 0, 1)
+
+
 def create_agglayer_config_artifact(
     plan, deployment_stages, args, contract_setup_addresses
 ):
@@ -107,6 +144,16 @@ def create_agglayer_config_artifact(
                     ),
                     "agglayer_admin_port": args["agglayer_admin_port"],
                     "prometheus_port": args["agglayer_metrics_port"],
+                    "agglayer_use_outbound_settle": use_outbound_settle(
+                        agglayer_version(args)
+                    ),
+                    "agglayer_use_settlement_config": use_settlement_config(
+                        agglayer_version(args)
+                    ),
+                    "agglayer_settle_confirmations": args[
+                        "agglayer_settle_confirmations"
+                    ],
+                    "agglayer_settlement_policy": args["agglayer_settlement_policy"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
                     "mock_verifier": args["agglayer_prover_primary_prover"]
@@ -116,6 +163,10 @@ def create_agglayer_config_artifact(
                     "op_el_rpc_url": args["op_el_rpc_url"],
                     "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
                     "consensus_contract_type": args["consensus_contract_type"],
+                    # Rollups beyond this run's own (network_id 1), pre-declared so
+                    # the agglayer this run deploys also knows about them. See
+                    # agglayer_extra_rollups in input_parser.star.
+                    "extra_rollups": args.get("agglayer_extra_rollups", []),
                 }
                 | contract_setup_addresses
                 | db_configs,

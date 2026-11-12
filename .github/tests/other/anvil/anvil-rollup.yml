@@ -1,5 +1,8 @@
 args:
   l1_engine: anvil
+  # An anvil L1 cannot host the default op-reth L2: the optimism-package needs an
+  # el_cl_genesis_data artifact that only the ethereum-package L1 produces.
+  sequencer_type: cdk-erigon
   consensus_contract_type: rollup
   # Pinned: this setup settles proofs through cdk-node, whose only settlement path is
   # `interop_sendTx` (SettlementBackend = "agglayer"). agglayer v0.6.0-rc.6 disabled that

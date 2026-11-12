@@ -1,0 +1,34 @@
+# Single-chain anvil L2 fixture: sequencer_type anvil end to end, with an anvil
+# L1. See params-aggkit-anvil-l2l2-run1.yml for the two-L2 variant.
+
+deployment_stages:
+  deploy_op_succinct: false
+  # The legacy zkevm-bridge-service is not needed: aggkit serves the bridge REST
+  # API itself ("bridge" in aggkit_components below).
+  deploy_cdk_bridge_infra: false
+  # Nothing in the anvil path reads the postgres databases.
+  deploy_databases: false
+
+args:
+  # Anvil on both layers, L1 and L2.
+  l1_engine: anvil
+  # The L1 URLs are deliberately not set: this job covers their derivation for an
+  # anvil L1.
+  sequencer_type: anvil
+  # The only consensus type supported with sequencer_type anvil.
+  consensus_contract_type: ecdsa-multisig
+
+  # "bridge" makes the aggkit service also serve the bridge REST API (port 5577).
+  aggkit_components: "aggsender,aggoracle,bridge"
+
+  # aggsender multisig committee: 1 validator, threshold 1.
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  additional_services: []
+
+  l2_chain_id: 20201
+  l2_network_id: 1
+
+# No optimism_package block: sequencer_type anvil rejects it.

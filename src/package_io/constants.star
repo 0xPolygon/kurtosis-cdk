@@ -1,5 +1,6 @@
 ADDITIONAL_SERVICES = struct(
     agglogger="agglogger",
+    aggkit_proxy="aggkit_proxy",
     arpeggio="arpeggio",
     assertoor="assertoor",
     blockscout="blockscout",
@@ -14,6 +15,16 @@ ADDITIONAL_SERVICES = struct(
     tx_spammer="tx_spammer",
     agglayer_dashboard="agglayer_dashboard",
     zkevm_bridge_ui="zkevm_bridge_ui",
+)
+
+# Which backend the "bridge_ui" additional service uses for bridge/claim data:
+# - bridge_hub (default): the bridge-hub stack (mongo, L1/L2 consumers, api)
+#   behind the haproxy proxy.
+# - aggkit: no bridge-hub stack, the haproxy proxy forwards to the aggkit bridge
+#   REST API.
+BRIDGE_UI_BACKEND = struct(
+    bridge_hub="bridge_hub",
+    aggkit="aggkit",
 )
 
 LOG_LEVEL = struct(
@@ -48,6 +59,7 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_reth="op-reth",
+    anvil="anvil",
     besu="besu",
 )
 
@@ -56,14 +68,26 @@ SEQUENCER_TYPE = struct(
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
+    # Anvil runs a single node which is both the sequencer and the RPC.
+    SEQUENCER_TYPE.anvil: "l2-anvil",
     SEQUENCER_TYPE.besu: "besu",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
     SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
+    SEQUENCER_TYPE.anvil: "l2-anvil",
     SEQUENCER_TYPE.besu: "besu",
 }
+
+# Stacks whose L2 contracts are predeployed through the sovereign genesis
+# pipeline (create_sovereign_rollup_predeployed -> create_predeployed_op_genesis)
+# rather than deployed by an L1 rollup-creation script.
+SOVEREIGN_SEQUENCER_TYPES = [
+    SEQUENCER_TYPE.op_reth,
+    SEQUENCER_TYPE.anvil,
+    SEQUENCER_TYPE.besu,
+]
 
 FORK_ID_TO_NAME = {
     9: "elderberry",
@@ -75,6 +99,10 @@ FORK_ID_TO_NAME = {
 TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.14"
 )
+
+# Anvil's built-in development mnemonic. The anvil L2 is prefunded from it, and
+# contracts.sh derives its L2 funding key from the same mnemonic.
+ANVIL_DEFAULT_MNEMONIC = "test test test test test test test test test test test junk"
 
 L1_ENGINE = struct(
     ethereum_package="ethereum-package",
@@ -103,8 +131,18 @@ DEFAULT_IMAGES = {
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.3",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
+    # Used by bridge_ui_backend "bridge_hub" (ui.star run_server): a container that
+    # reads a rendered config.ts. Not the same image as agglayer_dev_ui_aggkit_image.
     "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
+    # agglayer-dev-ui for bridge_ui_backend "aggkit" (ui.star run_dev_ui): an
+    # nginx image configured through a mounted /etc/agglayer-dev-ui/config.json,
+    # whose strict schema is rendered by
+    # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl.
+    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.1",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
+    # Anvil >= v1.5.0 is required: agglayer's settlement task calls
+    # eth_getTransactionBySenderAndNonce, which older versions answer with
+    # "Method not found" and agglayer then panics.
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.9.0",
     "besu_image": "hyperledger/besu:26.11.0",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
