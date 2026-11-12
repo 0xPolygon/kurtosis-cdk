@@ -26,10 +26,12 @@
 #      value the metadata claims must match it.
 #
 # This is deliberately a SEPARATE, explicit CI gate on top of the checks
-# extract-state.sh/build-images.sh already perform at capture/bake time: it
-# re-derives its verdict from the files on disk, so it also catches a bundle
-# that was produced by an older/bypassed snapshot.sh, copied in from
-# elsewhere, or hand-edited. The state files are looked up relative to the
+# extract-state.sh/build-images.sh already perform at capture/bake time, so it
+# also catches a bundle that was produced by an older/bypassed snapshot.sh or
+# copied in from elsewhere. Only invariant 3 is recomputed from the state
+# files: settlement_free and the chain set (roles, network ids, L2 count) are
+# read from the metadata as extract-state.sh recorded them, so a hand-edited
+# metadata file is not detected. The state files are looked up relative to the
 # bundle root, the parent directory of the one holding the metadata.
 # gate-snapshot-soundness_test.sh covers the failing cases.
 #
