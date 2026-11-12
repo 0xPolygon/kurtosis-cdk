@@ -145,6 +145,7 @@ jobs:
             ${{ steps.snap.outputs.dir }}/docker-compose.yml
             ${{ steps.snap.outputs.dir }}/docker-compose.mounts.yml
             ${{ steps.snap.outputs.dir }}/summary.json
+            ${{ steps.snap.outputs.dir }}/config/
           if-no-files-found: error
           retention-days: 30
           overwrite: true
