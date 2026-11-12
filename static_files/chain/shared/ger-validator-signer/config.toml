@@ -1,0 +1,26 @@
+# Configuration of a GER validator of the AggOracleCommittee v2 (ger_validator_signer, tools/ger_validator_signer in
+# agglayer/aggkit). An unknown key is an error.
+
+# The L1 where the Global Exit Roots are inserted
+L1RPCURL = "{{ .l1_rpc_url }}"
+L1ChainID = {{ .l1_chain_id }}
+# The AgglayerGER contract of L1: the validator signs the GERs that are in it
+AgglayerGERAddr = "{{ .l1_ger_address }}"
+LogLevel = "info"
+
+# The L1 block that inserted the GER has to be final: the block of the tag, minus NumBlocks
+[Finality]
+Tag = "{{ .ger_validator_finality_tag }}"
+NumBlocks = {{ .ger_validator_finality_num_blocks }}
+
+# The key of the validator, the one that the committee has registered (see create_keystores in contracts.sh)
+[Signer]
+Method = "local"
+Path = "/etc/ger_validator_signer/gervalidator-{{ .ger_validator_index }}.keystore"
+Password = "{{ .l2_keystore_password }}"
+
+[REST]
+Host = "0.0.0.0"
+Port = {{ .ger_validator_signer_port }}
+# The validators are only reachable inside the enclave: there is no TLS
+InsecureHTTP = true

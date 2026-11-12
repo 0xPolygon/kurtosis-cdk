@@ -401,9 +401,12 @@ MaxAttempts = 20
 WaitPeriodNextGER = "10s"
 
 # ------------------------------------------------------------------------------
-#
+# With the AggOracleCommittee v2 the AggOracle collects the signatures of the GER validators and injects the GER
+# with a single transaction. EnableAggOracleCommittee is the switch of the AggOracleCommittee v1
 # ------------------------------------------------------------------------------
-{{- if .use_agg_oracle_committee }}
+{{- if .use_agg_oracle_committee_v2 }}
+Mode = "committee"
+{{- else if .use_agg_oracle_committee }}
 EnableAggOracleCommittee = true
 {{- else }}
 EnableAggOracleCommittee = false
@@ -439,7 +442,7 @@ WaitPeriodMonitorTx = "10s"
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
-{{- if .use_agg_oracle_committee }}
+{{- if or .use_agg_oracle_committee .use_agg_oracle_committee_v2 }}
 AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
 {{- end }}
 

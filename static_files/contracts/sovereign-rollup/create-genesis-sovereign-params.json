@@ -20,7 +20,13 @@
 
     "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
 
-    {{if .use_agg_oracle_committee}}
+    {{if .use_agg_oracle_committee_v2}}
+    "useAggOracleCommittee": true,
+    "aggOracleProposer": "{{ .l2_aggoracle_address }}",
+    "aggOracleValidators": [],
+    "aggOracleThreshold": {{ .agg_oracle_committee_threshold }},
+    "globalExitRootUpdater": "",
+    {{else if .use_agg_oracle_committee}}
     "useAggOracleCommittee": true,
     "aggOracleCommittee": ["{{ .l2_aggoracle_address }}"],
     "quorum": "{{ .agg_oracle_committee_quorum }}",
