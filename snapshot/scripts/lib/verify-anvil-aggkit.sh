@@ -820,8 +820,8 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
 
     local IS_CLAIMED1
     IS_CLAIMED1=$(_verify_cast call --rpc-url "$L2_URL" "$L2_BRIDGE" \
-        'isClaimed(uint32,uint32)(bool)' "$DEPOSIT_COUNT1" "$ORIGIN_NETWORK1" 2>&1 | tail -1)
-    log_info "  isClaimed($DEPOSIT_COUNT1, $ORIGIN_NETWORK1) on L2 = $IS_CLAIMED1"
+        'isClaimed(uint32,uint32)(bool)' "$DEPOSIT_COUNT1" "$L1_NETWORK_ID" 2>&1 | tail -1)
+    log_info "  isClaimed($DEPOSIT_COUNT1, $L1_NETWORK_ID) on L2 = $IS_CLAIMED1"
     anvil_test_result "Bridge round trip: L1->L2 manual claim via cast (isClaimed == true)" \
         "$([ "$IS_CLAIMED1" = "true" ] && echo pass || echo fail)"
 
@@ -1007,10 +1007,12 @@ print(deps[0]["global_index"] if deps else "")' "$TX1" <<< "$BRIDGES1_JSON")
         return
     fi
 
+    # isClaimed takes the network the deposit was made on, not the asset's
+    # origin network that claimAsset takes.
     local IS_CLAIMED
     IS_CLAIMED=$(_verify_cast call --rpc-url "$L1_URL" "$L1_BRIDGE" \
-        'isClaimed(uint32,uint32)(bool)' "$DEPOSIT_COUNT" "$ORIGIN_NETWORK" 2>&1 | tail -1)
-    log_info "  isClaimed($DEPOSIT_COUNT, $ORIGIN_NETWORK) = $IS_CLAIMED"
+        'isClaimed(uint32,uint32)(bool)' "$DEPOSIT_COUNT" "$NETWORK_ID" 2>&1 | tail -1)
+    log_info "  isClaimed($DEPOSIT_COUNT, $NETWORK_ID) = $IS_CLAIMED"
     anvil_test_result "Bridge round trip: L2->L1 manual claim via cast (isClaimed == true)" \
         "$([ "$IS_CLAIMED" = "true" ] && echo pass || echo fail)"
 }
