@@ -63,7 +63,7 @@ git diff --stat
 In CI, `GITHUB_TOKEN` is already set: run both scripts without the prefix.
 
 Check the bumped rows are now ✅ and nothing else flipped. If another dep drifted
-since the nightly, bump it too rather than leaving a 🚨 row.
+since the weekly check, bump it too rather than leaving a 🚨 row.
 
 ## 4. Checks
 

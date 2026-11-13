@@ -5,7 +5,7 @@ For each fork domain, compares what the devnet activates with what the pinned
 clients support. Upstream sources are read at the exact refs this repo pins
 (image tags, `kurtosis.yml` replace pins), never at upstream HEAD, so these
 tables only change when a pin or the package config changes: a fork that is
-merely announced upstream never shows up as nightly drift.
+merely announced upstream never shows up as weekly drift.
 
 Everything above the repo-specific section at the bottom is shared by
 kurtosis-pos and kurtosis-cdk: keep both copies in sync.
