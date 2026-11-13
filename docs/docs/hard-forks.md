@@ -26,7 +26,7 @@ Fork epochs are the ethereum-package `minimal` preset defaults, overridden in [`
 
 Checked against:
 
-- [ethereum-package 5795b77e6523](https://github.com/ethpandaops/ethereum-package/blob/5795b77e65235ad223d4d3b413b2739190bf60cc/src/package_io/input_parser.star)
+- [ethereum-package 6886eac7b858](https://github.com/ethpandaops/ethereum-package/blob/6886eac7b858d8f28dc2f3cf4e7985cbdb926e56/src/package_io/input_parser.star)
 - [geth v1.17.10](https://github.com/ethereum/go-ethereum/blob/v1.17.10/params/config.go)
 - [lighthouse v8.3.3](https://github.com/sigp/lighthouse/blob/v8.3.3/common/eth2_network_config/built_in_network_configs/mainnet/config.yaml)
 
