@@ -3,8 +3,8 @@
 #
 # It is not in the CI matrix (.github/tests/op-reth): it needs three images that are not published yet. Set them in
 # "args" to run it, see docs/docs/advanced/aggoracle-committee-v2.md:
-#   - agglayer_contracts_image: agglayer-contracts with the AggOracleCommittee v2 (agglayer/agglayer-contracts,
-#     branch feature/agg-oracle-committee)
+#   - agglayer_contracts_image: agglayer-contracts with the AggOracleCommittee v2 (agglayer/agglayer-contracts
+#     v13.0.0-rc.0 or later)
 #   - aggkit_image: aggkit with AggOracle.Mode "committee" (agglayer/aggkit#1943)
 #   - ger_validator_signer_image: the GER validator (tools/ger_validator_signer of aggkit)
 deployment_stages:
