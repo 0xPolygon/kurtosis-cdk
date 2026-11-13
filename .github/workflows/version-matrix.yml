@@ -3,8 +3,6 @@ name: version-matrix
 on:
   schedule:
     - cron: 0 4 * * 1 # Monday 04:00 UTC, i.e. 6 AM Paris in summer (5 AM in winter), so bump PRs land before the workday.
-  push: # TEMP: test run, to revert
-    branches: [ci/weekly-version-matrix]
   workflow_dispatch:
 
 permissions:
@@ -17,10 +15,7 @@ jobs:
   check-version-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    continue-on-error: true  # prevent this job from failing the workflow
     outputs:
-      # `continue-on-error` reports the job as successful, so the drift verdict
-      # has to travel to the summary as an output rather than a job result.
       # Empty when the job was skipped (fork / no token) or an earlier step
       # failed before the comparison ran — the summary treats that as "unknown"
       # rather than as "up to date".
@@ -86,10 +81,9 @@ jobs:
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: |
           if [[ "${{ env.HAS_DIFF }}" == "true" ]]; then
-            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it"
+            echo "::warning title=version-matrix::Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it"
             git status --porcelain
             git diff
-            exit 1
           else
             echo "✅ Version matrix is up to date"
           fi
