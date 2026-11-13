@@ -1221,7 +1221,7 @@ class VersionMatrixExtractor:
     def _determine_head_tracked_status(self, repo: str, pin: str,
                                        head_version: Optional[str]) -> tuple:
         """Judge a pin that tracks HEAD rather than releases: any pin short of
-        the branch tip is behind, so the nightly bump follows HEAD."""
+        the branch tip is behind, so the weekly bump follows HEAD."""
         if not head_version:
             return None, None
 

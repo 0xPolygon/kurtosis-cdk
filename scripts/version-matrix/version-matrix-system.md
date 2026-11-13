@@ -172,7 +172,7 @@ What "latest" means follows from how a package is pinned in `kurtosis.yml`:
   it tags, so the latest tag would report `⚡️ ahead` forever.
 
 A head-tracked pin reports `🚨 behind` with its commit distance as soon as
-HEAD moves past it, so the nightly bump PR follows the branch tip: one refreshed
+HEAD moves past it, so the weekly bump PR follows the branch tip: one refreshed
 PR per upstream change rather than a pin drifting unnoticed. A pin ahead of HEAD
 (an unmerged or rewritten commit) reports `⚡️ ahead`.
 
@@ -190,7 +190,7 @@ support, for two domains. The result is written to its own page,
 Upstream files are read at the refs this repo pins (image tags, the `kurtosis.yml`
 package pins), never at upstream HEAD. The tables therefore only change when a
 pin or the package config changes: a fork that is merely announced or scheduled
-upstream never makes the nightly diff non-empty. A failed fetch fails the script
+upstream never makes the weekly diff non-empty. A failed fetch fails the script
 instead of rendering a fork as unsupported.
 
 | Status                  | Icon | Description                                                               |

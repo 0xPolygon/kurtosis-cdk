@@ -1,6 +1,6 @@
 # Opens (or refreshes) a PR bumping the pins the version matrix flags as behind
-# stable, then asks Claude to review it. Called by the nightly when
-# check-version-matrix reports drift; merging stays manual.
+# stable, then asks Claude to review it. Called by the weekly version-matrix workflow
+# when check-version-matrix reports drift; merging stays manual.
 
 name: bump-version-matrix
 

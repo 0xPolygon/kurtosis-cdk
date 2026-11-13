@@ -1,0 +1,174 @@
+name: version-matrix
+
+on:
+  schedule:
+    - cron: 0 4 * * 1 # Monday 04:00 UTC, i.e. 6 AM Paris in summer (5 AM in winter), so bump PRs land before the workday.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
+
+jobs:
+  check-version-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true  # prevent this job from failing the workflow
+    outputs:
+      # `continue-on-error` reports the job as successful, so the drift verdict
+      # has to travel to the summary as an output rather than a job result.
+      # Empty when the job was skipped (fork / no token) or an earlier step
+      # failed before the comparison ran — the summary treats that as "unknown"
+      # rather than as "up to date".
+      outdated: ${{ steps.version-check.outputs.outdated }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check if job should be run
+        id: check-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "Prevent running this job on forks. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ -z "$GITHUB_TOKEN" ]]; then
+            echo "No Github token provided. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning title=version-matrix::Version matrix job skipped."
+            exit 0
+          fi
+
+          echo "Running version matrix job."
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-python@v7
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        with:
+          python-version: 3.13
+
+      - name: Install dependencies
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: pip install -r scripts/version-matrix/requirements.txt
+
+      - name: Generate version matrix
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          echo "Generating version matrix with GitHub API..."
+          python scripts/version-matrix/extract-versions.py
+
+      - name: Generate markdown documentation
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: python scripts/version-matrix/generate-markdown.py
+
+      - name: Check if there are changes
+        id: version-check
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: |
+          has_diff=false
+          if [[ -n $(git status --porcelain) ]]; then
+            has_diff=true
+          fi
+          echo "HAS_DIFF=${has_diff}" >> $GITHUB_ENV
+          echo "HAS_DIFF=${has_diff}"
+          echo "outdated=${has_diff}" >> $GITHUB_OUTPUT
+
+      - name: Display check result
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: |
+          if [[ "${{ env.HAS_DIFF }}" == "true" ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it"
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Version matrix is up to date"
+          fi
+
+  bump-version-matrix:
+    needs: check-version-matrix
+    if: needs.check-version-matrix.outputs.outdated == 'true'
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    uses: ./.github/workflows/bump-version-matrix.yml
+    secrets: inherit
+
+  workflow-summary:
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event_name == 'schedule' }}
+    permissions:
+      contents: read
+      actions: read
+    needs:
+      - check-version-matrix
+      - bump-version-matrix
+    steps:
+      # bump-version-matrix is skipped whenever the matrix is up to date, so its
+      # result is reported with the matrix status below.
+      - name: Build the Slack message
+        id: message
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
+          OUTDATED: ${{ needs.check-version-matrix.outputs.outdated }}
+          BUMP_RESULT: ${{ needs.bump-version-matrix.result }}
+          PR_OPERATION: ${{ needs.bump-version-matrix.outputs.pr-operation }}
+          PR_URL: ${{ needs.bump-version-matrix.outputs.pr-url }}
+        run: |
+          # Links are a bonus: an API error must not cost the Slack message.
+          jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || jobs=""
+
+          # Slack link to the first job whose name starts with $1, labelled $2.
+          job_link() {
+            local url
+            url=$(jq -rs --arg p "$1" 'map(select(.name | startswith($p)))[0].html_url // ""' <<< "$jobs")
+            if [[ -n "$url" ]]; then echo "<$url|$2>"; else echo "$2"; fi
+          }
+
+          pr="<$PR_URL|#${PR_URL##*/}>"
+          if [[ "$OUTDATED" == false ]]; then
+            matrix="up to date ✅"
+          elif [[ "$OUTDATED" != true ]]; then
+            matrix="unknown ⚠️, the $(job_link check-version-matrix 'check job') failed before it could compare the matrix"
+          elif [[ "$PR_OPERATION" == created ]]; then
+            matrix="outdated ❌, bump PR opened: $pr"
+          elif [[ "$PR_OPERATION" == updated ]]; then
+            matrix="outdated ❌, bump PR refreshed: $pr"
+          elif [[ "$BUMP_RESULT" != success ]]; then
+            matrix="outdated ❌, the $(job_link bump-version-matrix 'bump job') failed"
+          elif [[ -n "$PR_URL" ]]; then
+            matrix="outdated ❌, nothing new to bump, $pr is still open"
+          else
+            matrix="outdated ❌, nothing to bump (pinned, pre-release or unpublished), see the $(job_link check-version-matrix drift)"
+          fi
+
+          echo "text=<$RUN_URL|Kurtosis CDK version matrix>: version matrix is $matrix" >> "$GITHUB_OUTPUT"
+
+      - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            {
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK - Version Matrix",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ${{ toJSON(steps.message.outputs.text) }}
+                  }
+                }
+              ]
+            }
