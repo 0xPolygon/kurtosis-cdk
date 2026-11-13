@@ -6,12 +6,13 @@ L1RPCURL = "{{ .l1_rpc_url }}"
 L1ChainID = {{ .l1_chain_id }}
 # The AgglayerGER contract of L1: the validator signs the GERs that are in it
 AgglayerGERAddr = "{{ .l1_ger_address }}"
-LogLevel = "info"
+# The finality the L1 block that inserted the GER needs, as in aggkit (e.g. "LatestBlock/-12")
+BlockFinality = "{{ .ger_validator_block_finality }}"
 
-# The L1 block that inserted the GER has to be final: the block of the tag, minus NumBlocks
-[Finality]
-Tag = "{{ .ger_validator_finality_tag }}"
-NumBlocks = {{ .ger_validator_finality_num_blocks }}
+[Log]
+Environment = "development"
+Level = "info"
+Outputs = ["stderr"]
 
 # The key of the validator, the one that the committee has registered (see create_keystores in contracts.sh)
 [Signer]
@@ -19,7 +20,7 @@ Method = "local"
 Path = "/etc/ger_validator_signer/gervalidator-{{ .ger_validator_index }}.keystore"
 Password = "{{ .l2_keystore_password }}"
 
-[REST]
+[PublicREST]
 Host = "0.0.0.0"
 Port = {{ .ger_validator_signer_port }}
 # The validators are only reachable inside the enclave: there is no TLS
