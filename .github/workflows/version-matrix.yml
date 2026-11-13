@@ -3,6 +3,8 @@ name: version-matrix
 on:
   schedule:
     - cron: 0 4 * * 1 # Monday 04:00 UTC, i.e. 6 AM Paris in summer (5 AM in winter), so bump PRs land before the workday.
+  push: # TEMP: test run, to revert
+    branches: [ci/weekly-version-matrix]
   workflow_dispatch:
 
 permissions:
