@@ -1,0 +1,29 @@
+# AggOracleCommittee v2 on a sovereign OP Stack chain: the AggOracle injects each GER with a single transaction, with the
+# signatures of 2 of the 3 GER validators (ger_validator_signer services).
+#
+# It is not in the CI matrix (.github/tests/op-reth): it needs three images that are not published yet. Set them in
+# "args" to run it, see docs/docs/advanced/aggoracle-committee-v2.md:
+#   - agglayer_contracts_image: agglayer-contracts with the AggOracleCommittee v2 (agglayer/agglayer-contracts
+#     v13.0.0-rc.0 or later)
+#   - aggkit_image: aggkit with AggOracle.Mode "committee" (agglayer/aggkit#1943)
+#   - ger_validator_signer_image: the GER validator (tools/ger_validator_signer of aggkit)
+deployment_stages:
+  deploy_op_succinct: false
+
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: ecdsa-multisig
+
+  use_agg_oracle_committee_v2: true
+  agg_oracle_committee_threshold: 2
+  agg_oracle_committee_total_validators: 3
+
+  # agglayer_contracts_image: <image>
+  # aggkit_image: <image>
+  # ger_validator_signer_image: <image>
+
+optimism_package:
+  chains:
+    "001":
+      proposer_params:
+        enabled: false

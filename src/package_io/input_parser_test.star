@@ -737,3 +737,163 @@ def test_parse_args_agglayer_extra_rollups_validation(plan):
             _minimal_anvil_user_args(), {"agglayer_extra_rollups": entries}
         )
         expect.fails(lambda ua=user_args: input_parser.parse_args(plan, ua), message)
+
+
+def _committee_args(overrides=None):
+    # The arguments that validate_agg_oracle_committee_args reads, with their default values
+    args = {
+        "use_agg_oracle_committee": False,
+        "use_agg_oracle_committee_v2": False,
+        "agg_oracle_committee_threshold": 0,
+        "agg_oracle_committee_total_validators": 0,
+        "ger_validator_signer_image": "",
+        "ger_validator_signer_port": 8080,
+        "ger_validator_block_finality": "FinalizedBlock",
+    }
+    if overrides:
+        args = args | overrides
+    return args
+
+
+def _committee_v2_args(overrides=None):
+    args = _committee_args(
+        {
+            "use_agg_oracle_committee_v2": True,
+            "agg_oracle_committee_threshold": 2,
+            "agg_oracle_committee_total_validators": 3,
+            "ger_validator_signer_image": "ger-validator-signer:test",
+        }
+    )
+    if overrides:
+        args = args | overrides
+    return args
+
+
+def test_validate_agg_oracle_committee_args_defaults(plan):
+    # The AggOracleCommittee v2 is disabled by default, and the default arguments are valid
+    expect.eq(input_parser.DEFAULT_ROLLUP_ARGS["use_agg_oracle_committee_v2"], False)
+    input_parser.validate_agg_oracle_committee_args(input_parser.DEFAULT_ROLLUP_ARGS)
+    input_parser.validate_agg_oracle_committee_args(_committee_args())
+
+
+def test_validate_agg_oracle_committee_args_v2(plan):
+    input_parser.validate_agg_oracle_committee_args(_committee_v2_args())
+    # The limits
+    input_parser.validate_agg_oracle_committee_args(
+        _committee_v2_args(
+            {
+                "agg_oracle_committee_threshold": 1,
+                "agg_oracle_committee_total_validators": 1,
+            }
+        )
+    )
+    input_parser.validate_agg_oracle_committee_args(
+        _committee_v2_args(
+            {
+                "agg_oracle_committee_threshold": 255,
+                "agg_oracle_committee_total_validators": 255,
+            }
+        )
+    )
+    for block_finality in [
+        "LatestBlock",
+        "SafeBlock",
+        "FinalizedBlock",
+        "LatestBlock/-12",
+        "FinalizedBlock/0",
+    ]:
+        input_parser.validate_agg_oracle_committee_args(
+            _committee_v2_args({"ger_validator_block_finality": block_finality})
+        )
+
+
+def test_validate_agg_oracle_committee_args_failures(plan):
+    tests = [
+        # name, args, expected error
+        [
+            "the v1 and the v2 together",
+            _committee_v2_args({"use_agg_oracle_committee": True}),
+            "can't be enabled together",
+        ],
+        [
+            "threshold set with the v2 disabled",
+            _committee_args({"agg_oracle_committee_threshold": 1}),
+            "AggOracle Committee v2 is disabled. agg_oracle_committee_threshold",
+        ],
+        [
+            "validators set with the v2 disabled",
+            _committee_args({"agg_oracle_committee_total_validators": 1}),
+            "AggOracle Committee v2 is disabled. agg_oracle_committee_total_validators",
+        ],
+        [
+            "no validators",
+            _committee_v2_args({"agg_oracle_committee_total_validators": 0}),
+            "agg_oracle_committee_total_validators ('0') needs to be between 1 and 255",
+        ],
+        [
+            "too many validators",
+            _committee_v2_args(
+                {
+                    "agg_oracle_committee_total_validators": 256,
+                    "agg_oracle_committee_threshold": 1,
+                }
+            ),
+            "agg_oracle_committee_total_validators ('256') needs to be between 1 and 255",
+        ],
+        [
+            "threshold of 0",
+            _committee_v2_args({"agg_oracle_committee_threshold": 0}),
+            "agg_oracle_committee_threshold ('0') needs to be between 1 and the number of validators ('3')",
+        ],
+        [
+            "threshold bigger than the validators",
+            _committee_v2_args({"agg_oracle_committee_threshold": 4}),
+            "agg_oracle_committee_threshold ('4') needs to be between 1 and the number of validators ('3')",
+        ],
+        [
+            "no image of the validator",
+            _committee_v2_args({"ger_validator_signer_image": ""}),
+            "ger_validator_signer_image needs to be set",
+        ],
+        [
+            "port 0",
+            _committee_v2_args({"ger_validator_signer_port": 0}),
+            "ger_validator_signer_port ('0') needs to be a valid port",
+        ],
+        [
+            "port out of range",
+            _committee_v2_args({"ger_validator_signer_port": 65536}),
+            "ger_validator_signer_port ('65536') needs to be a valid port",
+        ],
+        [
+            "unknown finality block",
+            _committee_v2_args({"ger_validator_block_finality": "PendingBlock"}),
+            "Unsupported ger_validator_block_finality: 'PendingBlock'",
+        ],
+        [
+            "finality as a tag (the previous format)",
+            _committee_v2_args({"ger_validator_block_finality": "finalized"}),
+            "Unsupported ger_validator_block_finality: 'finalized'",
+        ],
+        [
+            "positive offset",
+            _committee_v2_args({"ger_validator_block_finality": "LatestBlock/+5"}),
+            "Unsupported ger_validator_block_finality: 'LatestBlock/+5'",
+        ],
+        [
+            "offset without sign",
+            _committee_v2_args({"ger_validator_block_finality": "LatestBlock/5"}),
+            "Unsupported ger_validator_block_finality: 'LatestBlock/5'",
+        ],
+        [
+            "offset that is not a number",
+            _committee_v2_args({"ger_validator_block_finality": "LatestBlock/-a"}),
+            "Unsupported ger_validator_block_finality: 'LatestBlock/-a'",
+        ],
+    ]
+    for t in tests:
+        [name, args, expected_error] = [t[0], t[1], t[2]]
+        expect.fails(
+            lambda: input_parser.validate_agg_oracle_committee_args(args),
+            expected_error,
+        )

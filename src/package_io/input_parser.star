@@ -365,6 +365,27 @@ DEFAULT_ROLLUP_ARGS = {
     # By default, the L2 mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop'
     # which is being used to generate the accounts in DEFAULT_ACCOUNTS will also be used to generate the committee members.
     "agg_oracle_committee_total_members": 1,
+    # AggOracleCommittee v2: the AggOracle injects each GER with a single transaction, with the signatures of
+    # "agg_oracle_committee_threshold" of the GER validators, that sign it off-chain. The contract of the v2 replaces
+    # the v1 in the same file, so it needs the agglayer-contracts image and the aggkit image of the v2, and it can't be
+    # used together with "use_agg_oracle_committee" (the v1). Only for the sovereign chains of the OP Stack.
+    "use_agg_oracle_committee_v2": False,
+    # Number of signatures that the committee requires, 1 <= threshold <= total validators.
+    "agg_oracle_committee_threshold": 0,
+    # Number of GER validators (ger_validator_signer services), between 1 and 255. Their addresses and URLs are registered
+    # in the committee at the genesis of the L2. By default, the L2 mnemonic that generates the accounts in
+    # DEFAULT_ACCOUNTS also generates their keys (indexes 201 and following: the committee v1 members use 0 and
+    # following, and the aggsender validators 102 and following).
+    "agg_oracle_committee_total_validators": 0,
+    # Image of the GER validators (tools/ger_validator_signer in agglayer/aggkit). It has no default value yet, because
+    # there is no published image: it must be set when "use_agg_oracle_committee_v2" is true.
+    "ger_validator_signer_image": "",
+    # Port of the REST API of the GER validators.
+    "ger_validator_signer_port": 8080,
+    # How final an L1 block has to be for a validator to sign the GER that it inserted, written as in aggkit:
+    # <block>[/<offset>], with the block LatestBlock, SafeBlock or FinalizedBlock and an optional negative offset, e.g.
+    # "LatestBlock/-12" is the head minus 12 blocks. It is the finality of each validator (BlockFinality of its config).
+    "ger_validator_block_finality": "FinalizedBlock",
     "use_agg_sender_validator": False,
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
@@ -544,6 +565,16 @@ VALID_AGGLAYER_PROVERS = [
     "mock-prover",
     "cpu-prover",
     "network-prover",
+]
+
+# The AggOracleCommittee v2 supports from 1 to 255 validators.
+MAX_GER_VALIDATORS = 255
+
+# The L1 block tags that a GER validator accepts to decide if the block that inserted a GER is final.
+VALID_GER_VALIDATOR_FINALITY_BLOCKS = [
+    "LatestBlock",
+    "SafeBlock",
+    "FinalizedBlock",
 ]
 
 VALID_L1_ENGINES = [
@@ -820,11 +851,13 @@ def set_anvil_args(plan, args, user_args):
 # Helper function to compact together checks for incompatible parameters in input_parser.star
 def args_sanity_check(plan, deployment_stages, args, user_args):
     # Disable CDK-Erigon and AggOracle Committee combination deployments
-    if (
-        args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon
-        and args["use_agg_oracle_committee"] == True
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (
+        args["use_agg_oracle_committee"] == True
+        or args["use_agg_oracle_committee_v2"] == True
     ):
         fail("AggOracle Committee unsupported for CDK-Erigon")
+
+    validate_agg_oracle_committee_args(args)
 
     if args["agglayer_prover_primary_prover"] not in VALID_AGGLAYER_PROVERS:
         fail(
@@ -1054,7 +1087,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                     args["consensus_contract_type"], VALID_BESU_CONSENSUS_TYPES
                 )
             )
-        if args["use_agg_oracle_committee"]:
+        if args["use_agg_oracle_committee"] or args["use_agg_oracle_committee_v2"]:
             fail("AggOracle Committee unsupported for Besu")
         if args["besu_block_period_seconds"] < 1:
             fail(
@@ -1092,6 +1125,86 @@ def validate_consensus_type(consensus_type):
         fail(
             'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
                 consensus_type, VALID_CONSENSUS_TYPES
+            )
+        )
+
+
+# Checks the arguments of the AggOracleCommittee v2, and that it is not used together with the v1.
+# The checks of the v1 are in args_sanity_check.
+def validate_agg_oracle_committee_args(args):
+    if args["use_agg_oracle_committee"] and args["use_agg_oracle_committee_v2"]:
+        fail(
+            "use_agg_oracle_committee (AggOracleCommittee v1) and use_agg_oracle_committee_v2 can't be enabled together: the contract of the v2 replaces the one of the v1"
+        )
+
+    if not args["use_agg_oracle_committee_v2"]:
+        if args["agg_oracle_committee_threshold"] != 0:
+            fail(
+                "AggOracle Committee v2 is disabled. agg_oracle_committee_threshold ('{}') needs to be 0.".format(
+                    args["agg_oracle_committee_threshold"]
+                )
+            )
+        if args["agg_oracle_committee_total_validators"] != 0:
+            fail(
+                "AggOracle Committee v2 is disabled. agg_oracle_committee_total_validators ('{}') needs to be 0.".format(
+                    args["agg_oracle_committee_total_validators"]
+                )
+            )
+        return
+
+    total_validators = args["agg_oracle_committee_total_validators"]
+    if total_validators < 1 or total_validators > MAX_GER_VALIDATORS:
+        fail(
+            "AggOracle Committee v2 is enabled. agg_oracle_committee_total_validators ('{}') needs to be between 1 and {}.".format(
+                total_validators, MAX_GER_VALIDATORS
+            )
+        )
+
+    threshold = args["agg_oracle_committee_threshold"]
+    if threshold < 1 or threshold > total_validators:
+        fail(
+            "AggOracle Committee v2 is enabled. agg_oracle_committee_threshold ('{}') needs to be between 1 and the number of validators ('{}').".format(
+                threshold, total_validators
+            )
+        )
+
+    if args["ger_validator_signer_image"] == "":
+        fail(
+            "AggOracle Committee v2 is enabled. ger_validator_signer_image needs to be set: there is no published image of the GER validator yet (tools/ger_validator_signer in agglayer/aggkit)."
+        )
+
+    port = args["ger_validator_signer_port"]
+    if port < 1 or port > 65535:
+        fail(
+            "AggOracle Committee v2 is enabled. ger_validator_signer_port ('{}') needs to be a valid port.".format(
+                port
+            )
+        )
+
+    validate_ger_validator_block_finality(args["ger_validator_block_finality"])
+
+
+def validate_ger_validator_block_finality(block_finality):
+    """Check a finality as the GER validators read it (BlockFinality): <block>[/<offset>], with a negative offset.
+
+    The validator rejects a positive offset, because it would sign blocks that are not final yet.
+    """
+    parts = block_finality.split("/")
+    offset_ok = len(parts) == 1 or (
+        len(parts) == 2
+        and (
+            parts[1] == "0"
+            or (
+                parts[1].startswith("-")
+                and len(parts[1]) > 1
+                and parts[1][1:].isdigit()
+            )
+        )
+    )
+    if parts[0] not in VALID_GER_VALIDATOR_FINALITY_BLOCKS or not offset_ok:
+        fail(
+            "Unsupported ger_validator_block_finality: '{}', please use one of {}, optionally with a negative offset (e.g. 'LatestBlock/-12')".format(
+                block_finality, VALID_GER_VALIDATOR_FINALITY_BLOCKS
             )
         )
 

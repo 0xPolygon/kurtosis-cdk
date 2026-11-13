@@ -198,6 +198,21 @@ create_keystores() {
         fi
     fi
 
+    # Generate the keystores of the GER validators of the AggOracleCommittee v2
+    # shellcheck disable=SC2050
+    if [[ "{{ .use_agg_oracle_committee_v2 }}" == "true" ]]; then
+        MNEMONIC="lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop"
+        GER_VALIDATOR_COUNT="{{ .agg_oracle_committee_total_validators }}"
+
+        # The validators are numbered from 1, as the services (ger-validator<suffix>-001, ...).
+        for (( index=1; index<=GER_VALIDATOR_COUNT; index++ )); do
+            # $((index + 200)) is used instead of $index, because the same MNEMONIC generates other addresses:
+            # the members of the committee v1 (0 and following) and the aggsender validators (102 and following).
+            ger_validator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $((index + 200)))
+            _create_geth_keystore "gervalidator-$index.keystore" "$ger_validator_private_key" "{{.l2_keystore_password}}"
+        done
+    fi
+
     # Generate multiple aggsender validator keystores for validators
     # shellcheck disable=SC2050
     if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
@@ -1293,18 +1308,40 @@ create_predeployed_op_genesis() {
     # sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$agglayer_manager\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
     # jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
 
-    # Extract AggOracle Committee member addresses as a JSON array
-    agg_oracle_committee_members=$(seq 0 $(( "{{ .agg_oracle_committee_total_members }}" - 1 )) | while read -r index; do
-        cast wallet address --mnemonic "lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop" --mnemonic-index "$index"
-    done | jq -R . | jq -s .)
+    # shellcheck disable=SC2050
+    if [[ "{{ .use_agg_oracle_committee_v2 }}" == "true" ]]; then
+        # AggOracleCommittee v2: the committee registers the GER validators, with the address of their key and the URL of
+        # their REST API. The AggOracle reads the URLs from the contract. The URL is the one of the service that
+        # src/chain/shared/ger_validator_signer.star deploys, and the keys are the ones of create_keystores.
+        ger_validators=$(for (( index=1; index<={{ .agg_oracle_committee_total_validators }}; index++ )); do
+            ger_validator_address=$(cast wallet address --mnemonic "lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop" --mnemonic-index $((index + 200)))
+            jq -n --arg addr "$ger_validator_address" --arg url "http://ger-validator{{ .deployment_suffix }}-00${index}:{{ .ger_validator_signer_port }}" '{addr: $addr, url: $url}'
+        done | jq -s .)
 
-    # By default, the AggOracle sender will be "{{ .l2_aggoracle_address }}", which is also the signer to update L2 GER.
-    # But any of the addresses from the aggOracleCommittee should be able to sign the transaction. This will require change to AggOracle.EVMSender.EthTxManager.PrivateKeys
-    # Append to aggOracleCommittee in the JSON file
-    jq --argjson addrs "$agg_oracle_committee_members" '
-    .aggOracleCommittee += $addrs
-    ' "$input_dir"/create-genesis-sovereign-params.json > "$input_dir"/create-genesis-sovereign-params.json.tmp \
-    && mv "$input_dir"/create-genesis-sovereign-params.json.tmp "$input_dir"/create-genesis-sovereign-params.json
+        # The pipe hides a failure of cast: check that there is every validator, with a valid address.
+        if ! jq -e --argjson n "{{ .agg_oracle_committee_total_validators }}" 'length == $n and all(.[]; .addr | test("^0x[0-9a-fA-F]{40}$"))' <<< "$ger_validators" > /dev/null; then
+            _echo_ts "Failed to generate the GER validators of the AggOracleCommittee: $ger_validators"
+            exit 1
+        fi
+
+        jq --argjson validators "$ger_validators" '
+        .aggOracleValidators = $validators
+        ' "$input_dir"/create-genesis-sovereign-params.json > "$input_dir"/create-genesis-sovereign-params.json.tmp \
+        && mv "$input_dir"/create-genesis-sovereign-params.json.tmp "$input_dir"/create-genesis-sovereign-params.json
+    else
+        # Extract AggOracle Committee member addresses as a JSON array
+        agg_oracle_committee_members=$(seq 0 $(( "{{ .agg_oracle_committee_total_members }}" - 1 )) | while read -r index; do
+            cast wallet address --mnemonic "lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop" --mnemonic-index "$index"
+        done | jq -R . | jq -s .)
+
+        # By default, the AggOracle sender will be "{{ .l2_aggoracle_address }}", which is also the signer to update L2 GER.
+        # But any of the addresses from the aggOracleCommittee should be able to sign the transaction. This will require change to AggOracle.EVMSender.EthTxManager.PrivateKeys
+        # Append to aggOracleCommittee in the JSON file
+        jq --argjson addrs "$agg_oracle_committee_members" '
+        .aggOracleCommittee += $addrs
+        ' "$input_dir"/create-genesis-sovereign-params.json > "$input_dir"/create-genesis-sovereign-params.json.tmp \
+        && mv "$input_dir"/create-genesis-sovereign-params.json.tmp "$input_dir"/create-genesis-sovereign-params.json
+    fi
 
     # shellcheck disable=SC1054,SC1083,SC1056,SC1072
     {{ if not .gas_token_enabled }}
