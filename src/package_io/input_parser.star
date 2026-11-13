@@ -382,10 +382,10 @@ DEFAULT_ROLLUP_ARGS = {
     "ger_validator_signer_image": "",
     # Port of the REST API of the GER validators.
     "ger_validator_signer_port": 8080,
-    # How final an L1 block has to be for a validator to sign the GER that it inserted: the block of the tag (latest, safe or
-    # finalized) minus "ger_validator_finality_num_blocks" blocks. It is the finality of each validator.
-    "ger_validator_finality_tag": "finalized",
-    "ger_validator_finality_num_blocks": 0,
+    # How final an L1 block has to be for a validator to sign the GER that it inserted, written as in aggkit:
+    # <block>[/<offset>], with the block LatestBlock, SafeBlock or FinalizedBlock and an optional negative offset, e.g.
+    # "LatestBlock/-12" is the head minus 12 blocks. It is the finality of each validator (BlockFinality of its config).
+    "ger_validator_block_finality": "FinalizedBlock",
     "use_agg_sender_validator": False,
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
@@ -571,10 +571,10 @@ VALID_AGGLAYER_PROVERS = [
 MAX_GER_VALIDATORS = 255
 
 # The L1 block tags that a GER validator accepts to decide if the block that inserted a GER is final.
-VALID_GER_VALIDATOR_FINALITY_TAGS = [
-    "latest",
-    "safe",
-    "finalized",
+VALID_GER_VALIDATOR_FINALITY_BLOCKS = [
+    "LatestBlock",
+    "SafeBlock",
+    "FinalizedBlock",
 ]
 
 VALID_L1_ENGINES = [
@@ -1181,17 +1181,30 @@ def validate_agg_oracle_committee_args(args):
             )
         )
 
-    if args["ger_validator_finality_tag"] not in VALID_GER_VALIDATOR_FINALITY_TAGS:
-        fail(
-            "Unsupported ger_validator_finality_tag: '{}', please use one of {}".format(
-                args["ger_validator_finality_tag"], VALID_GER_VALIDATOR_FINALITY_TAGS
+    validate_ger_validator_block_finality(args["ger_validator_block_finality"])
+
+
+def validate_ger_validator_block_finality(block_finality):
+    """Check a finality as the GER validators read it (BlockFinality): <block>[/<offset>], with a negative offset.
+
+    The validator rejects a positive offset, because it would sign blocks that are not final yet.
+    """
+    parts = block_finality.split("/")
+    offset_ok = len(parts) == 1 or (
+        len(parts) == 2
+        and (
+            parts[1] == "0"
+            or (
+                parts[1].startswith("-")
+                and len(parts[1]) > 1
+                and parts[1][1:].isdigit()
             )
         )
-
-    if args["ger_validator_finality_num_blocks"] < 0:
+    )
+    if parts[0] not in VALID_GER_VALIDATOR_FINALITY_BLOCKS or not offset_ok:
         fail(
-            "AggOracle Committee v2 is enabled. ger_validator_finality_num_blocks ('{}') can't be negative.".format(
-                args["ger_validator_finality_num_blocks"]
+            "Unsupported ger_validator_block_finality: '{}', please use one of {}, optionally with a negative offset (e.g. 'LatestBlock/-12')".format(
+                block_finality, VALID_GER_VALIDATOR_FINALITY_BLOCKS
             )
         )
 

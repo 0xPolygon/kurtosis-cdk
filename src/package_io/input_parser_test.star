@@ -748,8 +748,7 @@ def _committee_args(overrides=None):
         "agg_oracle_committee_total_validators": 0,
         "ger_validator_signer_image": "",
         "ger_validator_signer_port": 8080,
-        "ger_validator_finality_tag": "finalized",
-        "ger_validator_finality_num_blocks": 0,
+        "ger_validator_block_finality": "FinalizedBlock",
     }
     if overrides:
         args = args | overrides
@@ -796,9 +795,15 @@ def test_validate_agg_oracle_committee_args_v2(plan):
             }
         )
     )
-    for tag in ["latest", "safe", "finalized"]:
+    for block_finality in [
+        "LatestBlock",
+        "SafeBlock",
+        "FinalizedBlock",
+        "LatestBlock/-12",
+        "FinalizedBlock/0",
+    ]:
         input_parser.validate_agg_oracle_committee_args(
-            _committee_v2_args({"ger_validator_finality_tag": tag})
+            _committee_v2_args({"ger_validator_block_finality": block_finality})
         )
 
 
@@ -861,14 +866,29 @@ def test_validate_agg_oracle_committee_args_failures(plan):
             "ger_validator_signer_port ('65536') needs to be a valid port",
         ],
         [
-            "unknown finality tag",
-            _committee_v2_args({"ger_validator_finality_tag": "unsafe"}),
-            "Unsupported ger_validator_finality_tag: 'unsafe'",
+            "unknown finality block",
+            _committee_v2_args({"ger_validator_block_finality": "PendingBlock"}),
+            "Unsupported ger_validator_block_finality: 'PendingBlock'",
         ],
         [
-            "negative number of blocks",
-            _committee_v2_args({"ger_validator_finality_num_blocks": -1}),
-            "ger_validator_finality_num_blocks ('-1') can't be negative",
+            "finality as a tag (the previous format)",
+            _committee_v2_args({"ger_validator_block_finality": "finalized"}),
+            "Unsupported ger_validator_block_finality: 'finalized'",
+        ],
+        [
+            "positive offset",
+            _committee_v2_args({"ger_validator_block_finality": "LatestBlock/+5"}),
+            "Unsupported ger_validator_block_finality: 'LatestBlock/+5'",
+        ],
+        [
+            "offset without sign",
+            _committee_v2_args({"ger_validator_block_finality": "LatestBlock/5"}),
+            "Unsupported ger_validator_block_finality: 'LatestBlock/5'",
+        ],
+        [
+            "offset that is not a number",
+            _committee_v2_args({"ger_validator_block_finality": "LatestBlock/-a"}),
+            "Unsupported ger_validator_block_finality: 'LatestBlock/-a'",
         ],
     ]
     for t in tests:

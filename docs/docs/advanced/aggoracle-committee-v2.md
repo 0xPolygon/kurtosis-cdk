@@ -43,8 +43,7 @@ An example is in [`.github/tests/other/aggoracle-committee-v2/op-reth.yml`](http
 | `agg_oracle_committee_total_validators` | `0` | Number of GER validators, from 1 to 255 |
 | `ger_validator_signer_image` | _(none)_ | Image of the GER validators. It must be set |
 | `ger_validator_signer_port` | `8080` | Port of the REST API of the validators |
-| `ger_validator_finality_tag` | `finalized` | The L1 block that inserted a GER has to be at least as final as this tag (`latest`, `safe` or `finalized`) for a validator to sign it |
-| `ger_validator_finality_num_blocks` | `0` | Blocks to subtract from the block of the tag |
+| `ger_validator_block_finality` | `FinalizedBlock` | How final the L1 block that inserted a GER has to be for a validator to sign it, as aggkit writes it: `LatestBlock`, `SafeBlock` or `FinalizedBlock`, with an optional negative offset (`LatestBlock/-12` is the head minus 12 blocks) |
 
 ## What is deployed
 
