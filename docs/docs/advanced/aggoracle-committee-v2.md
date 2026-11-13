@@ -12,7 +12,7 @@ The v2 needs three images that are not released yet. Until they are, this packag
 
 | Argument | Image |
 |---|---|
-| `agglayer_contracts_image` | [agglayer-contracts](https://github.com/agglayer/agglayer-contracts) with the AggOracleCommittee v2 (branch `feature/agg-oracle-committee`) |
+| `agglayer_contracts_image` | [agglayer-contracts](https://github.com/agglayer/agglayer-contracts) with the AggOracleCommittee v2 ([v13.0.0-rc.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v13.0.0-rc.0) or later) |
 | `aggkit_image` | [aggkit](https://github.com/agglayer/aggkit) with `AggOracle.Mode = "committee"` ([agglayer/aggkit#1943](https://github.com/agglayer/aggkit/pull/1943)) |
 | `ger_validator_signer_image` | The GER validator, `tools/ger_validator_signer` in aggkit |
 
