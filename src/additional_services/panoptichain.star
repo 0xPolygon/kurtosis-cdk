@@ -4,7 +4,7 @@ contracts_util = import_module("../contracts/util.star")
 wallet_module = import_module("../wallet/wallet.star")
 
 # https://github.com/0xPolygon/panoptichain/releases
-PANOPTICHAIN_IMAGE = "ghcr.io/0xpolygon/panoptichain:v8.1.4"
+PANOPTICHAIN_IMAGE = "ghcr.io/0xpolygon/panoptichain:v8.2.0"
 
 
 def run(plan, args, contract_setup_addresses):

@@ -198,7 +198,7 @@ Everything else: databases, observability, utility images and the status checker
 | haproxy | 3.2-bookworm | N/A | N/A |
 | mitmproxy | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | ✅ up to date |
 | mongodb | 7.0.29 | N/A | N/A |
-| panoptichain | [8.1.4](https://github.com/0xPolygon/panoptichain/releases/tag/v8.1.4) | [8.1.4](https://github.com/0xPolygon/panoptichain/releases/tag/v8.1.4) | ✅ up to date |
+| panoptichain | [8.2.0](https://github.com/0xPolygon/panoptichain/releases/tag/v8.2.0) | [8.2.0](https://github.com/0xPolygon/panoptichain/releases/tag/v8.2.0) | ✅ up to date |
 | postgres | 17.6 | N/A | N/A |
 | prometheus | [3.16.0](https://github.com/prometheus/prometheus/releases/tag/v3.16.0) | [3.16.0](https://github.com/prometheus/prometheus/releases/tag/v3.16.0) | ✅ up to date |
 | status-checker | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | [0.2.10](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.10) | ✅ up to date |
@@ -213,7 +213,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned version | Latest stable version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | ✅ up to date |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [5795b77e6523](https://github.com/ethpandaops/ethereum-package/tree/5795b77e65235ad223d4d3b413b2739190bf60cc) | [HEAD (5795b77e6523)](https://github.com/ethpandaops/ethereum-package/tree/5795b77e65235ad223d4d3b413b2739190bf60cc) | ✅ up to date |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [6886eac7b858](https://github.com/ethpandaops/ethereum-package/tree/6886eac7b858d8f28dc2f3cf4e7985cbdb926e56) | [HEAD (6886eac7b858)](https://github.com/ethpandaops/ethereum-package/tree/6886eac7b858d8f28dc2f3cf4e7985cbdb926e56) | ✅ up to date |
 
 ### Additional
 
