@@ -22,7 +22,7 @@ on:
 env:
   ENCLAVE_NAME: cdk
   # Same version as test.yml.
-  KURTOSIS_VERSION: 1.22.2
+  KURTOSIS_VERSION: 1.23.0
   GHCR_IMAGE_PREFIX: ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
 
 jobs:
