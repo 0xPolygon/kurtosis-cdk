@@ -45,7 +45,7 @@ runs:
     # Install dependencies
     - name: Install kurtosis
       id: kurtosis
-      uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.4
+      uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
       with:
         kurtosis_version: ${{ inputs.kurtosis_version }}
 
@@ -123,13 +123,13 @@ runs:
     # The mirror cannot be repaired from CI, so pull-images retries each pull a bounded number of times.
     - name: Pre pull package images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
-      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@v0.1.4
+      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
       with:
         images_file: modified-images.txt
 
     - name: Pre pull kurtosis core images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
-      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@v0.1.4
+      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
       with:
         registry_prefix: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual
         images: |
