@@ -27,6 +27,8 @@ jobs:
       check_timeout_minutes: 5
       kurtosis_version: 1.23.0
       kurtosis_test_version: v0.0.11
+      base_branch: ci/use-shared-version-matrix
+      pr_branch: chore/bump-test
     secrets:
       claude_api_key: ${{ secrets.CLAUDE_API_KEY }}
       app_id: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_ID }}
