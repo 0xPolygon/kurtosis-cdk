@@ -30,7 +30,7 @@ jobs:
 
       # Install linters
       - name: Install kurtosis
-        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
+        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
       - name: Install yamllint
         run: pip install yamllint
@@ -56,7 +56,9 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
-      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-package-pins@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-package-pins@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
+
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-images@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
   typos:
     runs-on: ubuntu-latest
@@ -96,7 +98,7 @@ jobs:
   unit:
     permissions:
       contents: read
-    uses: 0xPolygon/kurtosis-workflows/.github/workflows/unit.yml@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/unit.yml@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
   # Fast shell and Go checks for the snapshot tooling.
   snapshot-unit:
