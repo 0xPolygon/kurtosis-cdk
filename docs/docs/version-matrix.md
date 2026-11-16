@@ -49,7 +49,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
 | op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
 | op-node | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | ✅ up to date |
-| op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ up to date |
+| op-proposer | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | ✅ up to date |
 | op-reth | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
@@ -65,7 +65,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
 | op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
 | op-node | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | [1.20.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.1) | ✅ up to date |
-| op-proposer | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | [1.17.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.0) | ✅ up to date |
+| op-proposer | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | ✅ up to date |
 | op-reth | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | [2.8.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.8.2) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
@@ -213,7 +213,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned version | Latest stable version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | ✅ up to date |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [6886eac7b858](https://github.com/ethpandaops/ethereum-package/tree/6886eac7b858d8f28dc2f3cf4e7985cbdb926e56) | [HEAD (6886eac7b858)](https://github.com/ethpandaops/ethereum-package/tree/6886eac7b858d8f28dc2f3cf4e7985cbdb926e56) | ✅ up to date |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [61208c9b9773](https://github.com/ethpandaops/ethereum-package/tree/61208c9b97730b531a97f6f6c4f27ed7a8d64bf2) | [HEAD (61208c9b9773)](https://github.com/ethpandaops/ethereum-package/tree/61208c9b97730b531a97f6f6c4f27ed7a8d64bf2) | ✅ up to date |
 
 ### Additional
 
