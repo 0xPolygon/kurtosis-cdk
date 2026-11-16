@@ -163,7 +163,7 @@ runs:
           "kurtosistech/core:${{ inputs.kurtosis_version }}"
           "kurtosistech/files-artifacts-expander:${{ inputs.kurtosis_version }}"
           "timberio/vector:0.45.0-debian"
-          "traefik:2.10.6"
+          "traefik:v2.11.62"
           "alpine:3.17"
           "badouralix/curl-jq:latest"
           "protolambda/eth2-val-tools:latest"
