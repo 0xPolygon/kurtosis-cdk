@@ -196,6 +196,7 @@
   "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
   "trigger_cert_mode": "ASAP",
   "use_agg_oracle_committee": false,
+  "use_agg_oracle_committee_v2": false,
   "use_agg_sender_validator": true,
   "use_dynamic_ports": true,
   "use_previously_deployed_contracts": false,
