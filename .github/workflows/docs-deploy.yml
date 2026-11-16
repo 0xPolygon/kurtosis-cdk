@@ -14,8 +14,3 @@ jobs:
       pages: write
       id-token: write
     uses: 0xPolygon/kurtosis-workflows/.github/workflows/docs.yml@f09a1aa74beca7ce49980e9a67291f97bdd4eb5d # v0.1.4
-    with:
-      node_version: 24.22.1
-      deploy: true
-      build_timeout_minutes: 5
-      deploy_timeout_minutes: 10
