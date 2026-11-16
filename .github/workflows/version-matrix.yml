@@ -19,13 +19,14 @@ jobs:
       contents: read
       id-token: write
       pull-requests: read
-    uses: 0xPolygon/kurtosis-workflows/.github/workflows/version-matrix.yml@d7cf3eec2c480d4d436abc832378bc900a51a226 # main
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/version-matrix.yml@a61da399b67a2eb06d2eccee4b030f9db35e5169 # main
     with:
       label: Kurtosis CDK version matrix
       notify: ${{ github.event_name == 'schedule' || inputs.notify }}
       slack_channel_id: C04DS0SG599
       check_timeout_minutes: 5
       kurtosis_version: 1.23.0
+      kurtosis_test_version: v0.0.11
     secrets:
       claude_api_key: ${{ secrets.CLAUDE_API_KEY }}
       app_id: ${{ secrets.SEMANTIC_RELEASE_BOT_APP_ID }}
