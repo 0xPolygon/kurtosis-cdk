@@ -30,7 +30,7 @@ jobs:
 
       # Install linters
       - name: Install kurtosis
-        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.5
+        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
       - name: Install yamllint
         run: pip install yamllint
@@ -56,9 +56,9 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
-      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-package-pins@v0.1.5
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-package-pins@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
-      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-images@v0.1.5
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-images@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
   typos:
     runs-on: ubuntu-latest
