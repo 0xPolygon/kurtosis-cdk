@@ -808,6 +808,7 @@ def test_validate_agg_oracle_committee_args_v2(plan):
 
 
 def test_validate_agg_oracle_committee_args_failures(plan):
+    # The expected error is a regular expression (expect.fails): ( ) and + are escaped
     tests = [
         # name, args, expected error
         [
@@ -828,7 +829,7 @@ def test_validate_agg_oracle_committee_args_failures(plan):
         [
             "no validators",
             _committee_v2_args({"agg_oracle_committee_total_validators": 0}),
-            "agg_oracle_committee_total_validators ('0') needs to be between 1 and 255",
+            "agg_oracle_committee_total_validators \\('0'\\) needs to be between 1 and 255",
         ],
         [
             "too many validators",
@@ -838,17 +839,17 @@ def test_validate_agg_oracle_committee_args_failures(plan):
                     "agg_oracle_committee_threshold": 1,
                 }
             ),
-            "agg_oracle_committee_total_validators ('256') needs to be between 1 and 255",
+            "agg_oracle_committee_total_validators \\('256'\\) needs to be between 1 and 255",
         ],
         [
             "threshold of 0",
             _committee_v2_args({"agg_oracle_committee_threshold": 0}),
-            "agg_oracle_committee_threshold ('0') needs to be between 1 and the number of validators ('3')",
+            "agg_oracle_committee_threshold \\('0'\\) needs to be between 1 and the number of validators \\('3'\\)",
         ],
         [
             "threshold bigger than the validators",
             _committee_v2_args({"agg_oracle_committee_threshold": 4}),
-            "agg_oracle_committee_threshold ('4') needs to be between 1 and the number of validators ('3')",
+            "agg_oracle_committee_threshold \\('4'\\) needs to be between 1 and the number of validators \\('3'\\)",
         ],
         [
             "no image of the validator",
@@ -858,12 +859,12 @@ def test_validate_agg_oracle_committee_args_failures(plan):
         [
             "port 0",
             _committee_v2_args({"ger_validator_signer_port": 0}),
-            "ger_validator_signer_port ('0') needs to be a valid port",
+            "ger_validator_signer_port \\('0'\\) needs to be a valid port",
         ],
         [
             "port out of range",
             _committee_v2_args({"ger_validator_signer_port": 65536}),
-            "ger_validator_signer_port ('65536') needs to be a valid port",
+            "ger_validator_signer_port \\('65536'\\) needs to be a valid port",
         ],
         [
             "unknown finality block",
@@ -878,7 +879,7 @@ def test_validate_agg_oracle_committee_args_failures(plan):
         [
             "positive offset",
             _committee_v2_args({"ger_validator_block_finality": "LatestBlock/+5"}),
-            "Unsupported ger_validator_block_finality: 'LatestBlock/+5'",
+            "Unsupported ger_validator_block_finality: 'LatestBlock/\\+5'",
         ],
         [
             "offset without sign",
