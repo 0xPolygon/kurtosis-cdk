@@ -1,6 +1,6 @@
 ---
 name: update-version-matrix
-description: Bump the image and package pins flagged by the `check-version-matrix` job, regenerate docs/docs/version-matrix.md and open a PR. Use when given a check-version-matrix job URL, or asked to "bump the versions" / "update the version matrix". Also run unattended by .github/workflows/bump-version-matrix.yml.
+description: Bump the image and package pins flagged by the `check-version-matrix` job, regenerate docs/docs/version-matrix.md and open a PR. Use when given a check-version-matrix job URL, or asked to "bump the versions" / "update the version matrix". Also run unattended by the shared version-matrix workflow of 0xPolygon/kurtosis-workflows.
 ---
 
 # Update the version matrix
@@ -81,7 +81,7 @@ Body follows `.github/pull_request_template.md` (`## Description` /
 
 **Local**: work in a worktree off `origin/main`, commit, push, `gh pr create`.
 
-**CI** (run by `bump-version-matrix.yml`): only edit files. Do not commit, push
+**CI** (run by the shared `version-matrix` workflow of 0xPolygon/kurtosis-workflows): only edit files. Do not commit, push
 or open the PR: return the title and body, and the workflow opens or refreshes the
 PR. If nothing is left to bump (every drifted row is 📌, rc or unpublished), make
 no change and return an empty title. Either way, list every drifted row in
