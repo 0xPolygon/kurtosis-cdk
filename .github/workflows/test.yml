@@ -20,7 +20,6 @@ env:
   # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.11 is built against
   # kurtosis 1.23.0 and ships prebuilt binaries, so we install the release archive instead of
   # compiling from source.
-  KURTOSIS_TEST_VERSION: v0.0.11
 
 jobs:
   lint:
@@ -31,7 +30,7 @@ jobs:
 
       # Install linters
       - name: Install kurtosis
-        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.2
+        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.4
 
       - name: Install yamllint
         run: pip install yamllint
@@ -57,11 +56,7 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
-      - name: Install pyyaml
-        run: pip install pyyaml
-
-      - name: Verify external package pins
-        run: python3 scripts/version-matrix/verify-package-pins.py
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-package-pins@v0.1.4
 
   typos:
     runs-on: ubuntu-latest
@@ -99,18 +94,9 @@ jobs:
           fail: true
 
   unit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install kurtosis-test
-        run: |
-          curl -sSfL "https://github.com/leovct/kurtosis-test/releases/download/${KURTOSIS_TEST_VERSION}/kurtosis-test_Linux_x86_64.tar.gz" \
-            | sudo tar xz -C /usr/local/bin kurtosis-test
-
-      - name: Run unit tests
-        run: kurtosis-test .
+    permissions:
+      contents: read
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/unit.yml@v0.1.4
 
   # Fast shell and Go checks for the snapshot tooling.
   snapshot-unit:

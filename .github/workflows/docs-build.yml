@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   docs:
-    uses: 0xPolygon/kurtosis-workflows/.github/workflows/docs.yml@v0.1.2
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/docs.yml@v0.1.4
     with:
       node_version: 24.22.1
       build_timeout_minutes: 5

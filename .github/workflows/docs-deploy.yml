@@ -13,7 +13,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: 0xPolygon/kurtosis-workflows/.github/workflows/docs.yml@v0.1.2
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/docs.yml@v0.1.4
     with:
       node_version: 24.22.1
       deploy: true
