@@ -148,7 +148,7 @@ jobs:
             matrix="outdated ❌, nothing to bump (pinned, pre-release or unpublished), see the $(job_link check-version-matrix drift)"
           fi
 
-          echo "text=<$RUN_URL|Kurtosis CDK version matrix>: version matrix is $matrix" >> "$GITHUB_OUTPUT"
+          echo "text=<$RUN_URL|Kurtosis CDK version matrix>: $matrix" >> "$GITHUB_OUTPUT"
 
       - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
