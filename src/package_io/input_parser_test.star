@@ -915,3 +915,41 @@ def test_validate_agg_oracle_committee_args_failures(plan):
             lambda: input_parser.validate_agg_oracle_committee_args(args),
             expected_error,
         )
+
+
+def test_validate_agg_oracle_committee_args_deployment(plan):
+    # The v2 needs the predeployed genesis of the L2, where the committee is set up
+    expect.fails(
+        lambda: input_parser.validate_agg_oracle_committee_args(
+            _committee_v2_args(), False
+        ),
+        "It needs optimism_package.predeployed_contracts to be true",
+    )
+    # The v2 can't use an existing rollup manager: the helper service doesn't know the address of the committee
+    expect.fails(
+        lambda: input_parser.validate_agg_oracle_committee_args(
+            _committee_v2_args({"rollup_manager_address": "0x1"})
+        ),
+        "It can't be used with an existing rollup manager \\(rollup_manager_address\\)",
+    )
+    # Without the v2, neither of them is checked
+    input_parser.validate_agg_oracle_committee_args(
+        _committee_args({"rollup_manager_address": "0x1"}), False
+    )
+
+
+def test_parse_args_agg_oracle_committee_v2_without_predeployed_contracts(plan):
+    # parse_args passes optimism_package.predeployed_contracts to the checks of the v2
+    user_args = {
+        "args": {
+            "use_agg_oracle_committee_v2": True,
+            "agg_oracle_committee_threshold": 1,
+            "agg_oracle_committee_total_validators": 1,
+            "ger_validator_signer_image": "ger_validator_signer:local",
+        },
+        "optimism_package": {"predeployed_contracts": False},
+    }
+    expect.fails(
+        lambda: input_parser.parse_args(plan, user_args),
+        "It needs optimism_package.predeployed_contracts to be true",
+    )

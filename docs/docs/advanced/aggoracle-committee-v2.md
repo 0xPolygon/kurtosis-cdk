@@ -16,7 +16,7 @@ The v2 needs three images that are not released yet. Until they are, this packag
 | `aggkit_image` | [aggkit](https://github.com/agglayer/aggkit) with `AggOracle.Mode = "committee"` ([agglayer/aggkit#1943](https://github.com/agglayer/aggkit/pull/1943)) |
 | `ger_validator_signer_image` | The GER validator, `tools/ger_validator_signer` in aggkit |
 
-It is only supported for the sovereign chains of the OP Stack (not for CDK-Erigon, Besu nor Anvil).
+It is only supported for the sovereign chains of the OP Stack (not for CDK-Erigon, Besu nor Anvil). The committee is set up in the predeployed genesis of the L2, so it also needs `optimism_package.predeployed_contracts: true` (the default), and it can't be used with an existing rollup manager (`rollup_manager_address`).
 
 ## Enabling it
 

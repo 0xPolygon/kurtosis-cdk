@@ -857,7 +857,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
     ):
         fail("AggOracle Committee unsupported for CDK-Erigon")
 
-    validate_agg_oracle_committee_args(args)
+    validate_agg_oracle_committee_args(
+        args,
+        user_args.get("optimism_package", {}).get(
+            "predeployed_contracts",
+            op_input_parser.DEFAULT_NON_NATIVE_ARGS["predeployed_contracts"],
+        ),
+    )
 
     if args["agglayer_prover_primary_prover"] not in VALID_AGGLAYER_PROVERS:
         fail(
@@ -1136,8 +1142,8 @@ def validate_consensus_type(consensus_type):
 
 
 # Checks the arguments of the AggOracleCommittee v2, and that it is not used together with the v1.
-# The checks of the v1 are in args_sanity_check.
-def validate_agg_oracle_committee_args(args):
+# The checks of the v1 are in args_sanity_check. predeployed_contracts is optimism_package.predeployed_contracts.
+def validate_agg_oracle_committee_args(args, predeployed_contracts=True):
     if args["use_agg_oracle_committee"] and args["use_agg_oracle_committee_v2"]:
         fail(
             "use_agg_oracle_committee (AggOracleCommittee v1) and use_agg_oracle_committee_v2 can't be enabled together: the contract of the v2 replaces the one of the v1"
@@ -1157,6 +1163,20 @@ def validate_agg_oracle_committee_args(args):
                 )
             )
         return
+
+    # The committee and its validators are only set up in the predeployed genesis of the L2 (create_predeployed_op_genesis
+    # of contracts.sh). Without it, create_sovereign_rollup makes the AggOracle account the updater of the L2 GER manager.
+    if not predeployed_contracts:
+        fail(
+            "AggOracle Committee v2 is enabled. It needs optimism_package.predeployed_contracts to be true: the committee is only set up in the predeployed genesis of the L2."
+        )
+
+    # With an existing rollup manager, the contract addresses come from the helper service, which doesn't know the
+    # address of the committee (static_files/scripts/get-rollup-info.sh).
+    if "rollup_manager_address" in args:
+        fail(
+            "AggOracle Committee v2 is enabled. It can't be used with an existing rollup manager (rollup_manager_address): the address of the committee is only known when the L2 genesis is created here."
+        )
 
     total_validators = args["agg_oracle_committee_total_validators"]
     if total_validators < 1 or total_validators > MAX_GER_VALIDATORS:
