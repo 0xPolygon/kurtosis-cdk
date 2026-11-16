@@ -4,6 +4,7 @@ constants = import_module("../package_io/constants.star")
 contracts_util = import_module("./util.star")
 cdk_data_availability = import_module("../chain/cdk-erigon/cdk_data_availability.star")
 ports_package = import_module("../chain/shared/ports.star")
+ger_validator_signer = import_module("../chain/shared/ger_validator_signer.star")
 
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -112,6 +113,11 @@ def run(plan, args, deployment_stages, op_stack_args):
         "deploy_op_succinct": deployment_stages.get("deploy_op_succinct", False),
         "consensus_contract": consensus_contract,
         "sequencer_type": args["sequencer_type"],
+        # AggOracleCommittee v2: the URLs of the GER validators (space separated) that contracts.sh registers in the
+        # committee. Built by the module that deploys them, so the names of the services are defined in one place
+        "ger_validator_urls": " ".join(ger_validator_signer.urls(args))
+        if args.get("use_agg_oracle_committee_v2", False)
+        else "",
         "op_stack_seconds_per_slot": op_stack_seconds_per_slot,
         # vkeys and selectors
         "pp_vkey_hash": pp_vkey_hash,

@@ -1,6 +1,7 @@
 aggkit_prover = import_module("./aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
+ger_validator_signer = import_module("./ger_validator_signer.star")
 ports_package = import_module("./ports.star")
 contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-reth/op_succinct_proposer.star")
@@ -102,6 +103,10 @@ def run(
         sovereign_contract_setup_addresses,
         deploy_op_succinct,
     )
+
+    # Deploy the GER validators of the AggOracleCommittee v2, if needed. They are deployed before aggkit, that asks
+    # them to sign the GERs
+    ger_validator_signer.run(plan, args, contract_setup_addresses)
 
     # Get common dependencies
     deployment_context = _create_deployment_context(
@@ -451,7 +456,9 @@ def _update_sovereign_addresses_with_committee(
     plan, args, sovereign_contract_setup_addresses
 ):
     """Update sovereign contract addresses with committee address if oracle committee is used."""
-    if _should_deploy_oracle_committee(args):
+    if _should_deploy_oracle_committee(args) or args.get(
+        "use_agg_oracle_committee_v2", False
+    ):
         aggoracle_committee_address = contracts_util.get_aggoracle_committee_address(
             plan, args
         )
