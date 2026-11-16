@@ -23,6 +23,7 @@
     {{if .use_agg_oracle_committee_v2}}
     "useAggOracleCommittee": true,
     "aggOracleProposer": "{{ .l2_aggoracle_address }}",
+    {{- /* Filled in by create_predeployed_op_genesis of contracts.sh (jq): the address and URL of each GER validator */}}
     "aggOracleValidators": [],
     "aggOracleThreshold": {{ .agg_oracle_committee_threshold }},
     "globalExitRootUpdater": "",

@@ -2,12 +2,11 @@ constants = import_module("../../package_io/constants.star")
 
 
 def service_name(args, index):
-    """Name of the service of the GER validator number `index`, that starts at 1.
-
-    The AggOracleCommittee registers the URL of this service at the genesis of the L2, in create_predeployed_op_genesis of
-    contracts.sh, that builds the name in the same way: keep both in sync.
-    """
-    return "ger-validator{}-00{}".format(args["deployment_suffix"], index)
+    """Name of the service of the GER validator number `index`, that starts at 1: ger-validator<suffix>-001, ..."""
+    number = str(index)
+    return "ger-validator{}-{}{}".format(
+        args["deployment_suffix"], "0" * (3 - len(number)), number
+    )
 
 
 def url(args, index):
@@ -15,6 +14,18 @@ def url(args, index):
     return "http://{}:{}".format(
         service_name(args, index), args["ger_validator_signer_port"]
     )
+
+
+def urls(args):
+    """URLs of all the GER validators, in order (validator 1 first).
+
+    They are the only source of the URLs that the AggOracleCommittee registers at the genesis of the L2: contracts.sh
+    (create_predeployed_op_genesis) gets them in the template value ger_validator_urls.
+    """
+    return [
+        url(args, index)
+        for index in range(1, args["agg_oracle_committee_total_validators"] + 1)
+    ]
 
 
 def run(plan, args, contract_setup_addresses):

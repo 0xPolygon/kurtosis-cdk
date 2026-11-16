@@ -1311,11 +1311,13 @@ create_predeployed_op_genesis() {
     # shellcheck disable=SC2050
     if [[ "{{ .use_agg_oracle_committee_v2 }}" == "true" ]]; then
         # AggOracleCommittee v2: the committee registers the GER validators, with the address of their key and the URL of
-        # their REST API. The AggOracle reads the URLs from the contract. The URL is the one of the service that
-        # src/chain/shared/ger_validator_signer.star deploys, and the keys are the ones of create_keystores.
-        ger_validators=$(for (( index=1; index<={{ .agg_oracle_committee_total_validators }}; index++ )); do
+        # their REST API. The AggOracle reads the URLs from the contract. The URLs (ger_validator_urls, validator 1 first)
+        # are the ones of the services that src/chain/shared/ger_validator_signer.star deploys, and the keys are the
+        # ones of create_keystores.
+        ger_validators=$(index=0; for ger_validator_url in {{ .ger_validator_urls }}; do
+            index=$((index + 1))
             ger_validator_address=$(cast wallet address --mnemonic "lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop" --mnemonic-index $((index + 200)))
-            jq -n --arg addr "$ger_validator_address" --arg url "http://ger-validator{{ .deployment_suffix }}-00${index}:{{ .ger_validator_signer_port }}" '{addr: $addr, url: $url}'
+            jq -n --arg addr "$ger_validator_address" --arg url "$ger_validator_url" '{addr: $addr, url: $url}'
         done | jq -s .)
 
         # The pipe hides a failure of cast: check that there is every validator, with a valid address.

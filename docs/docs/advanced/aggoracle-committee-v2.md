@@ -16,7 +16,7 @@ The v2 needs three images that are not released yet. Until they are, this packag
 | `aggkit_image` | [aggkit](https://github.com/agglayer/aggkit) with `AggOracle.Mode = "committee"` ([agglayer/aggkit#1943](https://github.com/agglayer/aggkit/pull/1943)) |
 | `ger_validator_signer_image` | The GER validator, `tools/ger_validator_signer` in aggkit |
 
-It is only supported for the sovereign chains of the OP Stack (not for CDK-Erigon nor for Besu).
+It is only supported for the sovereign chains of the OP Stack (not for CDK-Erigon, Besu nor Anvil).
 
 ## Enabling it
 
@@ -48,7 +48,7 @@ An example is in [`.github/tests/other/aggoracle-committee-v2/op-reth.yml`](http
 ## What is deployed
 
 - **The committee**, in the genesis of the L2 (the `createSovereignGenesis` tool of agglayer-contracts). It is the `globalExitRootUpdater` of the L2 GER manager. Its owner is the sovereign admin, its **proposer** is the account of the AggOracle (`l2_aggoracle_address`: the only one that can inject), and its validators are the ones described below.
-- **One service per validator**, `ger-validator<deployment_suffix>-00<N>` (for example `ger-validator-001-001`), with its own configuration and keystore. They are deployed before aggkit. A validator signs a GER only if it is in the `AgglayerGER` contract of L1 and the block that inserted it is canonical and final for its own finality.
+- **One service per validator**, `ger-validator<deployment_suffix>-<N>`, with `<N>` in 3 digits (for example `ger-validator-001-001`), with its own configuration and keystore. They are deployed before aggkit. A validator signs a GER only if it is in the `AgglayerGER` contract of L1 and the block that inserted it is canonical and final for its own finality.
 - **aggkit** with `Mode = "committee"`. The URL of every validator is registered in the committee, so aggkit reads it from the contract. There is a single AggOracle for the chain, unlike the v1, that needs one for every member.
 
 The keys of the validators come from the same L2 mnemonic as the rest of the accounts, with the indexes 201 and following (see [Key Usage](./key-usage.md)). Their addresses are registered in the committee when the L2 genesis is created, and the keystores are created by the `contracts` service.

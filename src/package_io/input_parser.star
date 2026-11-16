@@ -1049,6 +1049,12 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 )
             )
 
+        # The AggOracleCommittee v2 is only supported (and tested) on the sovereign chains of the OP Stack
+        if args["use_agg_oracle_committee_v2"]:
+            fail(
+                "AggOracle Committee v2 unsupported for sequencer_type 'anvil': it is only supported on the OP Stack (op-geth, op-reth)."
+            )
+
         # The anvil node is started inside the deploy_agglayer_contracts_on_l1 stage
         # (main.star), so aggkit would be wired to a service that is never created.
         if deployment_stages.get(

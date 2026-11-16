@@ -85,6 +85,23 @@ def test_parse_args_anvil_rejects_nonpositive_block_time_or_slots(plan):
         )
 
 
+def test_parse_args_anvil_rejects_agg_oracle_committee_v2(plan):
+    # The AggOracleCommittee v2 is only supported on the OP Stack
+    user_args = _with_args(
+        _minimal_anvil_user_args(),
+        {
+            "use_agg_oracle_committee_v2": True,
+            "agg_oracle_committee_threshold": 2,
+            "agg_oracle_committee_total_validators": 3,
+            "ger_validator_signer_image": "ger_validator_signer:local",
+        },
+    )
+    expect.fails(
+        lambda: input_parser.parse_args(plan, user_args),
+        "AggOracle Committee v2 unsupported for sequencer_type 'anvil'",
+    )
+
+
 def test_parse_args_anvil_deployment_stage_coupling(plan):
     # The anvil L2 is launched inside the deploy_agglayer_contracts_on_l1 stage, so
     # skipping it while deploy_cdk_central_environment is on must fail.
