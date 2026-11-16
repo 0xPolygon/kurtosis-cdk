@@ -3,11 +3,9 @@ description: Prepare the environment for deploying Kurtosis packages.
 
 inputs:
   kurtosis_version:
-    description: The version of Kurtosis to install
+    description: The version of Kurtosis to install, empty for the one kurtosis-workflows is tested with
     required: false
-    # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks, so
-    # L2->L1 bridge claims never become ready; 1.18.2+ syncs correctly. See test.yml for details.
-    default: 1.23.0
+    default: ""
   docker_username:
     description: The username for Docker Hub
     required: false
@@ -46,7 +44,8 @@ runs:
 
     # Install dependencies
     - name: Install kurtosis
-      uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.1
+      id: kurtosis
+      uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.2
       with:
         kurtosis_version: ${{ inputs.kurtosis_version }}
 
@@ -124,19 +123,19 @@ runs:
     # The mirror cannot be repaired from CI, so pull-images retries each pull a bounded number of times.
     - name: Pre pull package images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
-      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@v0.1.1
+      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@v0.1.2
       with:
         images_file: modified-images.txt
 
     - name: Pre pull kurtosis core images from GCR
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
-      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@v0.1.1
+      uses: 0xPolygon/kurtosis-workflows/.github/actions/pull-images@v0.1.2
       with:
         registry_prefix: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual
         images: |
-          kurtosistech/engine:${{ inputs.kurtosis_version }}
-          kurtosistech/core:${{ inputs.kurtosis_version }}
-          kurtosistech/files-artifacts-expander:${{ inputs.kurtosis_version }}
+          kurtosistech/engine:${{ steps.kurtosis.outputs.version }}
+          kurtosistech/core:${{ steps.kurtosis.outputs.version }}
+          kurtosistech/files-artifacts-expander:${{ steps.kurtosis.outputs.version }}
           timberio/vector:0.45.0-debian
           traefik:v2.11.62
           alpine:3.17

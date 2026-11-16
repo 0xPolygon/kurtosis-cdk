@@ -24,6 +24,6 @@ jobs:
       id-token: write
       issues: write
       pull-requests: write
-    uses: 0xPolygon/kurtosis-workflows/.github/workflows/claude.yml@51fcf203d6766e8c2130d9fea8a330bf826b5315 # main
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/claude.yml@v0.1.2
     secrets:
       claude_api_key: ${{ secrets.CLAUDE_API_KEY }}

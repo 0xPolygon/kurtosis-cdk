@@ -16,10 +16,6 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-  # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks (the
-  # syncer freezes at ~block 120 while the L2 chain keeps advancing), so the aggsender never
-  # certifies the L2->L1 deposit and the bridge claim never becomes ready. 1.18.2+ syncs correctly.
-  KURTOSIS_VERSION: 1.23.0
   # leovct/kurtosis-test is a maintained fork of ethereum-optimism/kurtosis-test (upstream's
   # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.11 is built against
   # kurtosis 1.23.0 and ships prebuilt binaries, so we install the release archive instead of
@@ -35,12 +31,7 @@ jobs:
 
       # Install linters
       - name: Install kurtosis
-        shell: bash
-        run: |
-          echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install -y kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
+        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@v0.1.2
 
       - name: Install yamllint
         run: pip install yamllint

@@ -21,8 +21,6 @@ on:
 
 env:
   ENCLAVE_NAME: cdk
-  # Same version as test.yml.
-  KURTOSIS_VERSION: 1.23.0
   GHCR_IMAGE_PREFIX: ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
 
 jobs:
@@ -38,7 +36,6 @@ jobs:
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
-          kurtosis_version: ${{ env.KURTOSIS_VERSION }}
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
