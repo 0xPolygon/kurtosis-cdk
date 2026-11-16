@@ -15,6 +15,7 @@ permissions: {}
 jobs:
   version-matrix:
     permissions:
+      actions: read
       contents: read
       id-token: write
       pull-requests: read
