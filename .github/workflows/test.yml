@@ -25,6 +25,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       # Install linters
       - name: Install kurtosis
@@ -65,6 +67,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - uses: crate-ci/typos@4c8b7f51ca60df14e3c5ca82770dfbbe6c3dae85 # v1.52.0
         with:
           config: ${{ github.workspace }}/.github/scripts/typos.toml
@@ -76,6 +80,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: >
@@ -110,6 +116,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-go@v7.1.0
         with:
@@ -144,6 +152,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -182,6 +192,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - id: set-matrix
         run: |
@@ -215,6 +227,8 @@ jobs:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -254,6 +268,8 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -340,6 +356,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -438,6 +456,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -480,6 +500,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
