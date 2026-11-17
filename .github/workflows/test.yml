@@ -16,10 +16,6 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-  # leovct/kurtosis-test is a maintained fork of ethereum-optimism/kurtosis-test (upstream's
-  # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.11 is built against
-  # kurtosis 1.23.0 and ships prebuilt binaries, so we install the release archive instead of
-  # compiling from source.
 
 jobs:
   lint:
