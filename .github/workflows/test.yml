@@ -20,6 +20,8 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7.0.1
@@ -58,6 +60,8 @@ jobs:
 
   typos:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7.0.1
@@ -67,6 +71,8 @@ jobs:
 
   links:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7.0.1
@@ -99,6 +105,8 @@ jobs:
   # Fast shell and Go checks for the snapshot tooling.
   snapshot-unit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
@@ -167,6 +175,8 @@ jobs:
   list-ymls:
     needs: [lint, unit]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}

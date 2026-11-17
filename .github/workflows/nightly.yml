@@ -63,6 +63,8 @@ jobs:
 
   list-ymls:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
