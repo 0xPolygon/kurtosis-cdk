@@ -719,6 +719,7 @@ jobs:
 
   job-durations:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: ${{ always() && github.event_name == 'schedule' }}
     needs:
       - run-without-args

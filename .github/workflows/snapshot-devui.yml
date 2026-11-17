@@ -88,6 +88,7 @@ jobs:
   refuse-publish:
     if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Refuse to publish
         env:
