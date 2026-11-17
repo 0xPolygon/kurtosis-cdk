@@ -59,7 +59,7 @@ runs:
     - name: Install foundry
       uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
       with:
-        version: v1.8.0
+        version: v1.9.0
         cache: false
 
     # Login to registries
