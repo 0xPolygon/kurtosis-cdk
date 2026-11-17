@@ -13,7 +13,7 @@ runs:
   using: composite
   steps:
     - name: Checkout agglayer-e2e
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
       with:
         repository: agglayer/e2e
         path: ${{ inputs.path }}

@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -135,7 +135,7 @@ jobs:
 
       - name: Upload compose bundle and summary
         if: inputs.publish
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: devui-snapshot-${{ steps.tag.outputs.base_tag }}
           path: |

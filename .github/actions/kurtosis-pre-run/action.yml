@@ -53,7 +53,7 @@ runs:
     - name: Install yq
       shell: bash
       run: |
-        pip3 install yq
+        pip3 install yq==4.4.5
         yq --version
 
     - name: Install foundry
