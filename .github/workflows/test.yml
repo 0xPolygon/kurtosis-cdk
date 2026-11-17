@@ -16,49 +16,39 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-  # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks (the
-  # syncer freezes at ~block 120 while the L2 chain keeps advancing), so the aggsender never
-  # certifies the L2->L1 deposit and the bridge claim never becomes ready. 1.18.2+ syncs correctly.
-  KURTOSIS_VERSION: 1.23.0
-  # leovct/kurtosis-test is a maintained fork of ethereum-optimism/kurtosis-test (upstream's
-  # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.11 is built against
-  # kurtosis 1.23.0 and ships prebuilt binaries, so we install the release archive instead of
-  # compiling from source.
-  KURTOSIS_TEST_VERSION: v0.0.11
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       # Install linters
       - name: Install kurtosis
-        shell: bash
-        run: |
-          echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install -y kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
+        uses: 0xPolygon/kurtosis-workflows/.github/actions/setup-kurtosis@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
       - name: Install yamllint
-        run: pip install yamllint
+        run: pip install yamllint==1.38.0
 
       - name: Install hadolint
         run: |
-          sudo wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          sudo wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-Linux-x86_64
           sudo chmod +x /usr/local/bin/hadolint
 
       - name: Install shellcheck
-        run: sudo apt install shellcheck
+        run: sudo apt-get install -y shellcheck
 
       # Run linters
       - name: Run kurtosis linter
         run: kurtosis lint .
 
       - name: Run yamllint
-        run: yamllint --config-file ${{ github.workspace }}/.github/scripts/.yamllint.yml .
+        run: yamllint .
 
       - name: Run hadolint
         run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.github/scripts/.hadolint.yml {}
@@ -66,26 +56,30 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-package-pins@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
-      - name: Verify external package pins
-        run: python3 scripts/version-matrix/verify-package-pins.py
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/verify-images@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
   typos:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
-      - uses: crate-ci/typos@4c8b7f51ca60df14e3c5ca82770dfbbe6c3dae85 # v1.52.0
+      - uses: actions/checkout@v7.0.1
         with:
-          config: ${{ github.workspace }}/.github/scripts/typos.toml
+          persist-credentials: false
+      - uses: crate-ci/typos@4c8b7f51ca60df14e3c5ca82770dfbbe6c3dae85 # v1.52.0
 
   links:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: >
@@ -108,27 +102,22 @@ jobs:
           fail: true
 
   unit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install kurtosis-test
-        run: |
-          curl -sSfL "https://github.com/leovct/kurtosis-test/releases/download/${KURTOSIS_TEST_VERSION}/kurtosis-test_Linux_x86_64.tar.gz" \
-            | sudo tar xz -C /usr/local/bin kurtosis-test
-
-      - name: Run unit tests
-        run: kurtosis-test .
+    permissions:
+      contents: read
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/unit.yml@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
   # Fast shell and Go checks for the snapshot tooling.
   snapshot-unit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@v7.1.0
         with:
           go-version-file: scripts/anvil-template-check/go.mod
           cache-dependency-path: scripts/anvil-template-check/go.mod
@@ -160,7 +149,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -192,11 +183,15 @@ jobs:
   list-ymls:
     needs: [lint, unit]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - id: set-matrix
         run: |
@@ -229,7 +224,9 @@ jobs:
       matrix:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -268,7 +265,9 @@ jobs:
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -354,7 +353,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -452,7 +453,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -494,7 +497,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run

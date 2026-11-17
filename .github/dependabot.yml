@@ -30,7 +30,9 @@ updates:
     multi-ecosystem-group: all-deps
 
   - package-ecosystem: gomod
-    directory: "/static_files/additional_services/status-checker/checks/l1-info-tree"
+    directories:
+      - "/static_files/additional_services/status-checker/checks/l1-info-tree"
+      - "/scripts/anvil-template-check"
     patterns:
       - "*"
     multi-ecosystem-group: all-deps

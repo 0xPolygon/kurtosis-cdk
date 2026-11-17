@@ -21,8 +21,6 @@ on:
 
 env:
   ENCLAVE_NAME: cdk
-  # Same version as test.yml.
-  KURTOSIS_VERSION: 1.23.0
   GHCR_IMAGE_PREFIX: ghcr.io/0xpolygon/kurtosis-cdk-snapshot-
 
 jobs:
@@ -31,14 +29,13 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
-          kurtosis_version: ${{ env.KURTOSIS_VERSION }}
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
@@ -138,7 +135,7 @@ jobs:
 
       - name: Upload compose bundle and summary
         if: inputs.publish
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: devui-snapshot-${{ steps.tag.outputs.base_tag }}
           path: |

@@ -21,7 +21,6 @@ permissions:
 
 env:
   ENCLAVE_NAME: cdk
-  DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
   # reth is the default L1 execution client (geth breaks agglayer 0.6.0 settlement); this must
   # match so the gas-token job's `el-1-${L1_EL_TYPE}-${L1_CL_TYPE}` service lookup resolves.
   L1_EL_TYPE: reth
@@ -32,7 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -64,11 +65,15 @@ jobs:
 
   list-ymls:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - id: set-matrix
         run: |
@@ -103,7 +108,9 @@ jobs:
       matrix:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -141,7 +148,9 @@ jobs:
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -226,7 +235,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -307,7 +318,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -344,7 +357,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
@@ -435,7 +450,9 @@ jobs:
     # waits with margin. (num_chains=3 is a manual workflow_dispatch run; the nightly default is 2.)
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Resolve number of chains
         run: |
@@ -718,8 +735,9 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: multi-l2
 
-  workflow-summary:
+  job-durations:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: ${{ always() && github.event_name == 'schedule' }}
     needs:
       - run-without-args
@@ -729,63 +747,26 @@ jobs:
       - run-with-external-l1
       - run-with-pre-deployed-gas-token
       - run-with-multi-l2
+    permissions:
+      actions: read
     steps:
-      - uses: actions/checkout@v7
-        with:
-          sparse-checkout: scripts/perf
+      - uses: 0xPolygon/kurtosis-workflows/.github/actions/job-durations@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
 
-      - name: Job durations
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          # The recap is a bonus: an API error must not fail the workflow.
-          ./scripts/perf/job-durations.sh "$RUN_ID" >> "$GITHUB_STEP_SUMMARY" || echo "::warning::Could not list the job durations"
-
-      - name: Build the Slack message
-        id: message
-        env:
-          GH_TOKEN: ${{ github.token }}
-          NEEDS: ${{ toJSON(needs) }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          JOBS_API: repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs
-        run: |
-          # Links are a bonus: an API error must not cost the Slack message.
-          jobs=$(gh api --paginate "$JOBS_API" --jq '.jobs[]') || jobs=""
-
-          # Slack link to the first job whose name starts with $1, labelled $2.
-          job_link() {
-            local url
-            url=$(jq -rs --arg p "$1" 'map(select(.name | startswith($p)))[0].html_url // ""' <<< "$jobs")
-            if [[ -n "$url" ]]; then echo "<$url|$2>"; else echo "$2"; fi
-          }
-
-          tests=$(jq -r '[.[].result]
-            | if index("failure") then "some tests failed ❌"
-              elif index("cancelled") or index("skipped") then "some tests were skipped ⚠️"
-              else "all tests passed ✅" end' <<< "$NEEDS")
-          # Per matrix leg, so the link lands on the leg that broke.
-          broken=$(jq -rs '[.[] | select(.conclusion == "failure" or .conclusion == "cancelled")
-            | "<\(.html_url)|\(.name)>"] | join(", ")' <<< "$jobs")
-          [[ -n "$broken" ]] && tests+=" ($broken)"
-
-          echo "text=<$RUN_URL|Kurtosis CDK Nightly>: $tests" >> "$GITHUB_OUTPUT"
-
-      - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
-        with:
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          method: chat.postMessage
-          payload: |
-            {
-              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
-              "text": "Kurtosis CDK Nightly - Test Summary",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ${{ toJSON(steps.message.outputs.text) }}
-                  }
-                }
-              ]
-            }
+  workflow-summary:
+    if: ${{ always() && github.event_name == 'schedule' }}
+    needs:
+      - run-without-args
+      - run-with-args
+      - run-with-op-succinct
+      - run-with-additional-services
+      - run-with-external-l1
+      - run-with-pre-deployed-gas-token
+      - run-with-multi-l2
+    permissions:
+      actions: read
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/workflow-summary.yml@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
+    with:
+      name: Kurtosis CDK Nightly
+      needs: ${{ toJSON(needs) }}
+    secrets:
+      slack_bot_token: ${{ secrets.SLACK_BOT_TOKEN }}

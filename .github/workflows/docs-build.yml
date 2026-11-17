@@ -7,24 +7,10 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.22.1
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
-
-      - name: Install dependencies
-        working-directory: docs
-        run: npm ci
-
-      - name: Build website
-        working-directory: docs
-        run: npm run build
+  docs:
+    # The shared workflow declares the Pages permissions of its deploy job, which only runs on pushes to main.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/docs.yml@d9bb850e47a456b6519c1ba12ee9fbd32f21fe34 # v0.1.5
