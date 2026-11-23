@@ -94,7 +94,7 @@ The snapshot scripts run `cast`/`forge` in a throwaway foundry container with `-
 
 ```bash
 docker run --rm --network host --entrypoint=/usr/local/bin/cast \
-  ghcr.io/foundry-rs/foundry:v1.9.0 block-number --rpc-url http://127.0.0.1:8545
+  ghcr.io/foundry-rs/foundry:v1.10.0 block-number --rpc-url http://127.0.0.1:8545
 ```
 
 `--network host` only reaches the host's ports on Linux.

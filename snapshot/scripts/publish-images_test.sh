@@ -110,7 +110,7 @@ make_info() {
 {
   "flavor": "anvil-aggkit",
   "images": {
-    "anvil-001":   {"name": "snapshot-anvil-001:t",   "base_image": "ghcr.io/foundry-rs/foundry:v1.9.0"},
+    "anvil-001":   {"name": "snapshot-anvil-001:t",   "base_image": "ghcr.io/foundry-rs/foundry:v1.10.0"},
     "aggkit-001":  {"name": "snapshot-aggkit-001:t",  "base_image": "ghcr.io/agglayer/aggkit:0.11.1"},
     "agglayer":    {"name": "snapshot-agglayer:t",    "base_image": "ghcr.io/agglayer/agglayer:0.6.2"}
   }
@@ -175,7 +175,7 @@ assert_no_push() {
 # ---- success: ordering, digests, aliases -------------------------------------
 run_publish ok -- --tag snapshot-latest-devui
 assert_rc ok 0
-immutable_prefix="v1.9.0-20250813160000-1a2b3c4-r9.1"
+immutable_prefix="v1.10.0-20250813160000-1a2b3c4-r9.1"
 if [ "$(count_calls '^docker push')" -eq 3 ] && [ "$(count_calls 'imagetools create')" -eq 3 ]; then
     ok "ok: three immutable pushes and three alias moves"
 else
