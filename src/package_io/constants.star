@@ -128,7 +128,7 @@ SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.1",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.2.1",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.3.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.3",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
     # Used by bridge_ui_backend "bridge_hub" (ui.star run_server): a container that
@@ -143,8 +143,8 @@ DEFAULT_IMAGES = {
     # Anvil >= v1.5.0 is required: agglayer's settlement task calls
     # eth_getTransactionBySenderAndNonce, which older versions answer with
     # "Method not found" and agglayer then panics.
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.9.0",
-    "besu_image": "hyperledger/besu:26.11.0",
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.10.0",
+    "besu_image": "hyperledger/besu:26.11.1",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
@@ -163,10 +163,10 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:12.3.1",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.18.1",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.9.0-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.8.2",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.1",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.9.0",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.2",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.17.1",
-    # Pinned to v3.10.0: aggkit-prover 2.2.x embeds the op-succinct-elfs from this
+    # Pinned to v3.10.0: aggkit-prover 2.2.x/2.3.x embed the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the
     # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
     # match its own. Bump both together once a newer aggkit-prover ships.

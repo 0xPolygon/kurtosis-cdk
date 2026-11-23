@@ -42,7 +42,7 @@ cat > "${bundle}/state/state-metadata.json" <<'JSON'
 JSON
 cat > "${bundle}/images/IMAGE_INFO.json" <<'JSON'
 {"flavor": "anvil-aggkit", "tag": "t", "image_prefix": "snapshot-", "images": {
-  "anvil-001": {"name": "snapshot-anvil-001:t", "base_image": "ghcr.io/foundry-rs/foundry:v1.9.0"},
+  "anvil-001": {"name": "snapshot-anvil-001:t", "base_image": "ghcr.io/foundry-rs/foundry:v1.10.0"},
   "agglayer": {"name": "snapshot-agglayer:t", "base_image": "ghcr.io/agglayer/agglayer:0.6.2"},
   "aggkit-001": {"name": "snapshot-aggkit-001:t", "base_image": "ghcr.io/agglayer/aggkit:0.11.1"},
   "aggkit-002": {"name": "snapshot-aggkit-002:t", "base_image": "ghcr.io/agglayer/aggkit:0.11.1"},
