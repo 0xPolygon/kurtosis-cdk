@@ -43,7 +43,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 
 | Component | Deployed version | Latest stable version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ up to date |
+| aggkit | [0.12.0-rc5](https://github.com/agglayer/aggkit/releases/tag/v0.12.0-rc5) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ⚡️ ahead |
 | agglayer | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
 | op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
@@ -75,7 +75,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 
 | Component | Deployed version | Latest stable version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ up to date |
+| aggkit | [0.12.0-rc5](https://github.com/agglayer/aggkit/releases/tag/v0.12.0-rc5) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ⚡️ ahead |
 | aggkit-prover | [2.3.0](https://github.com/agglayer/provers/releases/tag/v2.3.0) | [2.3.0](https://github.com/agglayer/provers/releases/tag/v2.3.0) | ✅ up to date |
 | agglayer | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
@@ -96,7 +96,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 
 | Component | Deployed version | Latest stable version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ up to date |
+| aggkit | [0.12.0-rc5](https://github.com/agglayer/aggkit/releases/tag/v0.12.0-rc5) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ⚡️ ahead |
 | agglayer | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
 | cdk-erigon | [2.65.0-RC3](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC3) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | ⚡️ ahead |
@@ -155,7 +155,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 
 | Component | Deployed version | Latest stable version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| aggkit | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ✅ up to date |
+| aggkit | [0.12.0-rc5](https://github.com/agglayer/aggkit/releases/tag/v0.12.0-rc5) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ⚡️ ahead |
 | agglayer | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | [0.6.3](https://github.com/agglayer/agglayer/releases/tag/v0.6.3) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
 | besu | [26.11.1](https://github.com/hyperledger/besu/releases/tag/26.11.1) | [26.11.1](https://github.com/hyperledger/besu/releases/tag/26.11.1) | ✅ up to date |
@@ -184,7 +184,7 @@ Everything else: databases, observability, utility images and the status checker
 |-----------|-------------------------------|-----------------------|--------|
 | agglayer-dashboard | v4fixed | N/A | N/A |
 | agglayer-dev-ui | 844bfbc | 844bfbc | ✅ up to date |
-| agglayer-dev-ui-aggkit | [0.1.1](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.1) | [0.1.1](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.1) | ✅ up to date |
+| agglayer-dev-ui-aggkit | [0.1.2](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.2) | [0.1.2](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.2) | ✅ up to date |
 | agglogger | bf1f8c1 | bf1f8c1 | ✅ up to date |
 | arpeggio | v0.0.1 | N/A | N/A |
 | assertoor | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | [b035eef](https://github.com/ethpandaops/assertoor/commit/b035eef) | 📌 pinned — v0.1.2 cannot decode Gloas blocks of the local L1, pinned to a master build until a release does. |

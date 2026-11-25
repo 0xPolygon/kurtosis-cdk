@@ -18,4 +18,4 @@ runs:
         repository: agglayer/e2e
         path: ${{ inputs.path }}
         submodules: ${{ inputs.submodules }}
-        ref: ac2a4c9dbfa4dd1485dddd30b6d9eea5f0794ec3
+        ref: fff026c92844bc5a91fe5b1b46547b598d1fd615

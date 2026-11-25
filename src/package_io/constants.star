@@ -127,7 +127,7 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.1",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.12.0-rc5",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.3.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.3",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
@@ -138,7 +138,7 @@ DEFAULT_IMAGES = {
     # nginx image configured through a mounted /etc/agglayer-dev-ui/config.json,
     # whose strict schema is rendered by
     # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl.
-    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.1",
+    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.2",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     # Anvil >= v1.5.0 is required: agglayer's settlement task calls
     # eth_getTransactionBySenderAndNonce, which older versions answer with
