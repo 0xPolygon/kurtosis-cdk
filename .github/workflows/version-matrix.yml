@@ -19,7 +19,7 @@ jobs:
       contents: read
       id-token: write
       pull-requests: read
-    uses: 0xPolygon/kurtosis-workflows/.github/workflows/version-matrix.yml@a61da399b67a2eb06d2eccee4b030f9db35e5169 # v0.1.0
+    uses: 0xPolygon/kurtosis-workflows/.github/workflows/version-matrix.yml@f8ed58e0fe06fa745ed8c9a81c06bb786924bfa8 # v0.1.6
     with:
       label: Kurtosis CDK version matrix
       notify: ${{ github.event_name == 'schedule' || inputs.notify }}
