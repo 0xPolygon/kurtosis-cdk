@@ -29,6 +29,14 @@ def run(plan, args):
         plan.print("Custom genesis is disabled, using the default ethereum package.")
         custom_genesis = ""
 
+    preloaded_contracts = json.decode(custom_genesis) if custom_genesis else {}
+    preloaded_contracts[constants.MOCK_SP1_VERIFIER_ADDRESS] = {
+        "balance": "0ETH",
+        "code": constants.MOCK_SP1_VERIFIER_CODE,
+        "storage": {},
+        "nonce": "1",
+    }
+
     # Log format configuration.
     log_format = args.get("log_format")
     el_type = args.get("l1_el_type")
@@ -100,7 +108,7 @@ def run(plan, args):
         "participants": [participant],
         "network_params": {
             "network_id": str(args["l1_chain_id"]),
-            "additional_preloaded_contracts": custom_genesis,
+            "additional_preloaded_contracts": json.encode(preloaded_contracts),
             "preregistered_validator_keys_mnemonic": args["l1_preallocated_mnemonic"],
             "seconds_per_slot": args["l1_seconds_per_slot"],
             # The "minimal" preset is useful for rapid testing and development.
