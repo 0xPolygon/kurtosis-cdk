@@ -129,7 +129,7 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.12.0-rc5",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.3.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.6.3",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:1.0.0",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
     # Used by bridge_ui_backend "bridge_hub" (ui.star run_server): a container that
     # reads a rendered config.ts. Not the same image as agglayer_dev_ui_aggkit_image.
