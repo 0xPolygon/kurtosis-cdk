@@ -46,11 +46,11 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.12.0-rc5](https://github.com/agglayer/aggkit/releases/tag/v0.12.0-rc5) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ⚡️ ahead |
 | agglayer | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
-| op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
-| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
-| op-node | [1.20.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.2) | [1.20.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.2) | ✅ up to date |
+| op-batcher | [1.19.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.19.0) | [1.19.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.19.0) | ✅ up to date |
+| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.10.0) | 🚨 behind |
+| op-node | [1.21.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.21.0) | [1.21.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.21.0) | ✅ up to date |
 | op-proposer | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | ✅ up to date |
-| op-reth | [2.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.9.0) | [2.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.9.0) | ✅ up to date |
+| op-reth | [2.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.10.0) | [2.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.10.0) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
 ### cdk-opreth-sovereign-pessimistic
@@ -62,11 +62,11 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | 📌 pinned — Only supports aggkit 0.5.x so far. |
 | agglayer | [0.6.0](https://github.com/agglayer/agglayer/releases/tag/v0.6.0) | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | 📌 pinned — aggkit 0.5.4 signs V2/V3 certs, rejected by agglayer 0.6.1+. |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
-| op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
-| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
-| op-node | [1.20.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.2) | [1.20.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.2) | ✅ up to date |
+| op-batcher | [1.19.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.19.0) | [1.19.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.19.0) | ✅ up to date |
+| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.10.0) | 🚨 behind |
+| op-node | [1.21.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.21.0) | [1.21.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.21.0) | ✅ up to date |
 | op-proposer | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | [1.17.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.17.1) | ✅ up to date |
-| op-reth | [2.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.9.0) | [2.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.9.0) | ✅ up to date |
+| op-reth | [2.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.10.0) | [2.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.10.0) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
 ### cdk-opreth-zkrollup
@@ -79,10 +79,10 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit-prover | [2.3.0](https://github.com/agglayer/provers/releases/tag/v2.3.0) | [2.3.0](https://github.com/agglayer/provers/releases/tag/v2.3.0) | ✅ up to date |
 | agglayer | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
-| op-batcher | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | [1.18.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.18.1) | ✅ up to date |
-| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.9.0-allowlist](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0-allowlist) | ⚡️ ahead |
-| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.20.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.20.2) | 📌 pinned — op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2). |
-| op-reth | [2.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.9.0) | [2.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.9.0) | ✅ up to date |
+| op-batcher | [1.19.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.19.0) | [1.19.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.19.0) | ✅ up to date |
+| op-deployer | [0.9.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.9.0) | [0.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.10.0) | 🚨 behind |
+| op-node | [1.19.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.5) | [1.21.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.21.0) | 📌 pinned — op-succinct 3.10.x cannot read op-node 1.19.6+ (dropped cross_unsafe_l2). |
+| op-reth | [2.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.10.0) | [2.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.10.0) | ✅ up to date |
 | op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.13.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.13.0-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
@@ -158,7 +158,7 @@ Environments using [Besu](https://github.com/hyperledger/besu) as the L2 executi
 | aggkit | [0.12.0-rc5](https://github.com/agglayer/aggkit/releases/tag/v0.12.0-rc5) | [0.11.1](https://github.com/agglayer/aggkit/releases/tag/v0.11.1) | ⚡️ ahead |
 | agglayer | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | [1.0.0](https://github.com/agglayer/agglayer/releases/tag/v1.0.0) | ✅ up to date |
 | agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ up to date |
-| besu | [26.11.1](https://github.com/hyperledger/besu/releases/tag/26.11.1) | [26.11.1](https://github.com/hyperledger/besu/releases/tag/26.11.1) | ✅ up to date |
+| besu | [26.11.2](https://github.com/hyperledger/besu/releases/tag/26.11.2) | [26.11.2](https://github.com/hyperledger/besu/releases/tag/26.11.2) | ✅ up to date |
 | zkevm-bridge-service | [0.6.4-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC5) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ ahead |
 
 ## Default Images
@@ -187,14 +187,14 @@ Everything else: databases, observability, utility images and the status checker
 | agglayer-dev-ui-aggkit | [0.1.2](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.2) | [0.1.2](https://github.com/agglayer/agglayer-dev-ui/releases/tag/v0.1.2) | ✅ up to date |
 | agglogger | bf1f8c1 | bf1f8c1 | ✅ up to date |
 | arpeggio | v0.0.1 | N/A | N/A |
-| assertoor | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | [b035eef](https://github.com/ethpandaops/assertoor/commit/b035eef) | 📌 pinned — v0.1.2 cannot decode Gloas blocks of the local L1, pinned to a master build until a release does. |
+| assertoor | [49a91cd](https://github.com/ethpandaops/assertoor/commit/49a91cd) | [6dd8465](https://github.com/ethpandaops/assertoor/commit/6dd8465) | 📌 pinned — v0.1.2 cannot decode Gloas blocks of the local L1, pinned to a master build until a release does. |
 | blutgang | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | [0.3.6](https://github.com/rainshowerLabs/blutgang/releases/tag/Blutgang-0.3.6) | ✅ up to date |
 | bridge-hub-api | 2a71905 | 2a71905 | ✅ up to date |
 | bridge-hub-autoclaim | 2a71905 | 2a71905 | ✅ up to date |
 | bridge-hub-consumer | 2a71905 | 2a71905 | ✅ up to date |
 | e2e-test-runner | [dda31ee](https://github.com/agglayer/e2e/commit/dda31ee) | N/A | N/A |
 | erpc | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | [0.5.0](https://github.com/erpc/erpc/releases/tag/0.5.0) | ✅ up to date |
-| grafana | [13.3.1](https://github.com/grafana/grafana/releases/tag/v13.3.1) | [13.3.1](https://github.com/grafana/grafana/releases/tag/v13.3.1) | ✅ up to date |
+| grafana | [13.3.2](https://github.com/grafana/grafana/releases/tag/v13.3.2) | [13.3.2](https://github.com/grafana/grafana/releases/tag/v13.3.2) | ✅ up to date |
 | haproxy | 3.2-bookworm | N/A | N/A |
 | mitmproxy | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | [12.3.1](https://github.com/mitmproxy/mitmproxy/releases/tag/v12.3.1) | ✅ up to date |
 | mongodb | 7.0.29 | N/A | N/A |
@@ -213,7 +213,7 @@ External Kurtosis packages this package depends on. Versions are pinned in the [
 | Package | Pinned version | Latest stable version | Status |
 |---------|----------------|-----------------------|--------|
 | [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | [v2.1.1](https://github.com/agglayer/optimism-package/releases/tag/v2.1.1) | ✅ up to date |
-| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [35147d10dd57](https://github.com/ethpandaops/ethereum-package/tree/35147d10dd57f2dc00f5bde753f4338580c2f059) | [HEAD (35147d10dd57)](https://github.com/ethpandaops/ethereum-package/tree/35147d10dd57f2dc00f5bde753f4338580c2f059) | ✅ up to date |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [eb4af7ea4048](https://github.com/ethpandaops/ethereum-package/tree/eb4af7ea40480bf237c0dcda2ec7a8aaef9e4665) | [HEAD (eb4af7ea4048)](https://github.com/ethpandaops/ethereum-package/tree/eb4af7ea40480bf237c0dcda2ec7a8aaef9e4665) | ✅ up to date |
 
 ### Additional
 
