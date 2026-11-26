@@ -35,6 +35,12 @@ LOG_LEVEL = struct(
     trace="trace",
 )
 
+# op-deployer v0.10.0 needs an SP1 verifier exposing VERSION() on the L1. Devnets never submit
+# ZK proofs, so the L1 genesis preloads Optimism's MockSP1Verifier (runtime code) at this address.
+# Keep in sync with agglayer/optimism-package (`DEFAULT_SP1_VERIFIER`).
+MOCK_SP1_VERIFIER_ADDRESS = "0x5100000000000000000000000000000000000001"
+MOCK_SP1_VERIFIER_CODE = "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80632a5104361461004657806341493c6014610079578063ffa1ad7414610090575b600080fd5b6040517f0d13b26f3ea578005da0af16c31e23911e3f8f5124005a1e77fa2a6477dc930e81526020015b60405180910390f35b61008e610087366004610118565b5050505050565b005b604080518082018252600b81527f76302e302e302d4d4f434b000000000000000000000000000000000000000000602082015290516100709190610192565b60008083601f8401126100e157600080fd5b50813567ffffffffffffffff8111156100f957600080fd5b60208301915083602082850101111561011157600080fd5b9250929050565b60008060008060006060868803121561013057600080fd5b85359450602086013567ffffffffffffffff8082111561014f57600080fd5b61015b89838a016100cf565b9096509450604088013591508082111561017457600080fd5b50610181888289016100cf565b969995985093965092949392505050565b600060208083528351808285015260005b818110156101bf578581018301518582016040015282016101a3565b818111156101d1576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01692909201604001939250505056fea164736f6c634300080f000a"
+
 LOG_FORMAT = struct(
     json="json",
     pretty="pretty",
@@ -127,7 +133,7 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.11.1",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.12.0-rc5",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:2.3.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:1.0.0",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.3-r3",
@@ -138,13 +144,13 @@ DEFAULT_IMAGES = {
     # nginx image configured through a mounted /etc/agglayer-dev-ui/config.json,
     # whose strict schema is rendered by
     # static_files/additional_services/bridge-ui/aggkit-dev-ui-config.json.tmpl.
-    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.1",
+    "agglayer_dev_ui_aggkit_image": "ghcr.io/agglayer/agglayer-dev-ui:0.1.2",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     # Anvil >= v1.5.0 is required: agglayer's settlement task calls
     # eth_getTransactionBySenderAndNonce, which older versions answer with
     # "Method not found" and agglayer then panics.
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.10.0",
-    "besu_image": "hyperledger/besu:26.11.1",
+    "besu_image": "hyperledger/besu:26.11.2",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
     "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
@@ -161,10 +167,10 @@ DEFAULT_IMAGES = {
     "reth_image": "ghcr.io/paradigmxyz/reth:v2.11.0",
     "lighthouse_image": "sigp/lighthouse:v8.3.3",
     "mitm_image": "mitmproxy/mitmproxy:12.3.1",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.18.1",
-    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.9.0-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.9.0",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.20.2",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.19.0",
+    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.10.0-cdk",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.10.0",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.21.0",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.17.1",
     # Pinned to v3.10.0: aggkit-prover 2.2.x/2.3.x embed the op-succinct-elfs from this
     # version, and it hard-fails at startup if the aggregation vkey baked into the

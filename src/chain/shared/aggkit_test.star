@@ -23,6 +23,7 @@ def test_get_agglayer_endpoint(plan):
         ("ghcr.io/agglayer/aggkit:local", "grpc"),
         ("ghcr.io/agglayer/aggkit:1.0.0", "grpc"),
         ("ghcr.io/agglayer/aggkit:0.11.0", "grpc"),
+        ("ghcr.io/agglayer/aggkit:0.12.0-rc5", "grpc"),
         ("ghcr.io/agglayer/aggkit:0.2.14", "readrpc"),
         ("ghcr.io/agglayer/aggkit:0.1", "readrpc"),
         ("ghcr.io/agglayer/aggkit:0", "readrpc"),
@@ -36,6 +37,7 @@ def test_aggkit_version_gte_legacy_bridge_addr(plan):
     # The legacy polygonBridgeAddr flag is `not _aggkit_version_gte(image, 0, 8)`;
     # "0.11" must not be read as older than "0.8".
     cases = [
+        ("ghcr.io/agglayer/aggkit:0.12.0-rc5", False),
         ("ghcr.io/agglayer/aggkit:0.11.0", False),
         ("ghcr.io/agglayer/aggkit:0.9.0", False),
         ("ghcr.io/agglayer/aggkit:0.7.5", True),
