@@ -9,6 +9,7 @@ def test_parse_version(plan):
         ("0.6.0-rc7", (0, 6, 0, 7)),
         ("0.6", (0, 6, 0, 999)),
         ("0.5.0", (0, 5, 0, 999)),
+        ("1.0.0", (1, 0, 0, 999)),
         ("latest", (999, 0, 0, 999)),
         ("local", (999, 0, 0, 999)),
     ]
@@ -26,6 +27,7 @@ def test_settlement_config_gating(plan):
         ("0.6.0-rc.7", (False, True)),
         ("0.6.0", (False, True)),
         ("0.6.2", (False, True)),
+        ("1.0.0", (False, True)),
         ("latest", (False, True)),
     ]
     for version, expected in cases:
